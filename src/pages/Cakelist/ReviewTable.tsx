@@ -60,9 +60,9 @@ function ReviewTable(){
                  throw new Error('Failed to fetch data');
                }
                const result = await response.json();  // Parse JSON response
-               console.log('#############',result.data)
-                setReviewTable(result.data);  // Update the data state
-               setTotalCount(100);
+               console.log('#############',result.data.result)
+                setReviewTable(result.data.result);  // Update the data state
+               setTotalCount(result.data.total_count);
                
              } catch (err:any) {
                setError(err.message);  // Handle any errors

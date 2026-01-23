@@ -18,15 +18,15 @@ interface AnalyticsItem {
   language:string;
 }
 
-// const tableData = [
-//   { user_id: 1,Order_id:"c11", first_name: "User 1", book_for: "Rent", bookquantity: 5,language:"malayalam", status: "Rented" ,Booktype:"Drama",Buyprice:"255.99",RentPrice:"100.99"},
-//   { user_id: 2,order_id:"c11", first_name: "User 2", book_for: "Buy", bookquantity: 2,language:"English", status: "Sold out",Booktype:"Novel",Buyprice:"105.99",RentPrice:"100.99" },
-//   { user_id: 3,order_id:"c11", first_name: "User 3", book_for: "Rent", bookquantity: 2,language:"Hindi", status: "Available",Booktype:"short story",Buyprice:"150.99",RentPrice:"100.99" },
-//   { user_id: 4,order_id:"c11", first_name: "User 4", book_for: "Buy", bookquantity: 5,language:"malayalam", status: "Rented",Booktype:"Novel",Buyprice:"159.99",RentPrice:"100.99" },
-//   { user_id: 5,order_id:"c11", first_name: "User 5", book_for: "Buy", bookquantity: 3,language:"malayalam", status: "Available",Booktype:"Drama",Buyprice:"315.99",RentPrice:"100.99" },
-//   { user_id: 6,order_id:"c11", first_name: "User 6", book_for: "Buy", bookquantity: 4,language:"English", status: "Available",Booktype:"Novel",Buyprice:"915.99",RentPrice:"100.99" },
+const tableData = [
+  { user_id: 1,Order_id:"c11", first_name: "User 1", book_for: "Rent", bookquantity: 5,language:"malayalam", status: "Rented" ,Booktype:"Drama",Buyprice:"255.99",RentPrice:"100.99"},
+  { user_id: 2,order_id:"c11", first_name: "User 2", book_for: "Buy", bookquantity: 2,language:"English", status: "Sold out",Booktype:"Novel",Buyprice:"105.99",RentPrice:"100.99" },
+  { user_id: 3,order_id:"c11", first_name: "User 3", book_for: "Rent", bookquantity: 2,language:"Hindi", status: "Available",Booktype:"short story",Buyprice:"150.99",RentPrice:"100.99" },
+  { user_id: 4,order_id:"c11", first_name: "User 4", book_for: "Buy", bookquantity: 5,language:"malayalam", status: "Rented",Booktype:"Novel",Buyprice:"159.99",RentPrice:"100.99" },
+  { user_id: 5,order_id:"c11", first_name: "User 5", book_for: "Buy", bookquantity: 3,language:"malayalam", status: "Available",Booktype:"Drama",Buyprice:"315.99",RentPrice:"100.99" },
+  { user_id: 6,order_id:"c11", first_name: "User 6", book_for: "Buy", bookquantity: 4,language:"English", status: "Available",Booktype:"Novel",Buyprice:"915.99",RentPrice:"100.99" },
  
-// ];
+];
 function Booklist(){
    const [page, setPage] =useState(1);
      const [sizePerPage, setSizePerPage] = useState(10);

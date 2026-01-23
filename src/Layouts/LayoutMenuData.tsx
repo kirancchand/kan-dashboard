@@ -7,6 +7,7 @@ const Navdata = () => {
     const [isDashboard, setIsDashboard] = useState<boolean>(false);
     const [isApps, setIsApps] = useState<boolean>(false);
     const [isCakes, setIsCakes] = useState<boolean>(false);
+    const [isPlants, setIsPlants] = useState<boolean>(false);
     const [isBook, setIsBook] = useState<boolean>(false);
     const [isAuth, setIsAuth] = useState<boolean>(false);
     const [isPages, setIsPages] = useState<boolean>(false);
@@ -88,6 +89,9 @@ const Navdata = () => {
         }
          if (iscurrentState !== 'Cakes') {
             setIsCakes(false);
+        }
+        if(iscurrentState !== 'Plants'){
+            setIsPlants(false);
         }
         if (iscurrentState !== 'Auth') {
             setIsAuth(false);
@@ -264,6 +268,13 @@ const Navdata = () => {
             stateVariables: isCakes,
             subItems: [
                  {
+                    id: "user",
+                    label: "User Mangement",
+                    link: "/cakeUsers-list",
+                    parentId: "list",
+                    
+        },
+                 {
                     id: "order",
                     label: "Orders",
                     link: "/order-table",
@@ -334,6 +345,86 @@ const Navdata = () => {
     ]
 },
 
+{
+            id: "plantsapp",
+            label: "Plants App",
+            icon: "ri-apps-2-line",
+            link: "/#",
+             click: function (e: any) {
+                e.preventDefault();
+                
+                setIsPlants(!isPlants);
+                setIscurrentState('Plants');
+                updateIconSidebar(e);
+            },
+            stateVariables: isPlants,
+            subItems: [
+                 {
+                    id: "plants",
+                    label: "Plants",
+                    link: "/plants",
+                    parentId: "plants",
+                    
+        },
+                 {
+                    id: "categories",
+                    label: "Categories",
+                    link: "/plants-category",
+                    parentId: "list",
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setListcategories(!isListcategories);
+                    }
+                },
+                
+                {
+                    id: "transactions",
+                    label: "Transactions",
+                    link: "/plants-transactions",
+                    parentId: "list",
+                    // isChildItem: true,
+                    // click: function (e: any) {
+                    //     e.preventDefault();
+                    //     setListcategories(!isListcategories);
+                    // }
+        },
+          
+        {
+                    id: "orders",
+                    label: "Orders",
+                    link: "/plants-orders",
+                    parentId: "list",
+                    // isChildItem: true,
+                    // click: function (e: any) {
+                    //     e.preventDefault();
+                    //     setListcategories(!isListcategories);
+                    // }
+        },
+
+         {
+                    id: "carousel",
+                    label: "Carousels",
+                    link: "/plants-category",
+                    parentId: "list",
+                    // isChildItem: true,
+                    // click: function (e: any) {
+                    //     e.preventDefault();
+                    //     setListcategories(!isListcategories);
+                    // }
+        },
+        {
+                    id: "reviews",
+                    label: "Reviews",
+                    link: "/plants-reviews",
+                    parentId: "list",
+                    // isChildItem: true,
+                    // click: function (e: any) {
+                    //     e.preventDefault();
+                    //     setListcategories(!isListcategories);
+                    // }
+        },
+    ]
+},
        
         {
             label: "pages",

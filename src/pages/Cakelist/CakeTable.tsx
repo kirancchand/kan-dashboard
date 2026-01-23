@@ -21,11 +21,11 @@ interface AnalyticsItem {
 function CakeTable(){
     const [page, setPage] =useState(1);
   const [sizePerPage, setSizePerPage] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(null);
   const [sorting, setSorting] = useState<SortTanstackInterface[]>([]);
   const tableProps = {striped: true,bordered: false};
   let sort:SortInterface[]=[]; 
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsItem[]>([]); 
+  const [cakeData, setcakeData] = useState<AnalyticsItem[]>([]); 
   const [loading, setLoading] = useState(false);  // Loading state
   const [error, setError] = useState(null); 
  // Async function to fetch data from the API
@@ -62,10 +62,12 @@ function CakeTable(){
     if (!response.ok) {
       throw new Error('Failed to fetch data');
     }
-    const result = await response.json();  // Parse JSON response
-    console.log('******************',result.data)
-    setAnalyticsData(result.data);  // Update the data state
-    setTotalCount(100);
+    const result = await response.json(); 
+    setcakeData(result.data.result);  // Update the data state
+    setTotalCount(result.data.total_count);
+console.log("202020",result.data.total_count)
+   
+   
   } catch (err:any) {
     setError(err.message);  // Handle any errors
   } finally {
@@ -233,7 +235,7 @@ const EmailColumnFilter=()=>{
   } 
       },
       {
-        header: "Cake Name",
+        header: "Cakee Name",
         accessorKey: "cake_name",
         enableColumnFilter: false,
         sortDescFirst: false,
@@ -304,7 +306,7 @@ const openRowFunc=(row:any)=>{
       <CardBody>
        <TableContainer 
         columns={(columns || [])}
-        data={(analyticsData || [])}
+        data={(cakeData || [])}
         customPageSize={sizePerPage}
         tableClass="table-centered align-middle table-nowrap mb-0"
         theadClass="text-muted table-light"
@@ -320,7 +322,7 @@ const openRowFunc=(row:any)=>{
         tableProps={tableProps}
         getRowData={getRowData}
         rowColor="#fcba03"
-        clickable={false}
+        clickable={true}
         openRow={false}
         useExpand={false}
         expandedRowIds={expandedRowIds} 

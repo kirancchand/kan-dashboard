@@ -46,17 +46,17 @@ function OrderTable(){
   setError(null);
 
   try {
-  
-    const response = await axios.get(fetchGetAllOrders, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      params: reqData, 
-    });
+      const response = await axios.post(fetchGetAllOrders,reqData, {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+
+ 
 
     console.log("allorders......", response.data);
-    setAnalyticsData(response.data);
-    setTotalCount(100);
+    setAnalyticsData(response.data.result);
+    setTotalCount(response.data.total_count);
 
   } catch (err: any) {
     setError(err.message);

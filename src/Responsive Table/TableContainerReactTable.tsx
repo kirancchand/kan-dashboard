@@ -74,7 +74,7 @@ export function TableContainer({
       pagination,
       sorting
     },
-    // rowCount: totalCount,
+    rowCount: totalCount,
     manualPagination: true,
     manualSorting: true,
     enableSorting: false,
@@ -160,7 +160,7 @@ export function TableContainer({
     }
 
   }
-
+console.log("totalCount",totalCount)
   return (
     <Fragment>
       {!loading ? <div>

@@ -238,9 +238,28 @@ import Addusers from "pages/Books/Addusers";
 import Addnewpurchase from "pages/Books/Addnewpurchase";
 import Bookcategory from "pages/Books/Bookcategory";
 import Addcategory from "pages/Books/Addcategory";
+import Userslistcake from "pages/Cakelist/Userslistcake";
+import path from "path";
+import { Component } from "gridjs";
+import Plants from "pages/PlantsApp/Plants";
+import PlantsCarousel from "pages/PlantsApp/PlantsCarousel";
+import PlantsCategory from "pages/PlantsApp/PlantsCategory";
+import PlantsReviews from "pages/PlantsApp/PlantsReviews";
+import PlantsOrders from "pages/PlantsApp/PlantsOrders";
+import PlantsTransactions from "pages/PlantsApp/PlantsTransactions";
+
 
 
 const authProtectedRoutes = [
+  
+  // Plant App Routes
+  {path: "/plants", component: <Plants/> },
+  {path: "/plants-carousel", component: <PlantsCarousel/>},
+  {path: "/plants-reviews", component: <PlantsReviews/>},
+  {path: "/plants-category", component: <PlantsCategory/>},
+  {path: "/plants-orders", component: <PlantsOrders/>},
+  {path: "/plants-transactions", component: <PlantsTransactions/>},
+
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
   { path: "/dashboard-crm", component: <DashboardCrm /> },
   { path: "/dashboard", component: <DashboardEcommerce /> },
@@ -259,6 +278,7 @@ const authProtectedRoutes = [
   { path: "/book-category", component: <Bookcategory /> },
   { path: "/add-category", component: <Addcategory /> },
     { path: "/Users-list", component: <Userlist /> },
+      { path: "/cakeUsers-list", component: <Userslistcake/> },
      { path: "/Add-users", component: <Addusers /> },
   { path: "/cake-table", component: <CakeTable /> },
   { path: "/add-catageories", component: <AddCatageories /> },
