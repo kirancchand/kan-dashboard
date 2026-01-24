@@ -175,7 +175,7 @@ const PlantsCategory = () => {
                                                 </Col>
                                             </Row>
 
-                                            <Button className='float-end' type="submit" disabled={!isValid || isSubmitting}>
+                                            <Button className='float-end' type="submit" disabled={isSubmitting}>
                                                 Submit
                                             </Button>
                                         </FormikForm>
