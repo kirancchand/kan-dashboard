@@ -404,7 +404,7 @@ const Navdata = () => {
          {
                     id: "carousel",
                     label: "Carousels",
-                    link: "/plants-category",
+                    link: "/plants-carousel",
                     parentId: "list",
                     // isChildItem: true,
                     // click: function (e: any) {
