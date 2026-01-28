@@ -1,20 +1,7 @@
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
-import { Button, Modal, ModalHeader, ModalBody, Row, Col, Label, Input, FormGroup } from 'reactstrap';
-import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
 import Swal from 'sweetalert2';
-import * as Yup from "yup";
 import PlantsFormModal from './PlantsFormModal';
-
-interface AnalyticsItem {
-    id: number,
-    name: string,
-    desc: string,
-    price: number,
-    rating: number,
-    category: string,
-    src: any,
-}
 
 let DummyPlants = [
     { id: 1, name: "Rose", desc: "Rose is a really good plant for home.", price: 400, rating: 4.7, category: "Indoor Plant", src: ["1.webp", "2.webp", "3.webp", "4.webp"] },
@@ -50,22 +37,12 @@ const Plants = () => {
         setProducts(allDummyProducts)
     }
 
-
-
-    const successNotification = () => {
-        Swal.fire({
-            title: "Success!",
-            text: selectedProduct ? "Selected Product Updated." : "New Product Added",
-            icon: "success"
-        })
-    }
-
     const handleChange = (e: any) => {
         console.log(e.target)
         const selectedFiles: any = Array.from(e.target.files);
         const allImages: any = [];
-        const group = selectedFiles.map((item: any) => {
-            allImages.push(item.name);
+        selectedFiles.map((item: any) => {
+            return allImages.push(item.name);
         })
         console.log(allImages) 
         setFiles(allImages);
@@ -145,7 +122,7 @@ const Plants = () => {
                 return (
                     <div style={{ display: "flex", gap: "5px" }}>
                         {images.map((image, index) => (
-                            <img key={index} src={`${image}`} height={60} width={60}></img>
+                            <img alt="productimg" key={index} src={`${image}`} height={60} width={60}></img>
                         ))}
                     </div>
                 )
@@ -175,13 +152,15 @@ const Plants = () => {
             enableColumnFilter: false,
         },
 
-    ], [])
+    ], [toggle])
 
     const [mode, setMode] = useState("");
+    
     const returnFunc = (val: any) => {
         console.log(val)
-        mode == "add" ? addProduct(val) : updateProduct(val);
+        mode === "add" ? addProduct(val) : updateProduct(val);
     }
+
     console.log(modal)
     return (
         <React.Fragment>

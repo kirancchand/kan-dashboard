@@ -1,27 +1,9 @@
 import React, { useMemo, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
-import {
-    Button,
-    Modal,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Row,
-    Col,
-    Label,
-    Input,
-    FormGroup,
-} from "reactstrap";
-import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
 import Swal from "sweetalert2";
-import * as Yup from "yup";
+import CategoryModal from "./CategoryModal";
 
-interface AnalyticsItem {
-    id: number;
-    category: string;
-    parent_id: number;
-}
+
 
 let dummyPlantsCategory = [
     { id: 1, category: "Indoor Plants", parent_id: 0 },
@@ -33,6 +15,7 @@ let dummyPlantsCategory = [
 
 const PlantsCategory = () => {
     const [plantsCategoryData, setPlantsCategoryData] = useState(dummyPlantsCategory);
+    const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
 
     const handleDelete = (index: Number) => {
         Swal.fire({
@@ -68,21 +51,15 @@ const PlantsCategory = () => {
         setPlantsCategoryData(allPlantCategories)
     };
 
-    const PlantsCategorySchema = Yup.object().shape({
-        category: Yup.string().required("Category name is required!"),
-        parent_id: Yup.number(),
-    });
-
-    const successNotification = () => {
-        Swal.fire({
-            title: "Success!",
-            text: "New Category Added.",
-            icon: "success",
-        });
-    };
+    const updatePlantCategory = (values:any) =>{
+        setPlantsCategoryData(prev =>
+            prev.map(item => item.id === selectedCategory.id ? { ...item, ...values} : item)
+        );
+    }
 
     const [modal, setModal] = useState(false);
     const toggle = () => setModal(!modal);
+    const [mode, setMode] = useState("")
     const [totalCount, setTotalCount] = useState(0);
 
     let initialRequest = {
@@ -131,7 +108,11 @@ const PlantsCategory = () => {
                             <i className="ri-delete-bin-line" style={{ color: "red" }} onClick={() => {
                                 handleDelete(row.original.id)
                             }}></i>
-                            <i className="ri-edit-2-line" style={{ color: "red" }}></i>
+                            <i className="ri-edit-2-line" style={{ color: "red" }} onClick={() => {
+                                setMode("update")
+                                setSelectedCategory(row.original)
+                                toggle();
+                            }}></i>
                         </div>
                     );
                 },
@@ -149,89 +130,30 @@ const PlantsCategory = () => {
         fetchData(initialRequest);
     });
 
+    const returnFunction = (val: any) => {
+        console.log(val)
+        mode === "add" ? addPlantCategory(val) : updatePlantCategory(val);
+    }
+
     return (
         <React.Fragment>
             <div style={{ padding: "50px", marginTop: "50px" }}>
                 <div className="plants-header">
                     <h1>Plant App Categories</h1>
-                    <button className="btn btn-primary" onClick={toggle}>
+                    <button className="btn btn-primary" onClick={()=>{
+                        setMode("add")
+                        toggle()
+                    }}>
                         Add New Category
                     </button>
-                    <Modal isOpen={modal} toggle={toggle} size="lg" centered>
-                        <ModalHeader toggle={toggle}>Add New Plant Category</ModalHeader>
-                        <ModalBody>
-                            <div className="plants-form-content">
-                                <Formik
-                                    initialValues={{ category: "", parent_id: "" }}
-                                    validationSchema={PlantsCategorySchema}
-                                    validateOnMount
-                                    onSubmit={(values, { setSubmitting, resetForm }) => {
-                                        console.log("Form values:", values);
-                                        setSubmitting(false);
-                                        toggle();
-                                        successNotification();
-                                        addPlantCategory(values);
-                                        resetForm();
-                                    }}
-                                >
-                                    {({ isSubmitting, isValid }) => (
-                                        <FormikForm>
-                                            <Row>
-                                                <Col md={6}>
-                                                    <FormGroup>
-                                                        <Label for="exampleSelect">Select Category</Label>
-                                                        <Field
-                                                            as={Input}
-                                                            id="parent_id"
-                                                            name="parent_id"
-                                                            type="select"
-                                                        >
-                                                            <option value={""}>Select Parent Category</option>
-                                                            {plantsCategoryData.map((item) => (
-                                                                <option key={item.category} value={item.id}>
-                                                                    {item.category}
-                                                                </option>
-                                                            ))}
-                                                        </Field>
-                                                        <ErrorMessage
-                                                            name="parent_id"
-                                                            component="div"
-                                                            className="text-danger"
-                                                        />
-                                                    </FormGroup>
-                                                </Col>
-                                                <Col md={6}>
-                                                    <FormGroup>
-                                                        <Label for="category">Category Name</Label>
-                                                        <Field
-                                                            as={Input}
-                                                            id="category"
-                                                            name="category"
-                                                            type="text"
-                                                            placeholder="Enter Category Name"
-                                                        />
-                                                        <ErrorMessage
-                                                            name="category"
-                                                            component="div"
-                                                            className="text-danger"
-                                                        />
-                                                    </FormGroup>
-                                                </Col>
-                                            </Row>
-
-                                            <Button
-                                                className="float-end"
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                            >
-                                                Submit
-                                            </Button>
-                                        </FormikForm>
-                                    )}
-                                </Formik>
-                            </div>
-                        </ModalBody>
-                    </Modal>
+                    <CategoryModal
+                        mode={mode}
+                        modal={modal}
+                        toggle={toggle}
+                        selected={selectedCategory}
+                        returnFunction={(val: any) => returnFunction(val)}
+                        plantsCategoryData ={plantsCategoryData}
+                    />
                 </div>
                 <TableContainer
                     columns={columns || []}

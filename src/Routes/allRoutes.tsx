@@ -118,7 +118,6 @@ import LineAwesomeIcons from "../pages/Icons/LineAwesomeIcons/LineAwesomeIcons";
 import CryptoIcons from "../pages/Icons/CryptoIcons/CryptoIcons";
 
 //Maps
-import GoogleMaps from "../pages/Maps/GoogleMaps/GoogleMaps";
 
 //AuthenticationInner pages
 import BasicSignIn from '../pages/AuthenticationInner/Login/BasicSignIn';
@@ -134,7 +133,7 @@ import Team from '../pages/Pages/Team/Team';
 import Timeline from '../pages/Pages/Timeline/Timeline';
 import Faqs from '../pages/Pages/Faqs/Faqs';
 import Pricing from '../pages/Pages/Pricing/Pricing';
-import Gallery from '../pages/Pages/Gallery/Gallery';
+
 import Maintenance from '../pages/Pages/Maintenance/Maintenance';
 import ComingSoon from '../pages/Pages/ComingSoon/ComingSoon';
 import SiteMap from '../pages/Pages/SiteMap/SiteMap';
@@ -216,7 +215,6 @@ import RangeArea from "../pages/Charts/ApexCharts/RangeAreaCharts/Index";
 import FunnelCharts from "../pages/Charts/ApexCharts/FunnelCharts/Index";
 import Application from "pages/Jobs/Application";
 import Kanbanboard from "pages/Tasks/KanbanBoard";
-import Listcatageories from "pages/Cakelist/CatageoriesTable";
 import AddCakes from "pages/Cakelist/AddCakes";
 
 import Splash from "pages/Cakelist/Splash";
@@ -224,7 +222,6 @@ import Splashtable from "pages/Cakelist/Splashtable";
 import AddCatageories from "pages/Cakelist/AddCatageories";
 import CatageoriesTable from "pages/Cakelist/CatageoriesTable";
 import CakeTable from "pages/Cakelist/CakeTable";
-import ReviewTable from "pages/Cakelist/ReviewTable";
 import ContactTable from "pages/Cakelist/ContactTable";
 import OrderTable from "pages/Cakelist/OrderTable";
 import AllReviewTable from "pages/Cakelist/AllReviewTable";
@@ -239,8 +236,6 @@ import Addnewpurchase from "pages/Books/Addnewpurchase";
 import Bookcategory from "pages/Books/Bookcategory";
 import Addcategory from "pages/Books/Addcategory";
 import Userslistcake from "pages/Cakelist/Userslistcake";
-import path from "path";
-import { Component } from "gridjs";
 import Plants from "pages/PlantsApp/Plants";
 import PlantsCarousel from "pages/PlantsApp/PlantsCarousel";
 import PlantsCategory from "pages/PlantsApp/PlantsCategory";
