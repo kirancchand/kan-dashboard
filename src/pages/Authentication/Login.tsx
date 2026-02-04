@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardBody, Col, Container, Input, Label, Row, Button, Form, FormFeedback, Alert, Spinner } from 'reactstrap';
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 
+
 //redux
 import { useSelector, useDispatch } from "react-redux";
 
 import { Link } from "react-router-dom";
 import withRouter from "../../Components/Common/withRouter";
+
 // Formik validation
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
 // actions
-import { loginUser, socialLogin, resetLoginFlag } from "../../slices/thunks";
+import { loginSuccess, resetLoginFlag } from "../../slices/thunks";
 
 import logoLight from "../../assets/images/logo-light.png";
 import { createSelector } from 'reselect';
@@ -32,55 +34,37 @@ const Login = (props: any) => {
         })
     );
     // Inside your component
-    const {
-        user, error, errorMsg
-    } = useSelector(loginpageData);
+    const { user, error, errorMsg } = useSelector(loginpageData);
 
     const [userLogin, setUserLogin] = useState<any>([]);
     const [passwordShow, setPasswordShow] = useState<boolean>(false);
 
     const [loader, setLoader] = useState<boolean>(false);
 
-
-    useEffect(() => {
-        if (user && user) {
-            const updatedUserData = process.env.REACT_APP_DEFAULTAUTH === "firebase" ? user.multiFactor.user.email : user.email;
-            const updatedUserPassword = process.env.REACT_APP_DEFAULTAUTH === "firebase" ? "" : user.confirm_password;
-            setUserLogin({
-                email: updatedUserData,
-                password: updatedUserPassword
-            });
-        }
-    }, [user]);
-
     const validation: any = useFormik({
-        // enableReinitialize : use this flag when initial values needs to be changed
         enableReinitialize: true,
-
         initialValues: {
-            email: userLogin.email || "admin@themesbrand.com" || '',
-            password: userLogin.password || "123456" || '',
+            username: userLogin.username || "testuser" || '',
+            password: userLogin.password || "mypassword" || '',
         },
         validationSchema: Yup.object({
-            email: Yup.string().required("Please Enter Your Email"),
+            username: Yup.string().required("Please Enter Your Username"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
-        onSubmit: (values) => {
-            console.log( props.router.navigate)
-            dispatch(loginUser(values, props.router.navigate));
-            setLoader(true)
-        }
+        onSubmit: async (values) => {
+            try {
+                setLoader(true);
+                await dispatch(loginSuccess(values, props.router.navigate));
+
+            } catch (error) {
+                console.error("Login failed", error);
+            } finally {
+                setLoader(false);
+            }
+        },
     });
 
-    const signIn = (type: any) => {
-        dispatch(socialLogin(type, props.router.navigate));
-    };
 
-
-    //for facebook and google authentication
-    const socialResponse = (type: any) => {
-        signIn(type);
-    };
 
 
     useEffect(() => {
@@ -130,21 +114,21 @@ const Login = (props: any) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="email" className="form-label">Email</Label>
+                                                    <Label htmlFor="username" className="form-label">Username</Label>
                                                     <Input
-                                                        name="email"
+                                                        name="username"
                                                         className="form-control"
-                                                        placeholder="Enter email"
-                                                        type="email"
+                                                        placeholder="Enter Username"
+                                                        type="text"
                                                         onChange={validation.handleChange}
                                                         onBlur={validation.handleBlur}
-                                                        value={validation.values.email || ""}
+                                                        value={validation.values.username || ""}
                                                         invalid={
-                                                            validation.touched.email && validation.errors.email ? true : false
+                                                            validation.touched.username && validation.errors.username ? true : false
                                                         }
                                                     />
-                                                    {validation.touched.email && validation.errors.email ? (
-                                                        <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
+                                                    {validation.touched.username && validation.errors.username ? (
+                                                        <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
                                                     ) : null}
                                                 </div>
 
@@ -195,20 +179,12 @@ const Login = (props: any) => {
                                                         <Link
                                                             to="#"
                                                             className="btn btn-primary btn-icon me-1"
-                                                            onClick={e => {
-                                                                e.preventDefault();
-                                                                socialResponse("facebook");
-                                                            }}
                                                         >
                                                             <i className="ri-facebook-fill fs-16" />
                                                         </Link>
                                                         <Link
                                                             to="#"
                                                             className="btn btn-danger btn-icon me-1"
-                                                            onClick={e => {
-                                                                e.preventDefault();
-                                                                socialResponse("google");
-                                                            }}
                                                         >
                                                             <i className="ri-google-fill fs-16" />
                                                         </Link>

@@ -531,6 +531,7 @@ const Navdata = () => {
                     click: function (e: any) {
                         e.preventDefault();
                         setIsLogout(!isLogout);
+                        console.log("Tokens removed successfully!")
                     },
                     parentId: "authentication",
                     stateVariables: isLogout,
