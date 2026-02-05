@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardBody, Col, Container, Input, Label, Row, Button, Form, FormFeedback, Alert, Spinner } from 'reactstrap';
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
+import { http,login_request } from "http/http";
 
 
 //redux
@@ -14,7 +15,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 
 // actions
-import { loginSuccess, resetLoginFlag } from "../../slices/thunks";
+import { loginUser, resetLoginFlag} from "../../slices/thunks";
 
 import logoLight from "../../assets/images/logo-light.png";
 import { createSelector } from 'reselect';
@@ -54,7 +55,12 @@ const Login = (props: any) => {
         onSubmit: async (values) => {
             try {
                 setLoader(true);
-                await dispatch(loginSuccess(values, props.router.navigate));
+                const response = await http.post(login_request, values);
+                console.log("response: ", response)
+                if (response.status===200){
+                    dispatch(loginUser(response, props.router.navigate));
+                    
+                }
 
             } catch (error) {
                 console.error("Login failed", error);

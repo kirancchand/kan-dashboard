@@ -6,6 +6,7 @@ const Navdata = () => {
     //state data
     const [isDashboard, setIsDashboard] = useState<boolean>(false);
     const [isApps, setIsApps] = useState<boolean>(false);
+    const [isUsers,setIsUsers] = useState<boolean>(false);
     const [isCakes, setIsCakes] = useState<boolean>(false);
     const [isPlants, setIsPlants] = useState<boolean>(false);
     const [isBook, setIsBook] = useState<boolean>(false);
@@ -87,10 +88,10 @@ const Navdata = () => {
         if (iscurrentState !== 'Apps') {
             setIsApps(false);
         }
-         if (iscurrentState !== 'Cakes') {
+        if (iscurrentState !== 'Cakes') {
             setIsCakes(false);
         }
-        if(iscurrentState !== 'Plants'){
+        if (iscurrentState !== 'Plants') {
             setIsPlants(false);
         }
         if (iscurrentState !== 'Auth') {
@@ -99,7 +100,7 @@ const Navdata = () => {
         if (iscurrentState !== 'Pages') {
             setIsPages(false);
         }
-       
+
         if (iscurrentState !== 'AdvanceUi') {
             setIsAdvanceUi(false);
         }
@@ -209,33 +210,56 @@ const Navdata = () => {
                 },
             ],
         },
-         {
-            id: "booksapp",
-            label: "Books App",
-            icon: "ri-apps-2-line",
+        {
+            id: "users",
+            label: "Users",
+            icon: "ri-team-line",
             link: "/#",
             click: function (e: any) {
                 e.preventDefault();
-                
+
+                setIsUsers(!isUsers);
+                setIscurrentState('Users');
+                updateIconSidebar(e);
+            },
+            stateVariables: isUsers,
+            subItems: [
+                {
+                    id:"users",
+                    label:"Users List",
+                    link:"/all-app-users",
+                    parentId:"list"
+                }
+            ]
+
+        },
+        {
+            id: "booksapp",
+            label: "Books App",
+            icon: "ri-book-line",
+            link: "/#",
+            click: function (e: any) {
+                e.preventDefault();
+
                 setIsBook(!isBook);
                 setIscurrentState('Cakes');
                 updateIconSidebar(e);
             },
             stateVariables: isBook,
             subItems: [
-                  {
+                {
                     id: "user",
                     label: "User Mangement",
                     link: "/Users-list",
                     parentId: "list",
-                    
-        },
-                 {
+
+                },
+                {
                     id: "bookmanagement",
                     label: "Book Management",
-                    
+
                     parentId: "bookmanagement",
-                     isChildItem: true,
+                    isChildItem: true,
                     click: function (e: any) {
                         e.preventDefault();
                         setIsBooklist(!isBooklist);
@@ -245,36 +269,36 @@ const Navdata = () => {
                         { id: 1, label: "Book List", link: "/book-list" },
                         { id: 2, label: "Sell Order", link: "/sell-order" },
                         { id: 3, label: "Buy Order", link: "/Buy-orders" },
-                         { id: 4, label: "Rent Order", link: "/Rent-orders" },
-                         { id: 5, label: "Book Category", link: "/book-category" },
+                        { id: 4, label: "Rent Order", link: "/Rent-orders" },
+                        { id: 5, label: "Book Category", link: "/book-category" },
 
                     ]
-                }, 
+                },
             ]
-           
+
         },
-         {
+        {
             id: "cakesapp",
             label: "Cakes App",
-            icon: "ri-apps-2-line",
+            icon: "ri-cake-2-line",
             link: "/#",
-             click: function (e: any) {
+            click: function (e: any) {
                 e.preventDefault();
-                
+
                 setIsCakes(!isCakes);
                 setIscurrentState('Cakes');
                 updateIconSidebar(e);
             },
             stateVariables: isCakes,
             subItems: [
-                 {
+                {
                     id: "user",
                     label: "User Mangement",
                     link: "/cakeUsers-list",
                     parentId: "list",
-                    
-        },
-                 {
+
+                },
+                {
                     id: "order",
                     label: "Orders",
                     link: "/order-table",
@@ -284,7 +308,7 @@ const Navdata = () => {
                         setListcategories(!isListcategories);
                     }
                 },
-                
+
                 {
                     id: "list",
                     label: "Categories",
@@ -295,9 +319,9 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-          
-        {
+                },
+
+                {
                     id: "cakes",
                     label: "Cakes",
                     link: "/cake-table",
@@ -307,8 +331,8 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-        {
+                },
+                {
                     id: "splash",
                     label: "Splash Screen",
                     link: "/splash-table",
@@ -318,8 +342,8 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-         {
+                },
+                {
                     id: "review",
                     label: "Review",
                     link: "/review",
@@ -329,8 +353,8 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-         {
+                },
+                {
                     id: "contact",
                     label: "Contact",
                     link: "/contact-table",
@@ -340,33 +364,33 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        }
-       
-    ]
-},
+                }
 
-{
+            ]
+        },
+
+        {
             id: "plantsapp",
             label: "Plants App",
-            icon: "ri-apps-2-line",
+            icon: "ri-plant-line",
             link: "/#",
-             click: function (e: any) {
+            click: function (e: any) {
                 e.preventDefault();
-                
+
                 setIsPlants(!isPlants);
                 setIscurrentState('Plants');
                 updateIconSidebar(e);
             },
             stateVariables: isPlants,
             subItems: [
-                 {
+                {
                     id: "plants",
                     label: "Plants",
                     link: "/plants",
                     parentId: "plants",
-                    
-        },
-                 {
+
+                },
+                {
                     id: "categories",
                     label: "Categories",
                     link: "/plants-category",
@@ -376,7 +400,7 @@ const Navdata = () => {
                         setListcategories(!isListcategories);
                     }
                 },
-                
+
                 {
                     id: "transactions",
                     label: "Transactions",
@@ -387,9 +411,9 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-          
-        {
+                },
+
+                {
                     id: "orders",
                     label: "Orders",
                     link: "/plants-orders",
@@ -399,9 +423,9 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
+                },
 
-         {
+                {
                     id: "carousel",
                     label: "Carousels",
                     link: "/plants-carousel",
@@ -411,8 +435,8 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
-        },
-        {
+                },
+                {
                     id: "reviews",
                     label: "Reviews",
                     link: "/plants-reviews",
@@ -422,10 +446,10 @@ const Navdata = () => {
                     //     e.preventDefault();
                     //     setListcategories(!isListcategories);
                     // }
+                },
+            ]
         },
-    ]
-},
-       
+
         {
             label: "pages",
             isHeader: true,
@@ -672,7 +696,7 @@ const Navdata = () => {
             label: "Components",
             isHeader: true,
         },
-        
+
         {
             id: "advanceUi",
             label: "Advance UI",

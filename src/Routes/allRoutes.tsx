@@ -242,10 +242,13 @@ import PlantsCategory from "pages/PlantsApp/PlantsCategory";
 import PlantsReviews from "pages/PlantsApp/PlantsReviews";
 import PlantsOrders from "pages/PlantsApp/PlantsOrders";
 import PlantsTransactions from "pages/PlantsApp/PlantsTransactions";
+import AllUsers from "pages/Users/AllUsers";
 
 
 
 const authProtectedRoutes = [
+  //Users Routes
+  {path:"/all-app-users",component:<AllUsers/> },
   
   // Plant App Routes
   {path: "/plants", component: <Plants/> },

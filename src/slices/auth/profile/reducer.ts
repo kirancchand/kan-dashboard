@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { boolean } from "yup";
 
 export const initialState = {
   error: "",
-  success: "",
+  success: false,
   user: {}
 };
 
@@ -11,8 +12,8 @@ const ProfileSlice = createSlice({
   initialState,
   reducers: { 
     profileSuccess(state : any, action : any) {
-      state.success = action.payload.status;
-      state.user = action.payload.data
+      state.success = true
+      state.user = action.payload
     },
     profileError(state, action) {
         state.error = action.payload

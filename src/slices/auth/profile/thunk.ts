@@ -7,6 +7,14 @@ import { profileSuccess, profileError, resetProfileFlagChange } from "./reducer"
 
 const fireBaseBackend : any = getFirebaseBackend();
 
+export const userInformation = (user:any) => async (dispatch:any) =>{
+    const data = await user.data
+    console.log("user data",data)
+    if(data){
+        dispatch(profileSuccess(data));
+    }
+}
+
 export const editProfile = (user : any) => async (dispatch : any) => {
     try {
         let response;

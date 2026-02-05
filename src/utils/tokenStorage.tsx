@@ -4,8 +4,8 @@ export interface loginResponse {
 }
 
 export const saveTokens = (tokens: loginResponse) => {
-    localStorage.setItem("access_token", JSON.stringify(tokens.access_token));
-    localStorage.setItem("refresh_token", JSON.stringify(tokens.refresh_token));
+    localStorage.setItem("access_token", tokens.access_token);
+    localStorage.setItem("refresh_token", tokens.refresh_token);
 };
 
 export const getTokens = (): loginResponse | null => {

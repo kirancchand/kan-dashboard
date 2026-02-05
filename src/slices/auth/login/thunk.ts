@@ -1,35 +1,34 @@
 import { getFirebaseBackend } from "../../../helpers/firebase_helper";
-import { loginUser, logoutUser, apiError, reset_login_flag } from "./reducer";
+import {
+  loginSuccess,
+  logoutUser,
+  apiError,
+  reset_login_flag,
+} from "./reducer";
 import { clearTokens, saveTokens } from "utils/tokenStorage";
-import { accessToken,refreshToken } from "api/dummyToken";
+import { http,userinfo_request } from "http/http";
+import { userInformation } from "slices/thunks";
 
-export const loginSuccess =
-  (user: any, navigate: any) => async (dispatch: any) => {
+export const loginUser =
+  (response: any, navigate: any) => async (dispatch: any) => {
     try {
-
-      // const response = await api.post(loginUrl, user);
-      // const data = response.data;
-      
-      const data = {
-        username:user.username,
-        first_name:"viswajith"
-      }
-
+      const { data } = response;
       const tokens = {
-        access_token: accessToken,
-        refresh_token: refreshToken,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
       };
 
       saveTokens(tokens);
-      sessionStorage.setItem("authUser", JSON.stringify(data));
-      dispatch(loginUser(data));
-      navigate("/dashboard");
+      const userinfo = await http.get(userinfo_request);
+      dispatch(userInformation(userinfo));
 
+      sessionStorage.setItem("authUser", JSON.stringify(data));
+      dispatch(loginSuccess(data));
+      navigate("/dashboard");
     } catch (error: any) {
       dispatch(apiError(error));
     }
   };
-
 
 export const logoutSuccess = () => async (dispatch: any) => {
   try {
