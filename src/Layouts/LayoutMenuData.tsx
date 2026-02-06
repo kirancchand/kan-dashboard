@@ -226,7 +226,7 @@ const Navdata = () => {
             subItems: [
                 {
                     id:"users",
-                    label:"Users List",
+                    label:"Users Table",
                     link:"/all-app-users",
                     parentId:"list"
                 }
