@@ -1,9 +1,20 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
 import { SortTanstackInterface } from '../../Typecomponents/ComponentsType';
 import { FakeUsers } from './FakeUsers';
 import UsersFormModal from './UsersFormModal';
 import { http } from 'http/http';
+import { SortInterface } from '../../Typecomponents/ComponentsType';
+
+interface AnalyticsItem {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    email_id: string;
+    mobno: string;
+    dateofbirth: string;
+    f_gender_id: string;
+}
 
 
 const AllUsers = () => {
@@ -22,23 +33,24 @@ const AllUsers = () => {
     };
 
     const updateUser = (values: any) => {
-        http.put("/users/:id",values)
-        .then((response:any)=>{
-            return response
-        })
-        .catch((error)=>{
-            console.log(error);
-        })
+        http.put("/users/:id", values)
+            .then((response: any) => {
+
+                return response
+            })
+            .catch((error) => {
+                console.log(error);
+            })
     }
 
     const deleteUser = (values: any) => {
-        http.delete("/users/:id",values)
-        .then((response:any)=>{
-            return response
-        })
-        .catch((error)=>{
-            console.log(error);
-        })
+        http.delete("/users/:id", values)
+            .then((response: any) => {
+                return response
+            })
+            .catch((error) => {
+                console.log(error);
+            })
     }
 
     const returnFunction = (val: any) => {
@@ -115,6 +127,50 @@ const AllUsers = () => {
 
     ], [toggle])
 
+    const [totalCount, setTotalCount] = useState(0);
+    const [analyticsData, setAnalyticsData] = useState<AnalyticsItem[]>([]);
+    let sort:SortInterface[]=[]; 
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
+
+    let initialRequest = {
+        "start": 0,
+        "sort": [],
+        "numberOfRows": 10,
+        "filters": []
+    }
+    const fetchData = async (requestdata: any) => {
+        const {start,numberOfRows} = requestdata
+        const paginatedData = FakeUsers.slice(start,start+numberOfRows)
+        setTotalCount(FakeUsers.length)
+        setAnalyticsData(paginatedData)
+    }
+
+    useEffect(() => {
+        fetchData(initialRequest);
+    }, []);
+    
+    const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+        console.log("pages", pages)
+        console.log("sizePerPages", sizePerPages)
+        // console.log(sizePerPage)
+        setPage(pages)
+        setSizePerPage(sizePerPages)
+        if (sortField !== "" && sortOrder !== "") {
+            sort = [{
+                "columnName": sortField,
+                "sortOrder": sortOrder
+            }]
+        }
+        fetchData({
+            "start": (pages - 1) * sizePerPages,
+            "sort": sort,
+            "numberOfRows": sizePerPages,
+            "filters": []
+        });
+        console.log("page", page)
+    }
+
     return (
         <React.Fragment>
             <div style={{ padding: '50px', marginTop: '50px' }}>
@@ -130,7 +186,8 @@ const AllUsers = () => {
                 </div>
                 <TableContainer
                     columns={(columns || [])}
-                    data={(users || [])}
+                    data={(analyticsData || [])}
+                    customPageSize={sizePerPage}
                     tableClass="table-centered align-middle table-nowrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder='Search Users...'
@@ -138,7 +195,11 @@ const AllUsers = () => {
                     page={page}
                     sorting={sorting}
                     setSorting={setSorting}
+                    sizePerPage={sizePerPage}
                     clickable={false}
+                    totalCount={totalCount}
+                    handleTableChange={handleTableChange}
+                    loading={loading}
                 />
             </div>
         </React.Fragment>

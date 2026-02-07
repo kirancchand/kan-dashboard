@@ -88,5 +88,14 @@ export let FakeUsers = [
         "mobno": "9823456712",
         "dateofbirth": "1994-03-03",
         "f_gender_id": "Female"
+    },
+        {
+        "first_name": "Ajay",
+        "middle_name": "K",
+        "last_name": "Manoj",
+        "email_id": "ajay.manoj@example.com",
+        "mobno": "9123458924",
+        "dateofbirth": "2003-03-03",
+        "f_gender_id": "Male"
     }
 ]
