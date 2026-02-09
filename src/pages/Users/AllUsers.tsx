@@ -3,8 +3,9 @@ import { TableContainer } from "../../Responsive Table/TableContainerReactTable"
 import { SortTanstackInterface } from '../../Typecomponents/ComponentsType';
 import { FakeUsers } from './FakeUsers';
 import UsersFormModal from './UsersFormModal';
-import { http } from 'http/http';
+import { delete_user_url, http, update_user_url } from 'http/http';
 import { SortInterface } from '../../Typecomponents/ComponentsType';
+import AddUserModal from './AddUserModal';
 
 interface AnalyticsItem {
     first_name: string;
@@ -32,8 +33,12 @@ const AllUsers = () => {
         }
     };
 
+    const addToggle = () => {
+        setModal(!modal);
+    };
+
     const updateUser = (values: any) => {
-        http.put("/users/:id", values)
+        http.put(update_user_url, values)
             .then((response: any) => {
 
                 return response
@@ -44,7 +49,7 @@ const AllUsers = () => {
     }
 
     const deleteUser = (values: any) => {
-        http.delete("/users/:id", values)
+        http.delete(delete_user_url, values)
             .then((response: any) => {
                 return response
             })
@@ -129,7 +134,7 @@ const AllUsers = () => {
 
     const [totalCount, setTotalCount] = useState(0);
     const [analyticsData, setAnalyticsData] = useState<AnalyticsItem[]>([]);
-    let sort:SortInterface[]=[]; 
+    let sort: SortInterface[] = [];
     const [sizePerPage, setSizePerPage] = useState(10);
     const [loading, setLoading] = useState(false);
 
@@ -140,8 +145,8 @@ const AllUsers = () => {
         "filters": []
     }
     const fetchData = async (requestdata: any) => {
-        const {start,numberOfRows} = requestdata
-        const paginatedData = FakeUsers.slice(start,start+numberOfRows)
+        const { start, numberOfRows } = requestdata
+        const paginatedData = FakeUsers.slice(start, start + numberOfRows)
         setTotalCount(FakeUsers.length)
         setAnalyticsData(paginatedData)
     }
@@ -149,7 +154,7 @@ const AllUsers = () => {
     useEffect(() => {
         fetchData(initialRequest);
     }, []);
-    
+
     const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
         console.log("pages", pages)
         console.log("sizePerPages", sizePerPages)
@@ -176,12 +181,21 @@ const AllUsers = () => {
             <div style={{ padding: '50px', marginTop: '50px' }}>
                 <div className="plants-header">
                     <h1>Users Table</h1>
+                    <button className="btn btn-primary" onClick={() => {
+                        addToggle()
+                    }}>
+                        Add New User
+                    </button>
                     <UsersFormModal
                         selected={selectedUser}
                         mode={mode}
                         returnFunction={(val: any) => returnFunction(val)}
                         modal={modal}
                         toggle={toggle}
+                    />
+                    <AddUserModal
+                        toggle={addToggle}
+                        modal={modal}
                     />
                 </div>
                 <TableContainer

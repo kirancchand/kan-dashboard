@@ -45,14 +45,15 @@ const Login = (props: any) => {
     const validation: any = useFormik({
         enableReinitialize: true,
         initialValues: {
-            username: userLogin.username || "testuser" || '',
-            password: userLogin.password || "mypassword" || '',
+            username: userLogin.username || '',
+            password: userLogin.password || '',
         },
         validationSchema: Yup.object({
             username: Yup.string().required("Please Enter Your Username"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: async (values) => {
+            console.log("values:",values)
             try {
                 setLoader(true);
                 const response = await http.post(login_request, values);
@@ -61,7 +62,6 @@ const Login = (props: any) => {
                     dispatch(loginUser(response, props.router.navigate));
                     
                 }
-
             } catch (error) {
                 console.error("Login failed", error);
             } finally {
