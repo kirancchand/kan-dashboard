@@ -2,22 +2,30 @@ import React, { useMemo, useEffect, useState } from "react";
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
 import Swal from "sweetalert2";
 import CategoryModal from "./CategoryModal";
+import axios from "axios";
 
-
-
-let dummyPlantsCategory = [
-    { id: 1, category: "Indoor Plants", parent_id: 0 },
-    { id: 2, category: "Outdoor Plants", parent_id: 0 },
-    { id: 3, category: "Succulents", parent_id: 1 },
-    { id: 4, category: "Flowering Plants", parent_id: 2 },
-    { id: 5, category: "Herbal Plants", parent_id: 2 },
-];
+type Category = {
+    id: number;
+    name: string;
+    subcategory: number | string;
+};
 
 const PlantsCategory = () => {
-    const [plantsCategoryData, setPlantsCategoryData] = useState(dummyPlantsCategory);
-    const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
+    const [plantsCategoryData, setPlantsCategoryData] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const fetchData = async () => {
+        axios.get("http://localhost:5000/api/categories")
+            .then((response: any) => {
+                setPlantsCategoryData(response);
+            })
+            .catch((error) => console.log(error));
+        setTotalCount(100);
+    }
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-    const handleDelete = (index: Number) => {
+    const handleDelete = (index: number) => {
         Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
@@ -28,9 +36,14 @@ const PlantsCategory = () => {
             confirmButtonText: "Yes, delete it!",
         }).then((result) => {
             if (result.isConfirmed) {
-                setPlantsCategoryData((prev) =>
-                    prev.filter((item) => item.id !== index),
-                );
+                axios
+                    .delete(`http://localhost:5000/api/categories/${index}`)
+                    .then((response: any) => {
+                        fetchData();
+                        return response
+                    })
+                    .catch((error) => console.log(error));
+
                 Swal.fire({
                     title: "Success!",
                     text: "The Selected Category has been deleted.",
@@ -41,25 +54,28 @@ const PlantsCategory = () => {
     };
 
     const addPlantCategory = (values: any) => {
-        const newId = dummyPlantsCategory.length + 1;
-        const newData = {
-            id: newId,
-            ...values,
-        };
-        const allPlantCategories = [...plantsCategoryData];
-        allPlantCategories.push(newData);
-        setPlantsCategoryData(allPlantCategories)
+        axios
+            .post("http://localhost:5000/api/categories", values)
+            .then((response: any) => {
+                fetchData();
+                return response;
+            })
+            .catch((error) => console.log(error));
     };
 
-    const updatePlantCategory = (values:any) =>{
-        setPlantsCategoryData(prev =>
-            prev.map(item => item.id === selectedCategory.id ? { ...item, ...values} : item)
-        );
-    }
+    const updatePlantCategory = (values: any) => {
+        axios
+            .put(`http://localhost:5000/api/categories/${selectedCategory?.id}`, values)
+            .then((response: any) => {
+                fetchData();
+                return response;
+            })
+            .catch((error) => console.log(error));
+    };
 
     const [modal, setModal] = useState(false);
     const toggle = () => setModal(!modal);
-    const [mode, setMode] = useState("")
+    const [mode, setMode] = useState("");
     const [totalCount, setTotalCount] = useState(0);
 
     let initialRequest = {
@@ -71,11 +87,13 @@ const PlantsCategory = () => {
 
     const parentCategoryMap = useMemo(() => {
         const parent: Record<number, string> = {};
-        dummyPlantsCategory.forEach((item) => {
-            parent[item.id] = item.category;
+
+        plantsCategoryData.forEach((item) => {
+            parent[item.id] = item.name;
         });
+
         return parent;
-    }, [dummyPlantsCategory]);
+    }, [plantsCategoryData]);
 
     const columns = useMemo(
         () => [
@@ -88,14 +106,15 @@ const PlantsCategory = () => {
             {
                 id: "name",
                 header: "Category Name",
-                accessorKey: "category",
+                accessorKey: "name",
                 enableColumnFilter: false,
             },
             {
-                id: "parent_id",
+                id: "subcategory",
                 header: "Parent Category",
-                accessorFn: (row: any) => {
-                    return parentCategoryMap[row.parent_id] ?? "-";
+                accessorFn: (row: Category) => {
+                    const parentId = Number(row.subcategory);
+                    return parentCategoryMap[parentId] ?? "-";
                 },
                 enableColumnFilter: false,
             },
@@ -105,56 +124,62 @@ const PlantsCategory = () => {
                 cell: ({ row }: { row: any }) => {
                     return (
                         <div>
-                            <i className="ri-delete-bin-line" style={{ color: "red" }} onClick={() => {
-                                handleDelete(row.original.id)
-                            }}></i>
-                            <i className="ri-edit-2-line" style={{ color: "red" }} onClick={() => {
-                                setMode("update")
-                                setSelectedCategory(row.original)
-                                toggle();
-                            }}></i>
+                            <i
+                                className="ri-delete-bin-line"
+                                style={{ color: "red" }}
+                                onClick={() => handleDelete(row.original.id)}
+                            ></i>
+
+                            <i
+                                className="ri-edit-2-line"
+                                style={{ color: "red" }}
+                                onClick={() => {
+                                    setMode("update");
+                                    setSelectedCategory(row.original);
+                                    toggle();
+                                }}
+                            ></i>
                         </div>
                     );
                 },
                 enableColumnFilter: false,
             },
         ],
-        [parentCategoryMap],
+        [parentCategoryMap]
     );
 
-    const fetchData = async (reqData: any) => {
-        setTotalCount(100);
-    };
-
-    useEffect(() => {
-        fetchData(initialRequest);
-    });
-
     const returnFunction = (val: any) => {
-        console.log(val)
-        mode === "add" ? addPlantCategory(val) : updatePlantCategory(val);
-    }
+        mode === "add"
+            ? addPlantCategory(val)
+            : updatePlantCategory(val);
+    };
 
     return (
         <React.Fragment>
             <div style={{ padding: "50px", marginTop: "50px" }}>
                 <div className="plants-header">
                     <h1>Plant App Categories</h1>
-                    <button className="btn btn-primary" onClick={()=>{
-                        setMode("add")
-                        toggle()
-                    }}>
+
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                            setMode("add");
+                            toggle();
+                        }}
+                    >
                         Add New Category
                     </button>
+
                     <CategoryModal
                         mode={mode}
                         modal={modal}
                         toggle={toggle}
                         selected={selectedCategory}
                         returnFunction={(val: any) => returnFunction(val)}
-                        plantsCategoryData ={plantsCategoryData}
+                        plantsCategoryData={plantsCategoryData}
                     />
                 </div>
+
                 <TableContainer
                     columns={columns || []}
                     data={plantsCategoryData || []}

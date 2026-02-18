@@ -6,8 +6,8 @@ import * as Yup from "yup";
 const CategoryModal = (props:any) => {
 
     const PlantsCategorySchema = Yup.object().shape({
-        category: Yup.string().required("Category name is required!"),
-        parent_id: Yup.number(),
+        name: Yup.string().required("Category name is required!"),
+        subcategory: Yup.number(),
     });
     const successNotification = () => {
         Swal.fire({
@@ -17,7 +17,7 @@ const CategoryModal = (props:any) => {
         });
     };
 
-    const initialVals = { category: "", parent_id: "" }
+    const initialVals = { name: "", subcategory: "0" }
     return (
         <Modal isOpen={props.modal} toggle={props.toggle} size="lg" centered>
             <ModalHeader toggle={props.toggle}>{props.mode==="add"?"Add New Category":"Update Category"}</ModalHeader>
@@ -44,19 +44,19 @@ const CategoryModal = (props:any) => {
                                             <Label for="exampleSelect">Select Category</Label>
                                             <Field
                                                 as={Input}
-                                                id="parent_id"
-                                                name="parent_id"
+                                                id="subcategory"
+                                                name="subcategory"
                                                 type="select"
                                             >
                                                 <option value={""}>Select Parent Category</option>
                                                 {props.plantsCategoryData.map((item:any) => (
-                                                    <option key={item.category} value={item.id}>
-                                                        {item.category}
+                                                    <option key={item.name} value={item.id}>
+                                                        {item.name}
                                                     </option>
                                                 ))}
                                             </Field>
                                             <ErrorMessage
-                                                name="parent_id"
+                                                name="subcategory"
                                                 component="div"
                                                 className="text-danger"
                                             />
@@ -67,13 +67,13 @@ const CategoryModal = (props:any) => {
                                             <Label for="category">Category Name</Label>
                                             <Field
                                                 as={Input}
-                                                id="category"
-                                                name="category"
+                                                id="name"
+                                                name="name"
                                                 type="text"
                                                 placeholder="Enter Category Name"
                                             />
                                             <ErrorMessage
-                                                name="category"
+                                                name="name"
                                                 component="div"
                                                 className="text-danger"
                                             />
