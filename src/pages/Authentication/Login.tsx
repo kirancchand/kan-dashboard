@@ -70,9 +70,6 @@ const Login = (props: any) => {
         },
     });
 
-
-
-
     useEffect(() => {
         if (errorMsg) {
             setTimeout(() => {
