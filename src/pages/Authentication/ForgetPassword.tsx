@@ -18,7 +18,7 @@ import { userForgetPassword } from "../../slices/thunks";
 // import images
 // import profile from "../../assets/images/bg.png";
 import logoLight from "../../assets/images/logo-light.png";
-import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
+import ParticlesAuth from "./ParticlesAuth";
 import { createSelector } from "reselect";
 
 const ForgetPasswordPage = (props : any) => {

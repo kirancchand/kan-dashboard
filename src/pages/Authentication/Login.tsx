@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardBody, Col, Container, Input, Label, Row, Button, Form, FormFeedback, Alert, Spinner } from 'reactstrap';
-import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
+import ParticlesAuth from './ParticlesAuth';
 import { http,login_request } from "http/http";
 
 

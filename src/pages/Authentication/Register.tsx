@@ -18,7 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 //import images 
 import logoLight from "../../assets/images/logo-light.png";
-import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
+import ParticlesAuth from "./ParticlesAuth";
 import { createSelector } from "reselect";
 
 const Register = () => {
