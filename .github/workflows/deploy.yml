@@ -37,5 +37,5 @@ jobs:
           script: |
             cd /home/ubuntu/kan-dashboard
             rm -rf build
-            docker compose down
-            docker compose up -d
+            sudo docker compose -f docker-compose.yml down
+            sudo docker compose -f docker-compose.yml up -d
