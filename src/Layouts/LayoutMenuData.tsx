@@ -10,8 +10,7 @@ const Navdata = () => {
     const [isCakes, setIsCakes] = useState<boolean>(false);
     const [isPlants, setIsPlants] = useState<boolean>(false);
     const [isBook, setIsBook] = useState<boolean>(false);
-    const [isAuth, setIsAuth] = useState<boolean>(false);
-    const [isPages, setIsPages] = useState<boolean>(false);
+
 
     // Apps
     const [isListcategories, setListcategories] = useState<boolean>(false);
@@ -47,19 +46,11 @@ const Navdata = () => {
         if (iscurrentState !== 'Plants') {
             setIsPlants(false);
         }
-        if (iscurrentState !== 'Auth') {
-            setIsAuth(false);
-        }
-        if (iscurrentState !== 'Pages') {
-            setIsPages(false);
-        }
     }, [
         history,
         iscurrentState,
         isDashboard,
         isApps,
-        isAuth,
-        isPages,
     ]);
 
     const menuItems: any = [
@@ -81,45 +72,9 @@ const Navdata = () => {
             },
             subItems: [
                 {
-                    id: "analytics",
-                    label: "Analytics",
-                    link: "/dashboard-analytics",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "crm",
-                    label: "CRM",
-                    link: "/dashboard-crm",
-                    parentId: "dashboard",
-                },
-                {
                     id: "ecommerce",
                     label: "Ecommerce",
                     link: "/dashboard",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "crypto",
-                    label: "Crypto",
-                    link: "/dashboard-crypto",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "projects",
-                    label: "Projects",
-                    link: "/dashboard-projects",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "nft",
-                    label: "NFT",
-                    link: "/dashboard-nft",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "job",
-                    label: "Job",
-                    link: "/dashboard-job",
                     parentId: "dashboard",
                 },
             ],

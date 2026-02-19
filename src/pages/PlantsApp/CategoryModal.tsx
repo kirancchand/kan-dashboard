@@ -7,7 +7,7 @@ const CategoryModal = (props:any) => {
 
     const PlantsCategorySchema = Yup.object().shape({
         name: Yup.string().required("Category name is required!"),
-        subcategory: Yup.number(),
+        parent_category: Yup.string(),
     });
     const successNotification = () => {
         Swal.fire({
@@ -17,7 +17,7 @@ const CategoryModal = (props:any) => {
         });
     };
 
-    const initialVals = { name: "", subcategory: "0" }
+    const initialVals = { name: "", subcategory: "" }
     return (
         <Modal isOpen={props.modal} toggle={props.toggle} size="lg" centered>
             <ModalHeader toggle={props.toggle}>{props.mode==="add"?"Add New Category":"Update Category"}</ModalHeader>
@@ -44,19 +44,19 @@ const CategoryModal = (props:any) => {
                                             <Label for="exampleSelect">Select Category</Label>
                                             <Field
                                                 as={Input}
-                                                id="subcategory"
-                                                name="subcategory"
+                                                id="parent_category"
+                                                name="parent_category"
                                                 type="select"
                                             >
                                                 <option value={""}>Select Parent Category</option>
                                                 {props.plantsCategoryData.map((item:any) => (
-                                                    <option key={item.name} value={item.id}>
+                                                    <option key={item.name} value={item.name}>
                                                         {item.name}
                                                     </option>
                                                 ))}
                                             </Field>
                                             <ErrorMessage
-                                                name="subcategory"
+                                                name="parent_category"
                                                 component="div"
                                                 className="text-danger"
                                             />

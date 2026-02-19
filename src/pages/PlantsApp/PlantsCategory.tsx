@@ -3,6 +3,7 @@ import { TableContainer } from "../../Responsive Table/TableContainerReactTable"
 import Swal from "sweetalert2";
 import CategoryModal from "./CategoryModal";
 import axios from "axios";
+import { SortInterface } from '../../Typecomponents/ComponentsType';
 
 type Category = {
     id: number;
@@ -11,22 +12,96 @@ type Category = {
 };
 
 const PlantsCategory = () => {
+
+    let sort: SortInterface[] = [];
     const [plantsCategoryData, setPlantsCategoryData] = useState<Category[]>([]);
+    const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    const fetchData = async () => {
+    const [sorting, setSorting] = useState<[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [modal, setModal] = useState(false);
+    const toggle = () => setModal(!modal);
+    const [mode, setMode] = useState("");
+    const [totalCount, setTotalCount] = useState(0);
+
+    const fetchData = async (requestData: any) => {
         axios.get("http://localhost:5000/api/categories")
             .then((response: any) => {
-                setPlantsCategoryData(response);
+                const paginatedData = response.slice(start, start + numberOfRows)
+                setAllCategories(response)
+                setPlantsCategoryData(paginatedData);
+                setTotalCount(response.length)
             })
             .catch((error) => console.log(error));
-        setTotalCount(100);
+
+        const { start, numberOfRows } = requestData
     }
+
+    let initialRequest = {
+        "start": 0,
+        "sort": [],
+        "numberOfRows": 10,
+        "filters": []
+    }
+
     useEffect(() => {
-        fetchData();
+        fetchData(initialRequest);
     }, []);
 
-    const handleDelete = (index: number) => {
-        Swal.fire({
+    const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+        console.log("pages", pages)
+        console.log("sizePerPages", sizePerPages)
+
+        setPage(pages)
+        setSizePerPage(sizePerPages)
+        if (sortField !== "" && sortOrder !== "") {
+            sort = [{
+                "columnName": sortField,
+                "sortOrder": sortOrder
+            }]
+        }
+        fetchData({
+            "start": (pages - 1) * sizePerPages,
+            "sort": sort,
+            "numberOfRows": sizePerPages,
+            "filters": []
+        });
+        console.log("page", page)
+    }
+
+    const addPlantCategory = async (values: any) => {
+        try {
+            await axios.post("http://localhost:5000/api/categories", values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const updatePlantCategory = async (values: any) => {
+        try {
+            await axios.put(`http://localhost:5000/api/categories/${selectedCategory?.id}`, values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const handleDelete = async (index: number) => {
+        const result = await Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
             icon: "warning",
@@ -34,66 +109,27 @@ const PlantsCategory = () => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, delete it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axios
-                    .delete(`http://localhost:5000/api/categories/${index}`)
-                    .then((response: any) => {
-                        fetchData();
-                        return response
-                    })
-                    .catch((error) => console.log(error));
-
-                Swal.fire({
-                    title: "Success!",
-                    text: "The Selected Category has been deleted.",
-                    icon: "success",
-                });
-            }
         });
+        if (!result.isConfirmed) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/categories/${index}`);
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+
+            await Swal.fire({
+                title: "Success!",
+                text: "The selected category has been deleted.",
+                icon: "success",
+            });
+
+        } catch (error) {
+            console.error(error);
+        }
     };
-
-    const addPlantCategory = (values: any) => {
-        axios
-            .post("http://localhost:5000/api/categories", values)
-            .then((response: any) => {
-                fetchData();
-                return response;
-            })
-            .catch((error) => console.log(error));
-    };
-
-    const updatePlantCategory = (values: any) => {
-        axios
-            .put(`http://localhost:5000/api/categories/${selectedCategory?.id}`, values)
-            .then((response: any) => {
-                fetchData();
-                return response;
-            })
-            .catch((error) => console.log(error));
-    };
-
-    const [modal, setModal] = useState(false);
-    const toggle = () => setModal(!modal);
-    const [mode, setMode] = useState("");
-    const [totalCount, setTotalCount] = useState(0);
-
-    let initialRequest = {
-        start: 0,
-        sort: [],
-        numberOfRows: 10,
-        filters: [],
-    };
-
-    const parentCategoryMap = useMemo(() => {
-        const parent: Record<number, string> = {};
-
-        plantsCategoryData.forEach((item) => {
-            parent[item.id] = item.name;
-        });
-
-        return parent;
-    }, [plantsCategoryData]);
 
     const columns = useMemo(
         () => [
@@ -110,13 +146,10 @@ const PlantsCategory = () => {
                 enableColumnFilter: false,
             },
             {
-                id: "subcategory",
+                id: "parent_category",
                 header: "Parent Category",
-                accessorFn: (row: Category) => {
-                    const parentId = Number(row.subcategory);
-                    return parentCategoryMap[parentId] ?? "-";
-                },
                 enableColumnFilter: false,
+                accessorKey: "parent_category",
             },
             {
                 id: "actions",
@@ -145,7 +178,7 @@ const PlantsCategory = () => {
                 enableColumnFilter: false,
             },
         ],
-        [parentCategoryMap]
+        []
     );
 
     const returnFunction = (val: any) => {
@@ -176,7 +209,7 @@ const PlantsCategory = () => {
                         toggle={toggle}
                         selected={selectedCategory}
                         returnFunction={(val: any) => returnFunction(val)}
-                        plantsCategoryData={plantsCategoryData}
+                        plantsCategoryData={allCategories}
                     />
                 </div>
 
@@ -186,6 +219,15 @@ const PlantsCategory = () => {
                     tableClass="table-centered align-middle table-nowrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder="Search Category..."
+                    isGlobalFilter={true}
+                    page={page}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    sizePerPage={sizePerPage}
+                    clickable={false}
+                    totalCount={totalCount}
+                    handleTableChange={handleTableChange}
+                    loading={loading}
                 />
             </div>
         </React.Fragment>

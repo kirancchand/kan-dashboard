@@ -8,6 +8,8 @@ export const register_request = "/auth/register"
 export const refresh_token_request = '/auth/refresh-accesstoken';
 export const userinfo_request = '/auth/user-info'
 
+// Plant Categories API's
+
 // User API's
 export const update_user_url = "/users/:id"
 export const delete_user_url = "/users/:id"

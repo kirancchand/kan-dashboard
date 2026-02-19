@@ -1,14 +1,7 @@
 import { Navigate } from "react-router-dom";
 
 //Dashboard
-import DashboardAnalytics from "../pages/DashboardAnalytics";
-import DashboardCrm from "../pages/DashboardCrm";
 import DashboardEcommerce from "../pages/DashboardEcommerce";
-
-import DashboardCrypto from "../pages/DashboardCrypto";
-import DashboardProject from "../pages/DashboardProject";
-import DashboardNFT from "../pages/DashboardNFT";
-import DashboardJob from "../pages/DashboardJob";
 
 //Calendar
 import Calendar from "../pages/Calendar";
@@ -30,32 +23,16 @@ import MyWallet from '../pages/Crypto/MyWallet';
 import ICOList from '../pages/Crypto/ICOList';
 import KYCVerification from '../pages/Crypto/KYCVerification';
 
-//Crm Pages
-
-import CrmDeals from "../pages/Crm/CrmDeals/index";
-
 
 // //Ecommerce Pages
 
 import EcommerceProductDetail from "../pages/Ecommerce/EcommerceProducts/EcommerceProductDetail";
-import EcommerceOrders from "../pages/Ecommerce/EcommerceOrders/index";
 import EcommerceOrderDetail from "../pages/Ecommerce/EcommerceOrders/EcommerceOrderDetail";
 
 import EcommerceCart from "../pages/Ecommerce/EcommerceCart";
 import EcommerceCheckout from "../pages/Ecommerce/EcommerceCheckout";
-import EcommerceSellers from "../pages/Ecommerce/EcommerceSellers/index";
 import EcommerceSellerDetail from "../pages/Ecommerce/EcommerceSellers/EcommerceSellerDetail";
 
-// NFT Marketplace Pages
-import Marketplace from "../pages/NFTMarketplace/Marketplace";
-import Collections from "../pages/NFTMarketplace/Collections";
-import CreateNFT from "../pages/NFTMarketplace/CreateNFT";
-import Creators from "../pages/NFTMarketplace/Creators";
-import ExploreNow from "../pages/NFTMarketplace/ExploreNow";
-import ItemDetails from "../pages/NFTMarketplace/Itemdetails";
-import LiveAuction from "../pages/NFTMarketplace/LiveAuction";
-import Ranking from "../pages/NFTMarketplace/Ranking";
-import WalletConnect from "../pages/NFTMarketplace/WalletConnect";
 
 
 //APi Key
@@ -68,20 +45,9 @@ import Logout from "../pages/Authentication/Logout";
 import Register from "../pages/Authentication/Register";
 
 
-//Job pages
-import Statistics from "../pages/Jobs/Statistics";
-import JobList from "../pages/Jobs/JobList/List";
-import JobGrid from "../pages/Jobs/JobList/Grid";
-import JobOverview from "../pages/Jobs/JobList/Overview";
-import CandidateList from "../pages/Jobs/CandidateList/ListView";
-import CandidateGrid from "../pages/Jobs/CandidateList/GridView";
-import NewJobs from "../pages/Jobs/NewJob";
-import JobCategories from "../pages/Jobs/JobCategories";
-import CompaniesList from "../pages/Jobs/CompaniesList";
 
 
 import FileManager from "../pages/FileManager";
-import Application from "pages/Jobs/Application";
 import Kanbanboard from "pages/Tasks/KanbanBoard";
 import AddCakes from "pages/Cakelist/AddCakes";
 
@@ -126,14 +92,9 @@ const authProtectedRoutes = [
   { path: "/plants-orders", component: <PlantsOrders /> },
   { path: "/plants-transactions", component: <PlantsTransactions /> },
 
-  { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
-  { path: "/dashboard-crm", component: <DashboardCrm /> },
   { path: "/dashboard", component: <DashboardEcommerce /> },
   { path: "/index", component: <DashboardEcommerce /> },
-  { path: "/dashboard-crypto", component: <DashboardCrypto /> },
-  { path: "/dashboard-projects", component: <DashboardProject /> },
-  { path: "/dashboard-nft", component: <DashboardNFT /> },
-  { path: "/dashboard-job", component: <DashboardJob /> },
+
   { path: "/list-categories", component: <CatageoriesTable /> },
   { path: "/add-books", component: <Addbooks /> },
   { path: "/new-purchase", component: <Addnewpurchase /> },
@@ -185,43 +146,13 @@ const authProtectedRoutes = [
   //Api Key
   { path: "/apps-api-key", component: <APIKey /> },
 
-  //Crm
-
-  { path: "/apps-crm-deals", component: <CrmDeals /> },
-  // { path: "/apps-crm-leads", component: <CrmLeads /> },
-
 
   //transactions
   { path: "/apps-crypto-transactions", component: <Transactions /> },
   { path: "/apps-crypto-buy-sell", component: <BuySell /> },
-  // { path: "/apps-crypto-orders", component: <CryproOrder /> },
   { path: "/apps-crypto-wallet", component: <MyWallet /> },
   { path: "/apps-crypto-ico", component: <ICOList /> },
   { path: "/apps-crypto-kyc", component: <KYCVerification /> },
-
-  // NFT Marketplace
-  { path: "/apps-nft-marketplace", component: <Marketplace /> },
-  { path: "/apps-nft-collections", component: <Collections /> },
-  { path: "/apps-nft-create", component: <CreateNFT /> },
-  { path: "/apps-nft-creators", component: <Creators /> },
-  { path: "/apps-nft-explore", component: <ExploreNow /> },
-  { path: "/apps-nft-item-details", component: <ItemDetails /> },
-  { path: "/apps-nft-auction", component: <LiveAuction /> },
-  { path: "/apps-nft-ranking", component: <Ranking /> },
-  { path: "/apps-nft-wallet", component: <WalletConnect /> },
-
-
-  //Job pages
-  { path: "/apps-job-statistics", component: <Statistics /> },
-  { path: "/apps-job-lists", component: <JobList /> },
-  { path: "/apps-job-grid-lists", component: <JobGrid /> },
-  { path: "/apps-job-details", component: <JobOverview /> },
-  { path: "/apps-job-candidate-lists", component: <CandidateList /> },
-  { path: "/apps-job-candidate-grid", component: <CandidateGrid /> },
-  { path: "/apps-job-application", component: <Application /> },
-  { path: "/apps-job-new", component: <NewJobs /> },
-  { path: "/apps-job-companies-lists", component: <CompaniesList /> },
-  { path: "/apps-job-categories", component: <JobCategories /> },
 
   {
     path: "/",
