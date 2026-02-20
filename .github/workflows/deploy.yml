@@ -45,4 +45,5 @@ jobs:
             rm -rf build
             unzip -o build.zip
             rm build.zip
-            docker exec kan-dashboard nginx -s reload || true
+            docker compose -f docker-compose.yml down
+            docker compose -f docker-compose.yml up -d
