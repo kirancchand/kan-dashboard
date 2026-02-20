@@ -36,6 +36,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/kan-dashboard
-            sudo rm -rf build
-            sudo docker compose -f docker-compose.yml down
-            sudo docker compose -f docker-compose.yml up -d
+            rm -rf build
+	            docker compose down
+            docker compose up -d
