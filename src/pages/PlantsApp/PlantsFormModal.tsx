@@ -1,46 +1,76 @@
 import { Button, Modal, ModalHeader, ModalBody, Row, Col, Label, Input, FormGroup } from 'reactstrap';
 import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
-import Swal from 'sweetalert2';
 import * as Yup from "yup";
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+
+type Category = {
+    id: number;
+    name: string;
+    subcategory: number | string;
+};
+
+type Product = {
+    id: number;
+    name: string;
+    price: number;
+    category: string;
+    images: string[];
+    description: string;
+    rating: number;
+};
 
 const PlantsFormModal = (props: any) => {
     const mode = props.mode
+    const [CategoryData, setCategoryData] = useState<Category[]>([]);
+    const [product, setProduct] = useState<Product | any>(null);
 
-    const PlantCategories = [
-        { id: 0, name: "Select" },
-        { id: 1, name: "Indoor Plant" },
-        { id: 2, name: "Outdoor Plant" },
-        { id: 3, name: "Seeds" },
-        { id: 4, name: "Flowering Plant" },
-    ];
+    const fetchProduct = async () => {
+        if (mode !== "update" || !props.selected) return;
+        await axios.get(`http://localhost:5000/api/products/${props.selected}`)
+            .then((response: any) => {
+                setProduct(response)
+            })
+            .catch((error) => console.log(error));
+    }
+
+    const fetchCategories = async () => {
+        await axios.get('http://localhost:5000/api/categories')
+            .then((response: any) => {
+                setCategoryData(response)
+            })
+            .catch((error) => console.log(error));
+    }
+
+    useEffect(() => {
+        fetchCategories();
+    }, [])
+
+    useEffect(() => {
+        fetchProduct();
+    }, [props.selected, props.modal]);
 
     const initialVals = {
         name: "",
         category: "",
         price: "",
-        desc: "",
-        src: ""
+        description: "",
+        images: [],
+        rating: 0
     }
 
     const PlantSchema = Yup.object().shape({
         name: Yup.string()
             .required("Product Name is required!"),
-        desc: Yup.string()
+        description: Yup.string()
             .required("Product Description is required!"),
         category: Yup.string()
             .required("Product Category is required!"),
         price: Yup.number()
             .required("Product Price is required!"),
-        src: Yup.array()
+        images: Yup.array(),
+        rating: Yup.number(),
     })
-
-    const successNotification = () => {
-        Swal.fire({
-            title: "Success!",
-            text: props.selected ? "Selected Product Updated." : "New Product Added",
-            icon: "success"
-        })
-    }
 
     return (
         <Modal isOpen={props.modal} toggle={props.toggle} size="lg"
@@ -50,16 +80,30 @@ const PlantsFormModal = (props: any) => {
                 <div className='plants-form-content'>
                     <Formik
                         enableReinitialize
-                        initialValues={mode === "add" ? initialVals : props.selected}
+                        initialValues={mode === "add" ? initialVals : product}
                         validationSchema={PlantSchema}
                         onSubmit={(values, { resetForm }) => {
-                            successNotification();
-                            props.returnFunc(values)
+
+                            const formData = new FormData();
+
+                            formData.append("name", values.name);
+                            formData.append("category", values.category);
+                            formData.append("price", values.price);
+                            formData.append("description", values.description);
+                            formData.append("rating", values.rating);
+
+                            if (values.images && values.images.length > 0) {
+                                values.images.forEach((file: File) => {
+                                    formData.append("images", file);
+                                });
+                            }
+
+                            props.returnFunc(formData)
                             props.toggle()
                             resetForm();
                         }}
                     >
-                        {({ isSubmitting, isValid }) => (
+                        {({ isSubmitting, setFieldValue }) => (
                             <FormikForm>
                                 <Row>
                                     <Col md={4}>
@@ -72,9 +116,11 @@ const PlantsFormModal = (props: any) => {
                                                 id="category"
                                                 name="category"
                                                 type="select"
-                                            >   {PlantCategories.map(item => (
-                                                <option key={item.id} value={item.name}>{item.name}</option>
-                                            ))}
+                                            >
+                                                <option >Select Category</option>
+                                                {CategoryData.map(item => (
+                                                    <option key={item.name} value={item.name}>{item.name}</option>
+                                                ))}
                                             </Field>
                                             <ErrorMessage
                                                 name="category"
@@ -120,18 +166,18 @@ const PlantsFormModal = (props: any) => {
                                 </Row>
                                 <Row>
                                     <FormGroup>
-                                        <Label for="desc">
+                                        <Label for="description">
                                             Product Description
                                         </Label>
                                         <Field
                                             as={Input}
-                                            id="desc"
-                                            name="desc"
+                                            id="description"
+                                            name="description"
                                             type="text"
                                             placeholder="Enter Product Description"
                                         />
                                         <ErrorMessage
-                                            name="desc"
+                                            name="description"
                                             component="div"
                                             className="text-danger"
                                         />
@@ -139,18 +185,21 @@ const PlantsFormModal = (props: any) => {
                                 </Row>
                                 <FormGroup>
                                     <Label
-                                        for="src"
+                                        for="images"
                                         sm={2}
                                     >
                                         File
                                     </Label>
                                     <Col sm={12}>
                                         <Input
-                                            id="src"
-                                            name="src"
+                                            id="images"
+                                            name="images"
                                             type="file"
                                             multiple
-                                            onChange={props.onchange}
+                                            onChange={(event) => {
+                                                const files = Array.from(event.currentTarget.files || []);
+                                                setFieldValue("images", files);
+                                            }}
                                         />
                                     </Col>
                                 </FormGroup>

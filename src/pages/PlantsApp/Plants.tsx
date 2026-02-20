@@ -1,77 +1,145 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
 import Swal from 'sweetalert2';
 import PlantsFormModal from './PlantsFormModal';
+import axios from 'axios';
+import { SortInterface } from 'Typecomponents/ComponentsType';
 
-let DummyPlants = [
-    { id: 1, name: "Rose", desc: "Rose is a really good plant for home.", price: 400, rating: 4.7, category: "Indoor Plant", src: ["1.webp", "2.webp", "3.webp", "4.webp"] },
-    { id: 2, name: "Monstera", desc: "Monstera is a really good plant for home.", price: 400, rating: 4.7, category: "Indoor Plant", src: ["5.webp", "6.webp", "7.webp", "8.webp"] },
-];
+type Product = {
+    id: number;
+    name: string;
+    price: number;
+    category: string;
+    rating: number;
+    images: string[];
+    description: string;
+};
 
 const Plants = () => {
-    const [products, setProducts] = useState(DummyPlants)
-    const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+    let sort: SortInterface[] = [];
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProductId, setSelectedProductId] = useState(0);
     const [files, setFiles] = useState([]);
     const [modal, setModal] = useState(false);
+    const [sorting, setSorting] = useState<[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
 
     const toggle = () => {
         setModal(!modal);
         if (modal) {
-            setSelectedProduct(null);
             setFiles([]);
         }
     };
 
-
-    const addProduct = (values: any) => {
-        const newId = DummyPlants.length + 1;
-        const newData = {
-            id: newId,
-            ...values,
-            rating: 0,
-            src: files,
-        }
-        const allDummyProducts = [...products];
-        allDummyProducts.push(newData);
-        console.log("New Data: ", allDummyProducts)
-        setProducts(allDummyProducts)
+    let initialRequest = {
+        "start": 0,
+        "sort": [],
+        "numberOfRows": 10,
+        "filters": []
     }
 
-    const handleChange = (e: any) => {
-        console.log(e.target)
-        const selectedFiles: any = Array.from(e.target.files);
-        const allImages: any = [];
-        selectedFiles.map((item: any) => {
-            return allImages.push(item.name);
-        })
-        console.log(allImages) 
-        setFiles(allImages);
-    };
+    useEffect(() => {
+        fetchData(initialRequest);
+    }, []);
 
-    const updateProduct = (values: any) => {
-        setProducts(prev =>
-            prev.map(item => item.id === selectedProduct.id ? { ...item, ...values, src: files.length ? files : item.src } : item)
-        );
-    };
+    const fetchData = async (requestData: any) => {
+        axios.get("http://localhost:5000/api/products")
+            .then((response: any) => {
+                const paginatedData = response.slice(start, start + numberOfRows)
+                setProducts(paginatedData);
+                setTotalCount(response.length)
+            })
+            .catch((error) => console.log(error));
 
-    const deleteProduct = (index: Number) => {
+        const { start, numberOfRows } = requestData
+    }
+
+    const successNotification = () => {
         Swal.fire({
+            title: "Success!",
+            text: mode == "update" ? "Selected Product Updated." : "New Product Added",
+            icon: "success"
+        })
+    }
+
+    const addProduct = async (values: any) => {
+        try {
+            await axios.post("http://localhost:5000/api/products", values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+            await successNotification();
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const updateProduct = async (values: any) => {
+        try {
+            await axios.put(`http://localhost:5000/api/products/${selectedProductId}`, values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+            await successNotification();
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const deleteProduct = async (index: number) => {
+        const result = await Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-            setProducts(prev => prev.filter(item => item.id !== index))
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: "Success!",
-                    text: "The Selected Review has been deleted.",
-                    icon: "success"
-                });
-            }
+            confirmButtonText: "Yes, delete it!",
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/products/${index}`);
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+        }
+        catch (error) {
+
+        }
+
+        await Swal.fire({
+            title: "Success!",
+            text: "The selected category has been deleted.",
+            icon: "success",
+        });
+    };
+    const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+        setPage(pages)
+        setSizePerPage(sizePerPages)
+        if (sortField !== "" && sortOrder !== "") {
+            sort = [{
+                "columnName": sortField,
+                "sortOrder": sortOrder
+            }]
+        }
+        fetchData({
+            "start": (pages - 1) * sizePerPages,
+            "sort": sort,
+            "numberOfRows": sizePerPages,
+            "filters": []
         });
     }
 
@@ -85,7 +153,7 @@ const Plants = () => {
         },
         {
             id: "name",
-            header: "Plant Name",
+            header: "Product Name",
             accessorKey: "name",
             enableColumnFilter: false,
         },
@@ -96,9 +164,9 @@ const Plants = () => {
             enableColumnFilter: false,
         },
         {
-            id: "desc",
+            id: "description",
             header: "Description",
-            accessorKey: "desc",
+            accessorKey: "description",
             enableColumnFilter: false,
         },
         {
@@ -114,11 +182,11 @@ const Plants = () => {
             enableColumnFilter: false,
         },
         {
-            id: "src",
+            id: "images",
             header: "Product Images",
-            accessorKey: "src",
+            accessorKey: "images",
             cell: ({ getValue }: any) => {
-                const images = getValue() as string[];
+                const images = (getValue() as string[] | null) ?? [];
                 return (
                     <div style={{ display: "flex", gap: "5px" }}>
                         {images.map((image, index) => (
@@ -142,8 +210,7 @@ const Plants = () => {
                         }></i>
                         <i className="ri-edit-2-line" style={{ color: "red" }} onClick={() => {
                             setMode("update")
-                            setFiles(row.original.src);
-                            setSelectedProduct(row.original)
+                            setSelectedProductId(row.original.id)
                             toggle();
                         }}></i>
                     </div>
@@ -155,13 +222,11 @@ const Plants = () => {
     ], [toggle])
 
     const [mode, setMode] = useState("");
-    
+
     const returnFunc = (val: any) => {
-        console.log(val)
         mode === "add" ? addProduct(val) : updateProduct(val);
     }
 
-    console.log(modal)
     return (
         <React.Fragment>
             <div style={{ padding: '50px', marginTop: '50px' }}>
@@ -175,13 +240,13 @@ const Plants = () => {
                     </button>
 
                     <PlantsFormModal
-                        selected={selectedProduct}
+                        selected={selectedProductId}
                         mode={mode}
                         returnFunc={(val: any) => returnFunc(val)}
                         modal={modal}
                         toggle={toggle}
                         files={files}
-                        onchange={handleChange}
+                    // onchange={handleChange}
                     />
                 </div>
                 <TableContainer
@@ -190,6 +255,15 @@ const Plants = () => {
                     tableClass="table-centered align-middle table-nowrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder='Search Products...'
+                    isGlobalFilter={true}
+                    page={page}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    sizePerPage={sizePerPage}
+                    clickable={false}
+                    totalCount={totalCount}
+                    handleTableChange={handleTableChange}
+                    loading={loading}
                 />
             </div>
         </React.Fragment>
