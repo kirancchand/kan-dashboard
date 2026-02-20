@@ -19,16 +19,22 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      - name: Copy Build Folder
+      # Zip build folder
+      - name: Zip Build Folder
+        run: zip -r build.zip build
+
+      # Copy zip file
+      - name: Copy Zip to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build"
+          source: "build.zip"
           target: "/home/ubuntu/kan-dashboard"
 
-      - name: Restart Container
+      # Unzip and reload
+      - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -36,6 +42,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/kan-dashboard
-            sudo rm -rf build
-            docker compose -f docker-compose.yml down
-            docker compose -f docker-compose.yml up -d
+            rm -rf build
+            unzip -o build.zip
+            rm build.zip
+            docker exec kan-dashboard nginx -s reload || true
