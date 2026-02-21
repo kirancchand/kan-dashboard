@@ -1,27 +1,100 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
 import Swal from 'sweetalert2';
 import CarouselModal from './CarouselModal';
+import axios from 'axios';
+import { SortInterface } from 'Typecomponents/ComponentsType';
 
-let DummyCarousel = [
-    { id: 1, name: "Plant Categories", category: "Home", src: ["1.jpg", "2.jpg"] },
-    { id: 2, name: "Shoes Ad", category: "Advertisements", src: ["1.png", "2.png"] },
-];
+type Carousel = {
+    id: number;
+    name: string;
+    category: string;
+    images: string[];
+};
 
 const PlantsCarousel = () => {
 
     const [files, setFiles] = useState([]);
     const [mode, setMode] = useState("")
-    const [carousels, setCarousels] = useState(DummyCarousel)
+    const [carousels, setCarousels] = useState<Carousel[]>([]);
     const [selectedCarousel, setSelectedCarousel] = useState<any | null>(null);
+    const [sorting, setSorting] = useState<[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
-    const returnFunction = (val: any) => {
-        console.log(val)
-        mode === "add" ? addCarousel(val) : updateCarousel(val);
+    const [modal, setModal] = useState(false);
+    const toggle = () => setModal(!modal);
+
+    let sort: SortInterface[] = [];
+
+    let initialRequest = {
+        "start": 0,
+        "sort": [],
+        "numberOfRows": 10,
+        "filters": []
     }
 
-    const handleDelete = (index: Number) => {
+    const successNotification = () => {
         Swal.fire({
+            title: "Success!",
+            text: mode == "update" ? "Selected Carousel Updated." : "New Carousel Added",
+            icon: "success"
+        })
+    }
+
+    const fetchData = async (requestData: any) => {
+        const { start, numberOfRows } = requestData
+        axios.get("http://localhost:5000/api/carousels")
+            .then((response: any) => {
+                const paginatedData = response.slice(start, start + numberOfRows)
+                setCarousels(paginatedData);
+                setTotalCount(response.length)
+            })
+            .catch((error) => console.log(error));
+    }
+
+    useEffect(() => {
+        fetchData(initialRequest);
+    }, []);
+
+    const addCarousel = async (values: any) => {
+        try {
+            await axios.post("http://localhost:5000/api/carousels", values, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            })
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+            await successNotification();
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const updateCarousel = async (values: any) => {
+        try {
+            await axios.put(`http://localhost:5000/api/carousels/${selectedCarousel?.id}`, values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+            await successNotification();
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    const deleteCarousel = async (index: number) => {
+        const result = await Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
             icon: "warning",
@@ -29,19 +102,34 @@ const PlantsCarousel = () => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, delete it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setCarousels((prev) =>
-                    prev.filter((item) => item.id !== index),
-                );
-                Swal.fire({
-                    title: "Success!",
-                    text: "The Selected Carousel has been deleted.",
-                    icon: "success",
-                });
-            }
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/carousels/${index}`);
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+        }
+        catch (error) {
+
+        }
+
+        await Swal.fire({
+            title: "Success!",
+            text: "The selected category has been deleted.",
+            icon: "success",
         });
     };
+
+    const returnFunction = (values: any) => {
+        console.log(values)
+        mode === "add" ? addCarousel(values) : updateCarousel(values);
+    }
+
+
 
     const handleChange = (e: any) => {
         console.log(e.target)
@@ -54,27 +142,22 @@ const PlantsCarousel = () => {
         setFiles(allImages);
     };
 
-    const addCarousel = (values: any) => {
-        const newId = DummyCarousel.length + 1;
-        const newData = {
-            id: newId,
-            ...values,
-            src: files,
+    const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+        setPage(pages)
+        setSizePerPage(sizePerPages)
+        if (sortField !== "" && sortOrder !== "") {
+            sort = [{
+                "columnName": sortField,
+                "sortOrder": sortOrder
+            }]
         }
-        const allDummyCarousel = [...carousels];
-        allDummyCarousel.push(newData);
-        console.log("New Data: ", allDummyCarousel)
-        setCarousels(allDummyCarousel)
+        fetchData({
+            "start": (pages - 1) * sizePerPages,
+            "sort": sort,
+            "numberOfRows": sizePerPages,
+            "filters": []
+        });
     }
-
-    const updateCarousel = (values: any) => {
-        setCarousels(prev =>
-            prev.map(item => item.id === selectedCarousel.id ? { ...item, ...values, src: files.length ? files : item.src } : item)
-        );
-    }
-
-    const [modal, setModal] = useState(false);
-    const toggle = () => setModal(!modal);
 
     const columns = useMemo(() => [
         {
@@ -96,15 +179,15 @@ const PlantsCarousel = () => {
             enableColumnFilter: false,
         },
         {
-            id: "src",
+            id: "images",
             header: "Carousel Images",
-            accessorKey: "src",
+            accessorKey: "images",
             cell: ({ getValue }: any) => {
-                const images = getValue() as string[];
+                const images = (getValue() as string[] | null) ?? [];
                 return (
                     <div style={{ display: "flex", gap: "5px" }}>
                         {images.map((image, index) => (
-                            <img alt="carouselimg" key={index} src={`${image}`} height={60} width={120}></img>
+                            <img alt="carouselimg" key={index} src={`${image}`} height={60} width={60}></img>
                         ))}
                     </div>
                 )
@@ -118,11 +201,11 @@ const PlantsCarousel = () => {
                 return (
                     <div>
                         <i className="ri-delete-bin-line" style={{ color: "red" }} onClick={() => {
-                            handleDelete(row.original.id)
+                            deleteCarousel(row.original.id)
                         }}></i>
                         <i className="ri-edit-2-line" style={{ color: "red" }} onClick={() => {
                             setMode("update")
-                            setFiles(row.original.src);
+                            setFiles(row.original.images);
                             setSelectedCarousel(row.original)
                             toggle();
                         }
@@ -140,7 +223,7 @@ const PlantsCarousel = () => {
             <div style={{ padding: '50px', marginTop: '50px' }}>
                 <div className="plants-header">
                     <h1>Plants App Carousel</h1>
-                    <button className="btn btn-primary" onClick={()=>{
+                    <button className="btn btn-primary" onClick={() => {
                         setMode("add")
                         toggle()
                     }}>
@@ -161,6 +244,15 @@ const PlantsCarousel = () => {
                     tableClass="table-centered align-middle table-nowrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder='Search Products...'
+                    isGlobalFilter={true}
+                    page={page}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    sizePerPage={sizePerPage}
+                    clickable={false}
+                    totalCount={totalCount}
+                    handleTableChange={handleTableChange}
+                    loading={loading}
                 />
             </div>
         </React.Fragment>

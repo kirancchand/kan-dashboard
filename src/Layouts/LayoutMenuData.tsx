@@ -230,7 +230,7 @@ const Navdata = () => {
             subItems: [
                 {
                     id: "plants",
-                    label: "Plants",
+                    label: "Products",
                     link: "/plants",
                     parentId: "plants",
 

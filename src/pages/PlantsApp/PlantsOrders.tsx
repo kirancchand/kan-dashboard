@@ -1,15 +1,21 @@
-import React, { useMemo,  useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { TableContainer } from "../../Responsive Table/TableContainerReactTable";
 import { Button, Modal, ModalHeader, ModalBody, Row, Col, Label, Input, FormGroup } from 'reactstrap';
 import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
 import Swal from 'sweetalert2';
 import * as Yup from "yup";
+import { SortInterface } from 'Typecomponents/ComponentsType';
+import axios from 'axios';
 
-let dummyOrders = [
-    { id: 1, user_id: 9001, address_id: 301, date: "27-01-2026", cost: 1500, delivery_date: "01-02-2026", ostatus: "shipped" },
-    { id: 2, user_id: 9045, address_id: 308, date: "26-01-2026", cost: 2000, delivery_date: "03-02-2026", ostatus: "out of delivery" },
-    { id: 3, user_id: 9074, address_id: 367, date: "24-01-2026", cost: 500, delivery_date: "27-01-2026", ostatus: "delivered" },
-]
+type Order = {
+    id: number,
+    username: string,
+    address: string,
+    total: number,
+    order_date: string,
+    delivery_date: string,
+    status: string
+}
 
 const orderStatus = [
     { id: 1, name: "pending" },
@@ -18,19 +24,59 @@ const orderStatus = [
     { id: 4, name: "delivered" }
 ]
 
+const successNotification = () => {
+    Swal.fire({
+        title: "Success!",
+        text: "Selected Product Updated.",
+        icon: "success"
+    })
+}
+
+
 const PlantsOrders = () => {
 
-    const [orders, setOrders] = useState(dummyOrders);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [sorting, setSorting] = useState<[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    let sort: SortInterface[] = [];
+
     const [modal, setModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null)
     const toggle = () => setModal(!modal);
 
     const orderSchema = Yup.object().shape({
-        ostatus: Yup.string(),
+        status: Yup.string(),
     });
 
-    const handleDelete = (index: Number) => {
-        Swal.fire({
+
+    let initialRequest = {
+        "start": 0,
+        "sort": [],
+        "numberOfRows": 10,
+        "filters": []
+    }
+
+    const fetchData = async (requestData: any) => {
+        axios.get("http://localhost:5000/api/orders")
+            .then((response: any) => {
+                const paginatedData = response.slice(start, start + numberOfRows)
+                setOrders(paginatedData);
+                setTotalCount(response.length)
+            })
+            .catch((error) => console.log(error));
+
+        const { start, numberOfRows } = requestData
+    }
+
+    useEffect(() => {
+        fetchData(initialRequest);
+    }, []);
+
+    const deleteOrder = async (index: number) => {
+        const result = await Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
             icon: "warning",
@@ -38,26 +84,58 @@ const PlantsOrders = () => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, delete it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setOrders((prev) =>
-                    prev.filter((item) => item.id !== index),
-                );
-                Swal.fire({
-                    title: "Success!",
-                    text: "The Selected Category has been deleted.",
-                    icon: "success",
-                });
-            }
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/orders/${index}`);
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+        }
+        catch (error) {
+
+        }
+
+        await Swal.fire({
+            title: "Success!",
+            text: "The selected category has been deleted.",
+            icon: "success",
         });
     };
 
-    const handleUpdate = (values: any) => {
-        console.log("updated value: ", values)
-        setOrders(prev => prev.map((order) =>
-            order.id === selectedOrder ? { ...order, ostatus: values.ostatus } : order)
-        )
+    const updateOrder = async (values: any) => {
+        try {
+            await axios.put(`http://localhost:5000/api/orders/${selectedOrder}`, values)
+            await fetchData({
+                start: (page - 1) * sizePerPage,
+                sort,
+                numberOfRows: sizePerPage,
+                filters: []
+            });
+            await successNotification();
+        } catch (error) {
+            console.log(error)
+        }
+    };
 
+    const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+        setPage(pages)
+        setSizePerPage(sizePerPages)
+        if (sortField !== "" && sortOrder !== "") {
+            sort = [{
+                "columnName": sortField,
+                "sortOrder": sortOrder
+            }]
+        }
+        fetchData({
+            "start": (pages - 1) * sizePerPages,
+            "sort": sort,
+            "numberOfRows": sizePerPages,
+            "filters": []
+        });
     }
 
     const columns = useMemo(() => [
@@ -68,21 +146,27 @@ const PlantsOrders = () => {
             enableColumnFilter: false,
         },
         {
-            id: "user_id",
-            header: "User ID",
-            accessorKey: "user_id",
+            id: "username",
+            header: "User",
+            accessorKey: "username",
             enableColumnFilter: false,
         },
         {
-            id: "address_id",
-            header: "Address ID",
-            accessorKey: "address_id",
+            id: "address",
+            header: "Address",
+            accessorKey: "address",
             enableColumnFilter: false,
         },
         {
-            id: "date",
+            id: "total",
+            header: "Total",
+            accessorKey: "total",
+            enableColumnFilter: false,
+        },
+        {
+            id: "order_date",
             header: "Ordered Date",
-            accessorKey: "date",
+            accessorKey: "order_date",
             enableColumnFilter: false,
         },
         {
@@ -92,15 +176,9 @@ const PlantsOrders = () => {
             enableColumnFilter: false,
         },
         {
-            id: "cost",
-            header: "Cost",
-            accessorKey: "cost",
-            enableColumnFilter: false,
-        },
-        {
-            id: "ostatus",
+            id: "order_status",
             header: "Status",
-            accessorKey: "ostatus",
+            accessorKey: "order_status",
             enableColumnFilter: false,
         },
         {
@@ -110,7 +188,7 @@ const PlantsOrders = () => {
                 return (
                     <div>
                         <i className="ri-delete-bin-line" style={{ color: "red" }} onClick={() => {
-                            handleDelete(row.original.id)
+                            deleteOrder(row.original.id)
                         }}></i>
                         <i className="ri-edit-2-line" style={{ color: "red" }} onClick={() => {
                             setSelectedOrder(row.original.id)
@@ -126,20 +204,20 @@ const PlantsOrders = () => {
         <React.Fragment>
             <div style={{ padding: '50px', marginTop: '50px' }}>
                 <div className="plants-header">
-                    <h1>Plant App Orders</h1>
+                    <h1>Orders</h1>
                     <Modal isOpen={modal} toggle={toggle} size="lg" centered>
                         <ModalHeader toggle={toggle}>Update Order Status</ModalHeader>
                         <ModalBody>
                             <div className="plants-form-content">
                                 <Formik
-                                    initialValues={{ ostatus: orders.find(o => o.id === selectedOrder)?.ostatus || "pending" }}
+                                    initialValues={orders.find(o => o.id === selectedOrder) || { order_status: 'pending' }}
                                     validationSchema={orderSchema}
                                     validateOnMount
                                     onSubmit={(values, { setSubmitting, resetForm }) => {
                                         console.log("Form values:", values);
                                         setSubmitting(false);
                                         toggle();
-                                        handleUpdate(values)
+                                        updateOrder(values)
                                         resetForm();
                                     }}
                                 >
@@ -151,8 +229,8 @@ const PlantsOrders = () => {
                                                         <Label for="exampleSelect">Select Status</Label>
                                                         <Field
                                                             as={Input}
-                                                            id="ostatus"
-                                                            name="ostatus"
+                                                            id="order_status"
+                                                            name="order_status"
                                                             type="select"
                                                             className="form-select"
                                                         >   <option>Select Order Status</option>
@@ -191,6 +269,15 @@ const PlantsOrders = () => {
                     tableClass="table-centered align-middle table-nowrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder='Search Orders...'
+                    isGlobalFilter={true}
+                    page={page}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    sizePerPage={sizePerPage}
+                    clickable={false}
+                    totalCount={totalCount}
+                    handleTableChange={handleTableChange}
+                    loading={loading}
                 />
             </div>
         </React.Fragment>

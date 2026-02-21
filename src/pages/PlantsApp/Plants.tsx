@@ -47,6 +47,7 @@ const Plants = () => {
     }, []);
 
     const fetchData = async (requestData: any) => {
+        const { start, numberOfRows } = requestData
         axios.get("http://localhost:5000/api/products")
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
@@ -54,8 +55,6 @@ const Plants = () => {
                 setTotalCount(response.length)
             })
             .catch((error) => console.log(error));
-
-        const { start, numberOfRows } = requestData
     }
 
     const successNotification = () => {
@@ -68,7 +67,11 @@ const Plants = () => {
 
     const addProduct = async (values: any) => {
         try {
-            await axios.post("http://localhost:5000/api/products", values)
+            await axios.post("http://localhost:5000/api/products", values, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            })
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
