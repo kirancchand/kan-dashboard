@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import PlantsFormModal from './PlantsFormModal';
 import axios from 'axios';
 import { SortInterface } from 'Typecomponents/ComponentsType';
+import { DEV_URL } from 'http/http';
 
 type Product = {
     id: number;
@@ -46,16 +47,24 @@ const Plants = () => {
         fetchData(initialRequest);
     }, []);
 
-    const fetchData = async (requestData: any) => {
-        const { start, numberOfRows } = requestData
-        axios.get("http://localhost:5000/api/products")
-            .then((response: any) => {
-                const paginatedData = response.slice(start, start + numberOfRows)
-                setProducts(paginatedData);
-                setTotalCount(response.length)
-            })
-            .catch((error) => console.log(error));
-    }
+const fetchData = async (requestData: any) => {
+    const { start, numberOfRows } = requestData;
+    setLoading(true); 
+    axios.get(`${DEV_URL}/api/products/paginate`, {
+        params: {
+            start: start,
+            limit: numberOfRows
+        }
+    })
+    .then((response: any) => {
+        const { products, total } = response.data; 
+        
+        setProducts(products); 
+        setTotalCount(total); 
+    })
+    .catch((error) => console.error("Error fetching paginated products:", error))
+    .finally(() => setLoading(false));
+}
 
     const successNotification = () => {
         Swal.fire({
@@ -67,7 +76,7 @@ const Plants = () => {
 
     const addProduct = async (values: any) => {
         try {
-            await axios.post("http://localhost:5000/api/products", values, {
+            await axios.post(`${DEV_URL}/api/products`, values, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -86,7 +95,7 @@ const Plants = () => {
 
     const updateProduct = async (values: any) => {
         try {
-            await axios.put(`http://localhost:5000/api/products/${selectedProductId}`, values)
+            await axios.put(`${DEV_URL}/api/products/${selectedProductId}`, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -111,7 +120,7 @@ const Plants = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/products/${index}`);
+            await axios.delete(`${DEV_URL}/api/products/${index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
