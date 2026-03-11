@@ -191,7 +191,7 @@ const PlantsCategory = () => {
         <React.Fragment>
             <div style={{ padding: "50px", marginTop: "50px" }}>
                 <div className="plants-header">
-                    <h1>Plant App Categories</h1>
+                    <h1>Categories</h1>
 
                     <button
                         className="btn btn-primary"

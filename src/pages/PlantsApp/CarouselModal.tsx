@@ -2,6 +2,7 @@ import { Button, Modal, ModalHeader, ModalBody, Row, Col, Label, Input, FormGrou
 import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
+import { appendFile } from 'fs';
 
 const CarouselModal = (props: any) => {
     const CarouselCategories = [
@@ -16,7 +17,7 @@ const CarouselModal = (props: any) => {
             .required("Carousel Name is required!"),
         category: Yup.string()
             .required("Carousel Category is required!"),
-        src: Yup.array()
+        images: Yup.array()
     })
 
     const successNotification = () => {
@@ -27,7 +28,7 @@ const CarouselModal = (props: any) => {
         })
     }
 
-    const initialVals = { name: "", category: "", src: "", }
+    const initialVals = { name: "", category: "", images: [], }
 
     return (
         <Modal isOpen={props.modal} toggle={props.toggle} size="lg"
@@ -40,15 +41,25 @@ const CarouselModal = (props: any) => {
                         validationSchema={CarouselSchema}
                         validateOnMount
                         onSubmit={(values, { setSubmitting, resetForm }) => {
-                            console.log("Form values:", values);
+
+                            const formData = new FormData();
+
+                            formData.append("name", values.name);
+                            formData.append("category", values.category);
+
+                            if (values.images && values.images.length > 0) {
+                                values.images.forEach((file: File) => {
+                                    formData.append("images", file);
+                                });
+                            }
+
                             setSubmitting(false);
+                            props.returnFunction(formData)
                             props.toggle();
-                            props.returnFunction(values)
-                            successNotification();
                             resetForm();
                         }}
                     >
-                        {({ isSubmitting, isValid }) => (
+                        {({ isSubmitting, setFieldValue }) => (
                             <FormikForm>
                                 <Row>
                                     <Col md={6}>
@@ -99,11 +110,14 @@ const CarouselModal = (props: any) => {
                                     </Label>
                                     <Col sm={12}>
                                         <Input
-                                            id="src"
-                                            name="src"
+                                            id="images"
+                                            name="images"
                                             type="file"
                                             multiple
-                                            onChange={props.onchange}
+                                            onChange={(event) => {
+                                                const files = Array.from(event.currentTarget.files || []);
+                                                setFieldValue("images", files);
+                                            }}
                                         />
                                     </Col>
                                 </FormGroup>

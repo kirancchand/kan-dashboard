@@ -3,9 +3,9 @@ import { TableContainer } from "../../Responsive Table/TableContainerReactTable"
 import { SortTanstackInterface } from '../../Typecomponents/ComponentsType';
 import { FakeUsers } from './FakeUsers';
 import UsersFormModal from './UsersFormModal';
-import { delete_user_url, http, update_user_url } from 'http/http';
 import { SortInterface } from '../../Typecomponents/ComponentsType';
 import AddUserModal from './AddUserModal';
+import { http, GET_USER_LIST, delete_user_url, update_user_url } from '../../http/http';
 
 interface AnalyticsItem {
     first_name: string;
@@ -145,20 +145,23 @@ const AllUsers = () => {
         "filters": []
     }
     const fetchData = async (requestdata: any) => {
-        const { start, numberOfRows } = requestdata
-        const paginatedData = FakeUsers.slice(start, start + numberOfRows)
-        setTotalCount(FakeUsers.length)
-        setAnalyticsData(paginatedData)
-    }
+        const { start, numberOfRows } = requestdata;
+        try {
+            const response = await http.post(GET_USER_LIST, requestdata);
+            if (response.data) {
+                setAnalyticsData(response.data.result);
+                setTotalCount(response.data.totalCount);
+            }
+        } catch (error) {
+            console.error("Error fetching analytics data:", error);
+        }
+    };
 
     useEffect(() => {
         fetchData(initialRequest);
     }, []);
 
     const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
-        console.log("pages", pages)
-        console.log("sizePerPages", sizePerPages)
-        // console.log(sizePerPage)
         setPage(pages)
         setSizePerPage(sizePerPages)
         if (sortField !== "" && sortOrder !== "") {
