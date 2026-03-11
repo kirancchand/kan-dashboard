@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import PlantsFormModal from './PlantsFormModal';
 import axios from 'axios';
 import { SortInterface } from 'Typecomponents/ComponentsType';
-import { DEV_URL } from 'http/http';
+import { plant_url } from 'http/http';
 
 type Product = {
     id: number;
@@ -47,24 +47,24 @@ const Plants = () => {
         fetchData(initialRequest);
     }, []);
 
-const fetchData = async (requestData: any) => {
-    const { start, numberOfRows } = requestData;
-    setLoading(true); 
-    axios.get(`${DEV_URL}/api/products/paginate`, {
-        params: {
-            start: start,
-            limit: numberOfRows
-        }
-    })
-    .then((response: any) => {
-        const { products, total } = response.data; 
-        
-        setProducts(products); 
-        setTotalCount(total); 
-    })
-    .catch((error) => console.error("Error fetching paginated products:", error))
-    .finally(() => setLoading(false));
-}
+    const fetchData = async (requestData: any) => {
+        const { start, numberOfRows } = requestData;
+        setLoading(true);
+        axios.get(`${plant_url}paginate`, {
+            params: {
+                start: start,
+                limit: numberOfRows
+            }
+        })
+            .then((response: any) => {
+                const products = response.products;
+                const total = response.total;
+                setProducts(products);
+                setTotalCount(total);
+            })
+            .catch((error) => console.error("Error fetching paginated products:", error))
+            .finally(() => setLoading(false));
+    }
 
     const successNotification = () => {
         Swal.fire({
@@ -76,7 +76,7 @@ const fetchData = async (requestData: any) => {
 
     const addProduct = async (values: any) => {
         try {
-            await axios.post(`${DEV_URL}/api/products`, values, {
+            await axios.post(`${plant_url}`, values, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -95,7 +95,7 @@ const fetchData = async (requestData: any) => {
 
     const updateProduct = async (values: any) => {
         try {
-            await axios.put(`${DEV_URL}/api/products/${selectedProductId}`, values)
+            await axios.put(`${plant_url + selectedProductId}`, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -120,7 +120,7 @@ const fetchData = async (requestData: any) => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`${DEV_URL}/api/products/${index}`);
+            await axios.delete(`${plant_url + index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -149,9 +149,7 @@ const fetchData = async (requestData: any) => {
         }
         fetchData({
             "start": (pages - 1) * sizePerPages,
-            "sort": sort,
             "numberOfRows": sizePerPages,
-            "filters": []
         });
     }
 
@@ -180,6 +178,12 @@ const fetchData = async (requestData: any) => {
             header: "Description",
             accessorKey: "description",
             enableColumnFilter: false,
+            cell: (info:any) => {
+                const value = info.getValue();
+                return value?.length > 50
+                    ? value.substring(0, 30) + "..."
+                    : value;
+            },
         },
         {
             id: "rating",

@@ -105,15 +105,15 @@ const PlantsTransactions = () => {
             enableColumnFilter: false,
         },
         {
-            id: "username",
-            header: "User",
-            accessorKey: "username",
+            id: "user_id",
+            header: "User ID",
+            accessorKey: "user_id",
             enableColumnFilter: false,
         },
         {
-            id: "product",
-            header: "Product",
-            accessorKey: "product",
+            id: "product_id",
+            header: "Product ID",
+            accessorKey: "product_id",
             enableColumnFilter: false,
         },
         {

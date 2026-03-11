@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import * as Yup from "yup";
 import { SortInterface } from 'Typecomponents/ComponentsType';
 import axios from 'axios';
+import { order_url } from 'http/http';
 
 type Order = {
     id: number,
@@ -18,10 +19,10 @@ type Order = {
 }
 
 const orderStatus = [
-    { id: 1, name: "pending" },
-    { id: 2, name: "shipping" },
-    { id: 3, name: "out of delivery" },
-    { id: 4, name: "delivered" }
+    { id: 1, name: "Pending" },
+    { id: 2, name: "Shipping" },
+    { id: 3, name: "Out of delivery" },
+    { id: 4, name: "Delivered" }
 ]
 
 const successNotification = () => {
@@ -60,7 +61,7 @@ const PlantsOrders = () => {
     }
 
     const fetchData = async (requestData: any) => {
-        axios.get("http://localhost:5000/api/orders")
+        axios.get(order_url)
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
                 setOrders(paginatedData);
@@ -87,7 +88,7 @@ const PlantsOrders = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/orders/${index}`);
+            await axios.delete(`${order_url+index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -146,9 +147,9 @@ const PlantsOrders = () => {
             enableColumnFilter: false,
         },
         {
-            id: "username",
-            header: "User",
-            accessorKey: "username",
+            id: "user_id",
+            header: "User ID",
+            accessorKey: "user_id",
             enableColumnFilter: false,
         },
         {
