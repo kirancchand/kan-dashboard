@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import CategoryModal from "./CategoryModal";
 import axios from "axios";
 import { SortInterface } from '../../Typecomponents/ComponentsType';
+import { category_url } from "../../http/http";
 
 type Category = {
     id: number;
@@ -27,7 +28,7 @@ const PlantsCategory = () => {
     const [totalCount, setTotalCount] = useState(0);
 
     const fetchData = async (requestData: any) => {
-        axios.get("http://localhost:5000/api/categories")
+        axios.get(category_url)
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
                 setAllCategories(response)
@@ -73,7 +74,7 @@ const PlantsCategory = () => {
 
     const addPlantCategory = async (values: any) => {
         try {
-            await axios.post("http://localhost:5000/api/categories", values)
+            await axios.post(category_url, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -88,7 +89,7 @@ const PlantsCategory = () => {
 
     const updatePlantCategory = async (values: any) => {
         try {
-            await axios.put(`http://localhost:5000/api/categories/${selectedCategory?.id}`, values)
+            await axios.put(`${category_url+selectedCategory?.id}`, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -112,7 +113,7 @@ const PlantsCategory = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/categories/${index}`);
+            await axios.delete(`${category_url+index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,

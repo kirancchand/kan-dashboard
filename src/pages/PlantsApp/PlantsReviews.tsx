@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { SortInterface } from 'Typecomponents/ComponentsType';
+import { review_url } from "http/http";
 
 
 type Review = {
@@ -31,7 +32,7 @@ const PlantsReviews = () => {
     }
 
     const fetchData = async (requestData: any) => {
-        axios.get("http://localhost:5000/api/reviews")
+        axios.get(review_url)
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
                 setReviews(paginatedData);
@@ -59,7 +60,7 @@ const PlantsReviews = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/reviews/${index}`);
+            await axios.delete(`${review_url+index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,

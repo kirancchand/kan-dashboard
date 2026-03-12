@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import CarouselModal from './CarouselModal';
 import axios from 'axios';
 import { SortInterface } from 'Typecomponents/ComponentsType';
+import { carousel_url } from 'http/http';
 
 type Carousel = {
     id: number;
@@ -46,7 +47,7 @@ const PlantsCarousel = () => {
 
     const fetchData = async (requestData: any) => {
         const { start, numberOfRows } = requestData
-        axios.get("http://localhost:5000/api/carousels")
+        axios.get(carousel_url)
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
                 setCarousels(paginatedData);
@@ -61,7 +62,7 @@ const PlantsCarousel = () => {
 
     const addCarousel = async (values: any) => {
         try {
-            await axios.post("http://localhost:5000/api/carousels", values, {
+            await axios.post(carousel_url, values, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -80,7 +81,7 @@ const PlantsCarousel = () => {
 
     const updateCarousel = async (values: any) => {
         try {
-            await axios.put(`http://localhost:5000/api/carousels/${selectedCarousel?.id}`, values)
+            await axios.put(`${carousel_url+selectedCarousel?.id}`, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -105,7 +106,7 @@ const PlantsCarousel = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/carousels/${index}`);
+            await axios.delete(`${carousel_url+index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,

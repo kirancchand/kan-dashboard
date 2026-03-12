@@ -3,6 +3,7 @@ import { TableContainer } from "../../Responsive Table/TableContainerReactTable"
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { SortInterface } from 'Typecomponents/ComponentsType';
+import { transcation_url } from 'http/http';
 
 
 type Transaction = {
@@ -33,7 +34,7 @@ const PlantsTransactions = () => {
     }
 
     const fetchData = async (requestData: any) => {
-        axios.get("http://localhost:5000/api/transactions")
+        axios.get(transcation_url)
             .then((response: any) => {
                 const paginatedData = response.slice(start, start + numberOfRows)
                 setTransactions(paginatedData);
@@ -60,7 +61,7 @@ const PlantsTransactions = () => {
         });
         if (!result.isConfirmed) return;
         try {
-            await axios.delete(`http://localhost:5000/api/transactions/${index}`);
+            await axios.delete(`${transcation_url+index}`);
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
