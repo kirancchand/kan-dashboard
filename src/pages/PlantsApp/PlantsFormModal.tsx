@@ -3,6 +3,7 @@ import { Form as FormikForm, Field, ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { category_url, plant_url } from 'http/http';
 
 type Category = {
     id: number;
@@ -27,7 +28,7 @@ const PlantsFormModal = (props: any) => {
 
     const fetchProduct = async () => {
         if (mode !== "update" || !props.selected) return;
-        await axios.get(`http://localhost:5000/api/products/${props.selected}`)
+        await axios.get(`${plant_url+props.selected}`)
             .then((response: any) => {
                 setProduct(response)
             })
@@ -35,7 +36,7 @@ const PlantsFormModal = (props: any) => {
     }
 
     const fetchCategories = async () => {
-        await axios.get('http://localhost:5000/api/categories')
+        await axios.get(category_url)
             .then((response: any) => {
                 setCategoryData(response)
             })

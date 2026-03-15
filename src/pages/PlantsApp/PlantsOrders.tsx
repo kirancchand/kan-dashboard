@@ -109,7 +109,7 @@ const PlantsOrders = () => {
 
     const updateOrder = async (values: any) => {
         try {
-            await axios.put(`http://localhost:5000/api/orders/${selectedOrder}`, values)
+            await axios.put(`${order_url+selectedOrder}`, values)
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,

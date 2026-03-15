@@ -19,6 +19,10 @@ export const delete_user_url = "/users/:id"
 // Plant API's
 export const order_url = PLANT_API_URL+"/api/orders/"
 export const plant_url = PLANT_API_URL+"/api/products/"
+export const category_url = PLANT_API_URL+"/api/categories/"
+export const transcation_url = PLANT_API_URL+"/api/transactions/"
+export const carousel_url = PLANT_API_URL+"/api/carousels/"
+export const review_url = PLANT_API_URL+"/api/reviews/"
 
 export const http = axios.create({})
 
