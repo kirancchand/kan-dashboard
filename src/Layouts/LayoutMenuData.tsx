@@ -300,7 +300,7 @@ const Navdata = () => {
                 },
                 {
                     id: "myorders",
-                    label: "My order",
+                    label: "My Orders",
                     link: "/myorders",
                     parentId: "delivery",
                 },
