@@ -61,6 +61,8 @@ const Login = (props: any) => {
                 if (response.status===200){
                     dispatch(loginUser(response, props.router.navigate));
                     
+                }else{
+                    dispatch(loginUser(response, props.router.navigate));
                 }
             } catch (error) {
                 console.error("Login failed", error);

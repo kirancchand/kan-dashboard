@@ -10,6 +10,7 @@ const Navdata = () => {
     const [isCakes, setIsCakes] = useState<boolean>(false);
     const [isPlants, setIsPlants] = useState<boolean>(false);
     const [isBook, setIsBook] = useState<boolean>(false);
+    const [isDelivery, setIsDelivery] = useState<boolean>(false);
 
 
     // Apps
@@ -44,6 +45,9 @@ const Navdata = () => {
             setIsCakes(false);
         }
         if (iscurrentState !== 'Plants') {
+            setIsPlants(false);
+        }
+         if (iscurrentState !== 'Delivery') {
             setIsPlants(false);
         }
     }, [
@@ -271,6 +275,34 @@ const Navdata = () => {
                     label: "Reviews",
                     link: "/plants-reviews",
                     parentId: "list",
+                },
+            ]
+        },
+           {
+            id: "delivery",
+            label: "Delivery App",
+            icon: "ri-plant-line",
+            link: "/#",
+            click: function (e: any) {
+                e.preventDefault();
+
+                setIsDelivery(!isDelivery);
+                setIscurrentState('Delivery');
+                updateIconSidebar(e);
+            },
+            stateVariables: isDelivery,
+            subItems: [
+                {
+                    id: "deliveryperson",
+                    label: "Delivery Person",
+                    link: "/deliveryperson",
+                    parentId: "delivery",
+                },
+                {
+                    id: "myorders",
+                    label: "My order",
+                    link: "/myorders",
+                    parentId: "delivery",
                 },
             ]
         },

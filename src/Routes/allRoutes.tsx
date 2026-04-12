@@ -79,6 +79,9 @@ import PlantsTransactions from "pages/PlantsApp/PlantsTransactions";
 import AllUsers from "pages/Users/AllUsers";
 
 
+import DeliveryPerson from "pages/Delivery/DeliveryPerson";
+import MyOrders from "pages/Delivery/MyOrders";
+
 
 const authProtectedRoutes = [
   //Users Routes
@@ -105,6 +108,7 @@ const authProtectedRoutes = [
   { path: "/book-category", component: <Bookcategory /> },
   { path: "/add-category", component: <Addcategory /> },
   { path: "/Users-list", component: <Userlist /> },
+
   { path: "/cakeUsers-list", component: <Userslistcake /> },
   { path: "/Add-users", component: <Addusers /> },
   { path: "/cake-table", component: <CakeTable /> },
@@ -115,22 +119,20 @@ const authProtectedRoutes = [
   { path: "/contact-table", component: <ContactTable /> },
   { path: "/splash-table", component: <Splashtable /> },
   { path: "/splash", component: <Splash /> },
+
+  //Delivery
+  { path: "/deliveryperson", component: <DeliveryPerson /> },
+  { path: "/myorders", component: <MyOrders /> },
+
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },
   { path: "/apps-ecommerce-product-details/:_id", component: <EcommerceProductDetail /> },
   { path: "/apps-ecommerce-product-details", component: <EcommerceProductDetail /> },
-
   { path: "/apps-ecommerce-order-details", component: <EcommerceOrderDetail /> },
-
   { path: "/apps-ecommerce-cart", component: <EcommerceCart /> },
   { path: "/apps-ecommerce-checkout", component: <EcommerceCheckout /> },
-
   { path: "/apps-ecommerce-seller-details", component: <EcommerceSellerDetail /> },
-
   { path: "/apps-file-manager", component: <FileManager /> },
-
-
-
   //Chat
   { path: "/apps-chat", component: <Chat /> },
 
