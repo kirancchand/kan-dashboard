@@ -304,6 +304,12 @@ const Navdata = () => {
                     link: "/myorders",
                     parentId: "delivery",
                 },
+                {
+                    id: "map",
+                    label: "Map",
+                    link: "/delivery-map",
+                    parentId: "delivery",
+                },
             ]
         },
     ];

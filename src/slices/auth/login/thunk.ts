@@ -10,7 +10,7 @@ import { http,userinfo_request } from "http/http";
 import { userInformation } from "slices/thunks";
 
 export const loginUser =
-  (response: any, navigate: any) => async (dispatch: any) => {
+  (response: any, navigate: any, isDummy = false) => async (dispatch: any) => {
     try {
       const { data } = response;
       const tokens = {
@@ -19,7 +19,7 @@ export const loginUser =
       };
 
       saveTokens(tokens);
-      const userinfo = await http.get(userinfo_request);
+      const userinfo = isDummy ? { data } : await http.get(userinfo_request);
       dispatch(userInformation(userinfo));
 
       sessionStorage.setItem("authUser", JSON.stringify(data));

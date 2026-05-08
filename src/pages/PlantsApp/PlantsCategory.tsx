@@ -74,7 +74,12 @@ const PlantsCategory = () => {
 
     const addPlantCategory = async (values: any) => {
         try {
-            await axios.post(category_url, values)
+            const formData = new FormData();
+            formData.append("name", values.name);
+            if (values.parent_category) formData.append("parent_category", values.parent_category);
+            if (values.image) formData.append("image", values.image);
+
+            await axios.post(category_url, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -89,7 +94,16 @@ const PlantsCategory = () => {
 
     const updatePlantCategory = async (values: any) => {
         try {
-            await axios.put(`${category_url+selectedCategory?.id}`, values)
+            const formData = new FormData();
+            formData.append("name", values.name);
+            if (values.parent_category) formData.append("parent_category", values.parent_category);
+            if (values.image instanceof File) {
+                formData.append("image", values.image);
+            } else if (values.image) {
+                formData.append("image", values.image);
+            }
+
+            await axios.put(`${category_url+selectedCategory?.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
             await fetchData({
                 start: (page - 1) * sizePerPage,
                 sort,
@@ -144,6 +158,23 @@ const PlantsCategory = () => {
                 id: "name",
                 header: "Category Name",
                 accessorKey: "name",
+                enableColumnFilter: false,
+            },
+            {
+                id: "image",
+                header: "Image",
+                accessorKey: "image",
+                cell: ({ row }: { row: any }) => (
+                    row.original.image ? (
+                        <img
+                            src={row.original.image}
+                            alt={row.original.name}
+                            style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }}
+                        />
+                    ) : (
+                        <span>No Image</span>
+                    )
+                ),
                 enableColumnFilter: false,
             },
             {

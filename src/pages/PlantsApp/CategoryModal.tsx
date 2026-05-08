@@ -17,7 +17,7 @@ const CategoryModal = (props:any) => {
         });
     };
 
-    const initialVals = { name: "", subcategory: "" }
+    const initialVals = { name: "", parent_category: "", image: null }
     return (
         <Modal isOpen={props.modal} toggle={props.toggle} size="lg" centered>
             <ModalHeader toggle={props.toggle}>{props.mode==="add"?"Add New Category":"Update Category"}</ModalHeader>
@@ -36,7 +36,7 @@ const CategoryModal = (props:any) => {
                             resetForm();
                         }}
                     >
-                        {({ isSubmitting, isValid }) => (
+                        {({ isSubmitting, isValid, setFieldValue }) => (
                             <FormikForm>
                                 <Row>
                                     <Col md={6}>
@@ -76,6 +76,24 @@ const CategoryModal = (props:any) => {
                                                 name="name"
                                                 component="div"
                                                 className="text-danger"
+                                            />
+                                        </FormGroup>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col md={12}>
+                                        <FormGroup>
+                                            <Label for="image">Category Image (Optional)</Label>
+                                            <input
+                                                id="image"
+                                                name="image"
+                                                type="file"
+                                                className="form-control"
+                                                onChange={(event: any) => {
+                                                    if (event.currentTarget.files && event.currentTarget.files.length > 0) {
+                                                        setFieldValue("image", event.currentTarget.files[0]);
+                                                    }
+                                                }}
                                             />
                                         </FormGroup>
                                     </Col>

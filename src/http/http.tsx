@@ -4,7 +4,7 @@ export const BASE_URL = 'http://localhost:8084'
 // export const BASE_URL = 'http://3.23.103.50:8084'
 export const DEV_URL = 'http://3.23.103.50:5000'
 export const ADMIN_URL = "http://3.23.103.50:8070"
-export const PLANT_API_URL = 'http://3.23.103.50:5000'
+export const PLANT_API_URL = 'http://localhost:5000'
 
 // Registration & Authentication API's
 export const login_request = BASE_URL + '/auth/login';

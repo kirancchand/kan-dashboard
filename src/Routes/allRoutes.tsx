@@ -81,6 +81,7 @@ import AllUsers from "pages/Users/AllUsers";
 
 import DeliveryPerson from "pages/Delivery/DeliveryPerson";
 import MyOrders from "pages/Delivery/MyOrders";
+import Map from "pages/Delivery/Map";
 
 
 const authProtectedRoutes = [
@@ -123,6 +124,7 @@ const authProtectedRoutes = [
   //Delivery
   { path: "/deliveryperson", component: <DeliveryPerson /> },
   { path: "/myorders", component: <MyOrders /> },
+  { path: "/delivery-map", component: <Map /> },
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },
