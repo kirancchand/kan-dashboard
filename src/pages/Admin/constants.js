@@ -1,0 +1,14 @@
+// export const GET_MASTER_DATA =  'https://run.mocky.io/v3/3812981a-1351-4113-bd9c-55f00be29bfb';
+export const DEVURL = 'http://localhost:8080';
+export const GET_MASTER_DATA = 'http://localhost:8080/keyValue';
+export const MASTER_API = 'http://localhost:8080/master';
+export const STATE_API = `${MASTER_API}/state`;
+export const DISTRICT_API = `${MASTER_API}/district`;
+export const MENU_API = `${MASTER_API}/menu`;
+export const ROLE_API = `${MASTER_API}/role`;
+export const ROLEMENU_API = `${MASTER_API}/rolemenu`;
+export const USER_API = `${MASTER_API}/users`;
+export const REGION_API = `${MASTER_API}/region`;
+export const AREA_API = `${MASTER_API}/area`;
+export const BRANCH_API = `${MASTER_API}/branch`;
+export const SECTOR_API = `${MASTER_API}/sector`;

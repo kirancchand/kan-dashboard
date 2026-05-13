@@ -11,6 +11,12 @@ const Navdata = () => {
     const [isPlants, setIsPlants] = useState<boolean>(false);
     const [isBook, setIsBook] = useState<boolean>(false);
     const [isDelivery, setIsDelivery] = useState<boolean>(false);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [isAdminDivision, setIsAdminDivision] = useState<boolean>(false);
+    const [isAdminMenu, setIsAdminMenu] = useState<boolean>(false);
+    const [isAdminOrganisation, setIsAdminOrganisation] = useState<boolean>(false);
+    const [isVillage,setIsVillage]=useState<boolean>(false)
+
 
 
     // Apps
@@ -47,14 +53,29 @@ const Navdata = () => {
         if (iscurrentState !== 'Plants') {
             setIsPlants(false);
         }
-         if (iscurrentState !== 'Delivery') {
-            setIsPlants(false);
+        if (iscurrentState !== 'Delivery') {
+            setIsDelivery(false);
+        }
+        if (iscurrentState !== 'Admin') {
+            setIsAdmin(false);
+        }
+        if (iscurrentState !== 'Village') {
+            setIsVillage(false);
         }
     }, [
         history,
         iscurrentState,
         isDashboard,
         isApps,
+        isBook,
+        isCakes,
+        isPlants,
+        isDelivery,
+        isAdmin,
+        isAdminDivision,
+        isAdminMenu,
+        isAdminOrganisation,
+        isVillage
     ]);
 
     const menuItems: any = [
@@ -81,6 +102,18 @@ const Navdata = () => {
                     link: "/dashboard",
                     parentId: "dashboard",
                 },
+                {
+                    id: "userdashboard",
+                    label: "User",
+                    link: "/dashboard-user",
+                    parentId: "dashboard",
+                },
+                {
+                    id: "useranalytics",
+                    label: "User Analytics",
+                    link: "/dashboard-useranalytics",
+                    parentId: "dashboard",
+                }
             ],
         },
         {
@@ -115,7 +148,7 @@ const Navdata = () => {
                 e.preventDefault();
 
                 setIsBook(!isBook);
-                setIscurrentState('Cakes');
+                setIscurrentState('Books');
                 updateIconSidebar(e);
             },
             stateVariables: isBook,
@@ -312,6 +345,331 @@ const Navdata = () => {
                 },
             ]
         },
+        //   {
+        //     id: "admin",
+        //     label: "Admin",
+        //     icon: "ri-plant-line",
+        //     link: "/#",
+        //     click: function (e: any) {
+        //         e.preventDefault();
+
+        //         setIsAdmin(!isAdmin);
+        //         setIscurrentState('Admin');
+        //         updateIconSidebar(e);
+        //     },
+        //     stateVariables: isAdmin,
+        //     subItems: [
+        //         {
+        //             id: "state",
+        //             label: "State",
+        //             link: "/state",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "district",
+        //             label: "District",
+        //             link: "/district",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "region",
+        //             label: "Region",
+        //             link: "/region",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "area",
+        //             label: "Area",
+        //             link: "/Area",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "branch",
+        //             label: "Branch",
+        //             link: "/Branch",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "sector",
+        //             label: "Sector",
+        //             link: "/Sector",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "unit",
+        //             label: "Unit",
+        //             link: "/Unit",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "menu",
+        //             label: "Menu",
+        //             link: "/Menu",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "role",
+        //             label: "Role",
+        //             link: "/Role",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "rolemenu",
+        //             label: "Role Menu",
+        //             link: "/RoleMenu",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "organisationtype",
+        //             label: "Organisation Type",
+        //             link: "/OrganisationType",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "organisation",
+        //             label: "Organisation",
+        //             link: "/Organisation",
+        //             parentId: "admin",
+        //         },
+        //         {
+        //             id: "organisationmember",
+        //             label: "Organisation Member",
+        //             link: "/OrganisationMember",
+        //             parentId: "admin",
+        //         },
+        //     ]
+        // },
+         {
+            id: "admin",
+            label: "Admin",
+            icon: "ri-book-line",
+            link: "/#",
+            click: function (e: any) {
+                e.preventDefault();
+
+                setIsAdmin(!isAdmin);
+                setIscurrentState('Admin');
+                updateIconSidebar(e);
+            },
+            stateVariables: isAdmin,
+            subItems: [
+                {
+                    id: "divisionmanagement",
+                    label: "Division",
+
+                    parentId: "divisionmanagement",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsAdminDivision(!isAdminDivision);
+                    },
+                    stateVariables: isAdminDivision,
+                    childItems: [
+                       {
+                            id: "state",
+                            label: "State",
+                            link: "/state",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "district",
+                            label: "District",
+                            link: "/district",
+                            parentId: "admin",
+                        },
+                        // {
+                        //     id: "region",
+                        //     label: "Region",
+                        //     link: "/region",
+                        //     parentId: "admin",
+                        // },
+                        {
+                            id: "area",
+                            label: "Area",
+                            link: "/Area",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "branch",
+                            label: "Branch",
+                            link: "/Branch",
+                            parentId: "admin",
+                        },
+                        // {
+                        //     id: "sector",
+                        //     label: "Sector",
+                        //     link: "/Sector",
+                        //     parentId: "admin",
+                        // },
+                        // {
+                        //     id: "unit",
+                        //     label: "Unit",
+                        //     link: "/Unit",
+                        //     parentId: "admin",
+                        // }
+
+                    ]
+                },
+                {
+                    id: "menumanagement",
+                    label: "Menu",
+
+                    parentId: "menumanagement",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsAdminMenu(!isAdminMenu);
+                    },
+                    stateVariables: isAdminMenu,
+                    childItems: [
+                         {
+                            id: "menu",
+                            label: "Menu",
+                            link: "/Menu",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "role",
+                            label: "Role",
+                            link: "/Role",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "rolemenu",
+                            label: "RoleMenu",
+                            link: "/RoleMenu",
+                            parentId: "admin",
+                        },
+                    ]
+                },
+                {
+                    id: "organisationmanagement",
+                    label: "Organisation",
+
+                    parentId: "organisationmanagement",
+                    isChildItem: true,
+                    click: function (e: any) {
+                        e.preventDefault();
+                        setIsAdminOrganisation(!isAdminOrganisation);
+                    },
+                    stateVariables: isAdminOrganisation,
+                    childItems: [
+                        {
+                            id: "organisationtype",
+                            label: "Organisation Type",
+                            link: "/OrganisationType",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "organisation",
+                            label: "Organisation",
+                            link: "/Organisation",
+                            parentId: "admin",
+                        },
+                        {
+                            id: "organisationmember",
+                            label: "Organisation Member",
+                            link: "/OrganisationMember",
+                            parentId: "admin",
+                        },
+                    ]
+                },
+
+
+              
+               
+            ]
+
+        },
+           {
+                    id: "village",
+                    label: "Village",
+                    icon: "ri-plant-line",
+                    link: "/#",
+                    click: function (e: any) {
+                        e.preventDefault();
+
+                        setIsVillage(!isVillage);
+                        setIscurrentState('Village');
+                        updateIconSidebar(e);
+                    },
+                    stateVariables: isVillage,
+                    subItems: [
+                        {
+                            id: "vappname",
+                            label: "Village App Name",
+                            link: "/vappname",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappcarousel",
+                            label: "Village App Carousel",
+                            link: "/vappcarousal",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappemergencyservices",
+                            label: "Village App Emergency Service",
+                            link: "/vappemergencyservices",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappusers",
+                            label: "Village App Users",
+                            link: "/vappusers",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappcategory",
+                            label: "Village App Category",
+                            link: "/vappcategory",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vapporganizations",
+                            label: "Village App Organisations",
+                            link: "/vapporganizations",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappadvertisement",
+                            label: "Village App Advertisement",
+                            link: "/vappadvertisement",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappstate",
+                            label: "Village App State",
+                            link: "/vappstate",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappdistrict",
+                            label: "Village App District",
+                            link: "/vappdistrict",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vapparea",
+                            label: "Village App Area",
+                            link: "/vapparea",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vappbranch",
+                            label: "Village App Branch",
+                            link: "/vappbranch",
+                            parentId: "village",
+                        },
+                        {
+                            id: "vapporganizationmember",
+                            label: "Organisation Member",
+                            link: "/vapporganizationmember",
+                            parentId: "village",
+                        },
+                       
+                    ]
+                },
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
 };

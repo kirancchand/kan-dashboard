@@ -83,6 +83,41 @@ import DeliveryPerson from "pages/Delivery/DeliveryPerson";
 import MyOrders from "pages/Delivery/MyOrders";
 import Map from "pages/Delivery/Map";
 
+import KanDashboard from "pages/KanDashboard";
+import UserAnalytics from "pages/UserAnalytics";
+
+import State from "pages/Admin/Division/State";
+import District from "pages/Admin/Division/District";
+import Region from "pages/Admin/Division/Region";
+import Area from "pages/Admin/Division/Area";
+import Branch from "pages/Admin/Division/Branch";
+import Sector from "pages/Admin/Division/Sector";
+import Unit from "pages/Admin/Division/Unit";
+
+import Menu from "pages/Admin/Menu/Management/Menu";
+import Role from "pages/Admin/Menu/Management/Role";
+import RoleMenu from "pages/Admin/Menu/Management/RoleMenu";
+
+import OrganisationType from "pages/Admin/Organisation/OrganisationType";
+import Organisation from "pages/Admin/Organisation/Organisation";
+import OrganisationMember from "pages/Admin/Organisation/OrganisationMemberIndex";
+
+//village
+import VillageApp from "../pages/VillageApp/VillageApp";
+import AppnameForm from "../pages/VillageApp/AppName/AppnameForm";
+import CarousalTable from "../pages/VillageApp/CarousalTable/CarousalTable";
+import EmergencyServices from "pages/VillageApp/EmergencyServices/EmergencyServices";
+import Users from "../pages/VillageApp/Users/Users";
+import Category from "../pages/VillageApp/Category/Category";
+import Organizations from "pages/VillageApp/Organizations/Organizations";
+import OrganizationMember from "pages/VillageApp/OrganizationMember/OrganizationMember";
+
+import Advertisement from "../pages/VillageApp/Advertisement/Advertisement";
+import VillageState from "../pages/VillageApp/State/State";
+import VillageDistrict from "../pages/VillageApp/District/District";
+import VillageArea from "../pages/VillageApp/Area/Area";
+import VillageBranch from "../pages/VillageApp/Branch/Branch";
+
 
 const authProtectedRoutes = [
   //Users Routes
@@ -125,6 +160,41 @@ const authProtectedRoutes = [
   { path: "/deliveryperson", component: <DeliveryPerson /> },
   { path: "/myorders", component: <MyOrders /> },
   { path: "/delivery-map", component: <Map /> },
+
+  //Elastic Search
+  { path: "/dashboard-user", component: <KanDashboard /> },
+  { path: "/dashboard-useranalytics", component: <UserAnalytics /> },
+
+  //Admin
+  { path: "/state", component: <State /> },
+  { path: "/district", component: <District /> },
+  { path: "/region", component: <Region /> },
+  { path: "/Area", component: <Area /> },
+  { path: "/Branch", component: <Branch /> },
+  { path: "/Sector", component: <Sector /> },
+  { path: "/Unit", component: <Unit /> },
+   
+  { path: "/Menu", component: <Menu /> },
+  { path: "/Role", component: <Role /> },
+  { path: "/RoleMenu", component: <RoleMenu /> },
+
+  { path: "/OrganisationType", component: <OrganisationType /> },
+  { path: "/Organisation", component: <Organisation /> },
+  { path: "/OrganisationMember", component: <OrganisationMember /> },
+
+  { path: "/vappname", component: <AppnameForm /> },
+  { path: "/vappcarousal", component: <CarousalTable /> },
+  { path: "/vappemergencyservices", component: <EmergencyServices /> },
+  { path: "/vappusers",component:<Users />},
+  { path: "/vappcategory",component:<Category />},
+  { path: "/vapporganizations", component:<Organizations />},
+  { path: "/vappadvertisement",component:<Advertisement />},
+  { path: "/vappstate",component:<VillageState />},
+  { path: "/vappdistrict",component:<VillageDistrict />},
+  { path: "/vapparea",component:<VillageArea/>},
+  { path: "/vappbranch",component:<VillageBranch />},
+  { path: "/vapporganizationmember",component:<OrganizationMember />},
+
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },
