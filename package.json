@@ -45,6 +45,7 @@
     "gridjs-react": "^6.0.1",
     "i18next": "^23.7.8",
     "i18next-browser-languagedetector": "^7.2.0",
+    "leaflet": "^1.9.4",
     "lodash": "^4.17.23",
     "lucide-react": "^0.540.0",
     "moment": "^2.29.4",
@@ -64,6 +65,7 @@
     "react-filepond": "^7.1.2",
     "react-flatpickr": "^3.10.13",
     "react-i18next": "^13.5.0",
+    "react-leaflet": "^4.2.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-redux": "^9.0.2",
     "react-router-dom": "^6.20.1",
@@ -87,11 +89,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-"eslintConfig": {
-  "extends": [],
-  "rules": {}
-}
-,
+  "eslintConfig": {
+    "extends": [],
+    "rules": {}
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -108,6 +109,7 @@
     "autoprefixer": "10.4.5"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/lodash": "^4.17.23"
   }
 }
