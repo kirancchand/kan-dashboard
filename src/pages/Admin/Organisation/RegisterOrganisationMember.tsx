@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import UserList from './UserList';
 import { TableContainer } from "../../../Responsive Table/TableContainerReactTable";
 import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
@@ -146,6 +147,7 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
 
 
     const [loading, setLoading] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
 
       async function addNewOrganisation(data:any) {
           console.log('data', data);
@@ -237,6 +239,12 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
                 </CardHeader>
     
                 <CardBody>
+                     <UserList 
+
+  setSelectedUser={setSelectedUser} 
+  areaOptions={areaData} 
+  branchOptions={branchData} 
+/>
                     {successMsg && <Alert color="success">{successMsg}</Alert>}
     
                     <Form onSubmit={formik.handleSubmit}>
