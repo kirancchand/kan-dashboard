@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
-import { BASE_URL, ADMIN_URL, MASTER_API, PLANT_API_URL } from "./constants";
+import { BASE_URL, ADMIN_URL, MASTER_API, PLANT_API_URL,ELASTIC_URL } from "./constants";
 
 
 export const STATE_API = `${MASTER_API}/state`;
@@ -45,9 +45,14 @@ export const refresh_token_request = BASE_URL + '/auth/refresh-accesstoken';
 export const userinfo_request = BASE_URL + '/auth/user-info'
 //admin API's
 export const GET_USER_LIST = ADMIN_URL + "/master/users/listUser"
+export const LISTELASTICUSER=ELASTIC_URL+"/user/search_byFilter"
+export const LISTELASTICUSERDATA=ELASTIC_URL+"/user/search_byFilterData"
 export const GET_MENU_LIST = ADMIN_URL + "/master/menu/listMenu"
 export const GET_ROLE_LIST = ADMIN_URL + "/master/role/listRole"
 export const GET_ROLE_MENU_LIST = ADMIN_URL + "/master/rolemenu/listRoleMenu"
+export const GET_MENU_BY_ROLE_ID = ADMIN_URL + "/master/rolemenu/getmenu_byrole_id"
+export const UPDATE_ROLEMENU = ADMIN_URL + "/master/rolemenu/update_rolemenu"
+
 export const addRole = `${ROLE_API}/add`;
 export const addRoleMenu = `${ROLEMENU_API}/add`;
 
@@ -60,6 +65,10 @@ export const GET_ORGANISATION_LIST = ADMIN_URL + "/master/organisation/listOrgan
 export const ADD_ORGANISATION = ADMIN_URL + "/master/organisation/add"
 export const DELETE_ORGANISATION = ADMIN_URL + "/master/organisation/delete"
 export const UPDATE_ORGANISATION = ADMIN_URL + "/master/organisation/update"
+
+export const ADD_ORGANISATION_MEMBER = ADMIN_URL + "/master/organisationmember/add"
+export const GET_ORGANISATION_MEMBER_LIST = ADMIN_URL + "/master/organisationmember/listOrganisationMember"
+export const DELETE_ORGANISATION_MEMBER = ADMIN_URL + "/master/organisationmember/delete"
 
 // User API's
 export const update_user_url = "/users/:id"

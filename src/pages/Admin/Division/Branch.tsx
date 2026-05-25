@@ -170,19 +170,6 @@ const Branch = () => {
       // })
     }
   
-  const [branchOptions] = useState([
-    { id: "1", name: "Palode" },
-    { id: "2", name: "Mokeri" },
-    { id: "3", name: "Kanyakumari" },
-  ]);
-
-  const handleTableChange = ({
-    page,
-    sizePerPage,
-  }: any) => {
-    setPage(page);
-    setSizePerPage(sizePerPage);
-  };
 
   async function deleteBranch(branch_id:any) {
          setLoading(true);
@@ -331,88 +318,6 @@ const Branch = () => {
         deleteBranch(branch_id)
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        header: "Sl No",
-        enableColumnFilter: false,
-        cell: (cell: any) =>
-          cell.row.index + 1,
-      },
-
-      {
-        header: "Area",
-        enableColumnFilter: false,
-        accessorKey: "area",
-      },
-
-      {
-        header: "Branch",
-        enableColumnFilter: false,
-        accessorKey: "branch",
-      },
-
-      {
-        header: "Geo Area",
-        enableColumnFilter: false,
-        cell: (cell: any) => {
-          const file =
-            cell.row.original.geoarea;
-
-          return file ? (
-            <a
-              href={URL.createObjectURL(file)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View File
-            </a>
-          ) : null;
-        },
-      },
-
-      {
-        header: "Add All Branch",
-        cell: (cell: any) =>
-          cell.row.original.addAllBranch
-            ? "Yes"
-            : "No",
-      },
-
-      {
-        header: "Actions",
-        enableColumnFilter: false,
-        cell: (cell: any) => {
-          const row = cell.row.original;
-
-          return (
-            <div className="d-flex gap-2">
-              <Button
-                size="sm"
-                color="soft-warning"
-                onClick={() =>
-                  handleEdit(row)
-                }
-              >
-                Edit
-              </Button>
-
-              <Button
-                size="sm"
-                color="soft-danger"
-                onClick={() =>
-                  handleDelete(row.id)
-                }
-              >
-                Delete
-              </Button>
-            </div>
-          );
-        },
-      },
-    ],
-    [data]
-  );
 
   return (
     <div className="page-content">

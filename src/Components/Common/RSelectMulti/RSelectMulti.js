@@ -17,11 +17,12 @@ function RSelectMulti(props) {
     }),
   }
   const style1 = {
-    // control: (base, state) => ({
-    //   ...base,
+    control: (base, state) => ({
+      ...base,
+      color:'#fff',
     //  height:35,
     //  minHeight:35
-    // }),
+    }),
     menu: provided => ({ ...provided, zIndex: 9999 })
   }
   

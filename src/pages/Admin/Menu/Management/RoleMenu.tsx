@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect,useRef } from 'react'
 import { TableContainer } from "../../../../Responsive Table/TableContainerReactTable";
 import { SortTanstackInterface } from '../../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
 import { SortInterface } from '../../../../Typecomponents/ComponentsType';
 // import AddUserModal from '../../AddUserModal';
-import { http, GET_ROLE_MENU_LIST, addRoleMenu } from '../../../../http/http';
+import { http, GET_ROLE_MENU_LIST, addRoleMenu,GET_MENU_BY_ROLE_ID,UPDATE_ROLEMENU } from '../../../../http/http';
 import md from '../../../../http/masterData';
 import { toast } from 'react-toastify';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
@@ -26,6 +26,7 @@ import {
 } from 'reactstrap';
 import RSelect from '../../../../Components/Common/RSelect/RSelect';
 import RSelectMulti from '../../../../Components/Common/RSelectMulti/RSelectMulti';
+import { co } from '@fullcalendar/core/internal-common';
 interface DataItem {
     role_id: number;
     role: string;
@@ -37,46 +38,60 @@ interface DataItem {
 const RoleMenu = () => {
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState<SortTanstackInterface[]>([]);
-    const [selectedUser, setSelectedUser] = useState<any | null>(null);
-    const [mode, setMode] = useState("");
-    const [modal, setModal] = useState(false);
-
     const [loading,setLoading]=useState(false);
-    const [roleData,setRoleData]=useState([{value:1,label:"role 1"}]);
-    const [menuData,setMenuData]=useState([{value:1,label:"menu 1"},{value:2,label:"menu 2"}]);
+    const [roleData,setRoleData]=useState([]);
+    const [menuData,setMenuData]=useState([]);
     const [roleLoading,setRoleLoading]=useState(false);
     const [menuLoading,setMenuLoading]=useState(false);
+    const [editData,setEditData]=useState<any>([]);
+    const formRef = useRef<any>(null);
 
-      useEffect(()=>{
-        async function getRole() {
-          setRoleLoading(true);
-          md('getAll_Role')
-            .then((r) => {
-              setRoleData(r);
-              setRoleLoading(false);
-            }).catch((error) => {
-              toast(error, { position: 'top-right', type: 'error' });
-              setRoleLoading(false);
-            });
-        }
-    
-        async function getMenu() {
-          setMenuLoading(true);
-          md('getAll_Menu')
-            .then((r) => {
-              setMenuData(r);
-              setMenuLoading(false);
-            }).catch((error) => {
-              toast(error, { position: 'top-right', type: 'error' });
-              setMenuLoading(false);
-            });
-        }
-    
-        getRole()
-        getMenu()
-      },[])
 
-let initialValue={
+    useEffect(()=>{
+    async function getRole() {
+        setRoleLoading(true);
+        md('getAll_Role')
+        .then((r) => {
+            setRoleData(r);
+            setRoleLoading(false);
+        }).catch((error) => {
+            toast(error, { position: 'top-right', type: 'error' });
+            setRoleLoading(false);
+        });
+    }
+
+    async function getMenu() {
+        setMenuLoading(true);
+        md('getAll_Menu')
+        .then((r) => {
+            setMenuData(r);
+            setMenuLoading(false);
+        }).catch((error) => {
+            toast(error, { position: 'top-right', type: 'error' });
+            setMenuLoading(false);
+        });
+    }
+
+    getRole()
+    getMenu()
+    },[])
+
+    useEffect(()=>{
+        if(editData.length>0){  
+            console.log("editData",editData)
+            console.log("roleData",roleData)
+            console.log("menuData",menuData)
+            console.log("role_id",roleData.find((r: any) => r.value === editData[0].f_role_id.toString()))
+            formRef.current.setFieldValue("role", roleData.find((r: any) => r.value === editData[0].f_role_id.toString()))
+            let menu=editData.map((item:any)=>{
+                console.log("item",item)
+                return menuData.find((m: any) => m.value === item.f_menu_id.toString())
+            })
+            formRef.current.setFieldValue("menu", menu) 
+        }
+    },[editData])
+
+  let initialValue={
     role:null,
     menu:[]
   }
@@ -87,8 +102,33 @@ let initialValue={
   const menuFunc=(value:any,setFieldValue:any)=>{
     setFieldValue("menu",value)
   }
+console.log("roleData",roleData)
+async function getRoleMenu(role_id:any) {
+        setLoading(true);
+        await http({
+            method: 'GET',
+            url: GET_MENU_BY_ROLE_ID+'/'+role_id
+        })
+            .then(function(response) {
+            if (response.status === 200) {
+                setEditData(response.data.data);
+            } else {
+                toast('Failed to Get Data', {
+                position: 'top-right',
+                type: 'error',
+                });
+            }
+            setLoading(false);
+            })
+            .catch(err => {
+            toast(err, { position: 'top-right', type: 'error' });
+            setLoading(false);
+            });
+        }
 
-
+  const handleUpdate=(row:any)=>{
+    getRoleMenu(row.role_id)
+  }
 
     const serialNo = (celldata: any) => {
         return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.id) + 1)}</span>
@@ -103,6 +143,12 @@ let initialValue={
             enableColumnFilter: false,
             cell: (cell: any) => serialNo(cell),
         }, 
+         {
+            id: "Role Name",
+            header: "Role Name",
+            accessorKey: "role",
+            enableColumnFilter: false,
+        },
         {
             id: "Menu Name",
             header: "Menu Name",
@@ -110,11 +156,30 @@ let initialValue={
             enableColumnFilter: false,
         },
         {
-            id: "Role Name",
-            header: "Role Name",
-            accessorKey: "role",
-            enableColumnFilter: false,
-        },
+            header: "Actions",
+            cell: (cell: any) => {
+    
+                const row = cell.row.original;
+    
+                return (
+                
+            <div className="d-flex gap-2">
+                    <Button
+                    size="sm"
+                    color="soft-danger"
+                    onClick={() =>
+                        handleUpdate(row)
+                    }
+                    >
+                    Edit
+                    </Button>
+    
+                </div>
+                
+                );
+            },
+            },
+       
 
     ], [])
 
@@ -189,8 +254,39 @@ let initialValue={
             });
     }
 
+    async function updateRoleMenu(data:any) {
+        console.log("data",data)
+        setLoading(true)
+        await http({
+            method: 'POST',
+            url: UPDATE_ROLEMENU,
+            data,
+        }).then(function (response) {
+            if (response.status === 200) {
+                console.log(response.data)
+                toast(response.data.message, { position: 'top-right', type: 'success' });
+                fetchData(initialRequest);
+            } else {
+                toast("Failed to Add State", { position: 'top-right', type: 'error' });
+            };
+                 setLoading(false)
+            })
+            .catch(err => {
+                toast(err, { position: 'top-right', type: 'error' });
+                setLoading(false)
+            });
+    }
+
+    
+
+
     const handleSubmit=(values:any,{resetForm}:any)=>{
-        addNewRoleMenu(values)
+        if(editData.length>0){
+            updateRoleMenu(values)
+        } else{
+            addNewRoleMenu(values)
+        }
+
         resetForm()
     }
 
@@ -207,6 +303,7 @@ let initialValue={
                                 initialValues={initialValue}
                                 //  validationSchema={firContentValidateSchema}
                                 onSubmit={handleSubmit}
+                                innerRef={formRef}
                             >
                             {({
                             errors,
@@ -258,7 +355,7 @@ let initialValue={
                                         </FormGroup>
                                     </Col>
                                     <Col md="2">
-                                        <Button type="submit" color="primary">Save</Button>
+                                        <Button type="submit" color="primary">{editData.length>0?"Update":"Save"}</Button>
                                     </Col>
                                     </Row>
                             </Form>

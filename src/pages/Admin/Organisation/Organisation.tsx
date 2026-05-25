@@ -303,7 +303,7 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
                                 setRespValue({
                                     nav:"OrganisationMember",
                                     mode:"",
-                                    data:null,
+                                    data:row,
                                     origin:"OrganisationMember",
                                     title:"Organisation Member"
                                     })
@@ -651,7 +651,7 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
                             tableClass="table-centered align-middle table-nowrap mb-0"
                             theadClass="text-muted table-light"
                             SearchPlaceholder='Search Users...'
-                            isGlobalFilter={true}
+                            isGlobalFilter={false}
                             page={page}
                             sorting={sorting}
                             setSorting={setSorting}
