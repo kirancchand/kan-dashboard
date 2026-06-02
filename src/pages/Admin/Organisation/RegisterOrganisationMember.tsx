@@ -77,7 +77,7 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
     const [userLoading,setUserLoading]=useState(false);
     const [selectedUser, setSelectedUser] = useState<any>([]);
     const [showModal, setShowModal] = useState(false);
-    
+    const [loading, setLoading] = useState(false);
     const toggle = () => {
         setShowModal(!showModal);
         if (showModal) {
@@ -122,7 +122,7 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
 
 
 
-    const [loading, setLoading] = useState(false);
+  
 
 
 

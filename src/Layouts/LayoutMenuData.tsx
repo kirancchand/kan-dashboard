@@ -608,27 +608,9 @@ const Navdata = () => {
                             parentId: "village",
                         },
                         {
-                            id: "vappemergencyservices",
-                            label: "Village App Emergency Service",
-                            link: "/vappemergencyservices",
-                            parentId: "village",
-                        },
-                        {
                             id: "vappusers",
                             label: "Village App Users",
                             link: "/vappusers",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vappcategory",
-                            label: "Village App Category",
-                            link: "/vappcategory",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vapporganizations",
-                            label: "Village App Organisations",
-                            link: "/vapporganizations",
                             parentId: "village",
                         },
                         {
@@ -638,35 +620,11 @@ const Navdata = () => {
                             parentId: "village",
                         },
                         {
-                            id: "vappstate",
-                            label: "Village App State",
-                            link: "/vappstate",
+                            id: "vapporganizations",
+                            label: "Village App Organisations",
+                            link: "/vapporganizations",
                             parentId: "village",
-                        },
-                        {
-                            id: "vappdistrict",
-                            label: "Village App District",
-                            link: "/vappdistrict",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vapparea",
-                            label: "Village App Area",
-                            link: "/vapparea",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vappbranch",
-                            label: "Village App Branch",
-                            link: "/vappbranch",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vapporganizationmember",
-                            label: "Organisation Member",
-                            link: "/vapporganizationmember",
-                            parentId: "village",
-                        },
+                        }
                        
                     ]
                 },

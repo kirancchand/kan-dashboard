@@ -1,6 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
-import { BASE_URL, ADMIN_URL, MASTER_API, PLANT_API_URL,ELASTIC_URL } from "./constants";
+import { BASE_URL, ADMIN_URL, MASTER_API, PLANT_API_URL,ELASTIC_URL,VILLAGE_URL } from "./constants";
 
 
 export const STATE_API = `${MASTER_API}/state`;
@@ -81,6 +81,13 @@ export const category_url = PLANT_API_URL+"/api/categories/"
 export const transcation_url = PLANT_API_URL+"/api/transactions/"
 export const carousel_url = PLANT_API_URL+"/api/carousels/"
 export const review_url = PLANT_API_URL+"/api/reviews/"
+
+//Village API's
+export const ADD_VILLAGE_APP = VILLAGE_URL + "/api/villageapps" //GET AND POST FOR ADD AND GET ALL VILLAGE APP
+export const ADD_VILLAGE_ORGANIZATION = VILLAGE_URL + "/api/organisations"
+export const ADD_VILLAGE_ADVERTISEMENT = VILLAGE_URL + "/api/advertisements"
+export const ADD_VILLAGE_USERS = VILLAGE_URL + "/api/users"
+
 
 export const http = axios.create({})
 

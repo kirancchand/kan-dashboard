@@ -245,6 +245,9 @@ export interface TableContainerProps {
     useExpand?:boolean;
     expandedRowIds?: any;
     renderExpandedRow?: any;
+    rowSelection?: Record<string, boolean>;
+    setRowSelection?: (val: any) => void;
+    rowIdKey?: string;
 }
 
 export interface SortInterface {

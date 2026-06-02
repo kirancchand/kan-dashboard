@@ -45,6 +45,9 @@ export function TableContainer({
   useExpand,
   expandedRowIds,
   renderExpandedRow,
+  rowSelection,
+  setRowSelection,
+  rowIdKey
 }: TableContainerProps) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -72,7 +75,8 @@ export function TableContainer({
       columnFilters,
       globalFilter,
       pagination,
-      sorting
+      sorting,
+      rowSelection: rowSelection ?? {},
     },
     rowCount: totalCount,
     manualPagination: true,
@@ -86,10 +90,12 @@ export function TableContainer({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     // getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row.id,
+    // getRowId: (row) => row.id,
+    getRowId: (row) => rowIdKey ? String(row[rowIdKey]) : String(row.id ?? Math.random()),
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableColumnFilters: true,
+    onRowSelectionChange: setRowSelection,
     
   });
 

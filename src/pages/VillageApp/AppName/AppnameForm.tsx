@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState,useEffect, Fragment } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -20,30 +20,32 @@ import {
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { TableContainer } from '../../../common/AnalyticsTable/TableContainerReactTable';
-import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
-
-
+import TableFilterDropdown from '../../../common/AnalyticsTable/TableFilterDropdown';
+import { SortTanstackInterface,SortInterface } from '../../../Typecomponents/ComponentsType';
+import { http } from '../../../http/http';
+import { ADD_VILLAGE_NAME,GET_VILLAGE_NAME } from '../Api';
+import { toast } from 'react-toastify';
 interface AppnameRow {
   id: number;
-  name: string;
-  description: string;
-  about: string;
+  villageapp_name: string;
+  villageapp_desc: string;
+  villageapp_about: string;
 }
 
 const AppnameFormSchema = Yup.object().shape({
   
 
-  name: Yup.string()
+  villageapp_name: Yup.string()
     .min(3, 'Name must be at least 3 characters')
     .max(60, 'Name must not exceed 60 characters')
     .required('Name is required'),
 
-  description: Yup.string()
+  villageapp_desc: Yup.string()
     .min(10, 'Description must be at least 10 characters')
     .max(200, 'Description must not exceed 200 characters')
     .required('Description is required'),
 
-  about: Yup.string()
+  villageapp_about: Yup.string()
     .max(500, 'About must not exceed 500 characters')
     .optional(),
 });
@@ -59,53 +61,78 @@ const AppnameForm = () => {
   const [page, setPage] = useState(1);
   const [sizePerPage, setSizePerPage] = useState(3);
   const [sorting, setSorting] = useState<SortTanstackInterface[]>([]);
-  
+  const [loading, setLoading] = useState(false);
+
+  const [totalCount, setTotalCount] = useState(0);
+  const [data, setData] = useState<[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterName, setFilterName] = useState("");
+  const [tempName, setTempName] = useState("");
+  let sort: SortInterface[] = [];
+    
+      
  
-  
+  let initialRequest = {
+      "start": 0,
+      "sort": [],
+      "numberOfRows": 10,
+      "filters": []
+  }
+  async function saveVillageName(data:any) {
+      setLoading(true);
+      await http({
+        method: 'POST',
+        url: ADD_VILLAGE_NAME,
+        data,
+      }).then(function(response) {
+          if (response.status === 200) {
+            formik.resetForm();
+            toast(response.data.message, { position: 'top-right',type: 'success' });
+            setShowForm(false);
+            fetchData(initialRequest);
+
+          } else {
+            toast('Failed to Add village', {position: 'top-right',type: 'error'});
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
   
 
   const formik = useFormik<AppnameRow>({
     initialValues: {
-  id: 0,   // instead of ''
-  name: '',
-  description: '',
-  about: '',
-},
-
+      id: 0, 
+      villageapp_name: '',
+      villageapp_desc: '',
+      villageapp_about: '',
+    },
     validationSchema: AppnameFormSchema,
-
     onSubmit: async (values, { resetForm, setSubmitting }) => {
-  setApiError(null);
-  setSuccessMsg(null);
+      setApiError(null);
+      setSuccessMsg(null);
 
-  try {
-    if (editId) {
-      const updated = tableData.map((item) =>
-        item.id === editId ? { ...values, id: editId } : item
-      );
+      try {
+          if (editId) {
+                const updated = tableData.map((item) =>
+                  item.id === editId ? { ...values, id: editId } : item
+                );
+                setTableData(updated);
+                setEditId(null);
+            } else {
+              saveVillageName(values);
+            }
+        
 
-      setTableData(updated);
-      setEditId(null);
-    } else {
-      const newEntry: AppnameRow = {
-  ...values,
-  id:
-    tableData.length > 0
-      ? Math.max(...tableData.map((item) => item.id)) + 1
-      : 1,
-};
-
-      setTableData([...tableData, newEntry]);
+      } catch (error) {
+        setApiError('Something went wrong');
+      } finally {
+        setSubmitting(false);
+      }
     }
-    
-    resetForm();
-    setShowForm(false);
-  } catch (error) {
-    setApiError('Something went wrong');
-  } finally {
-    setSubmitting(false);
-  }
-}
   });
 
  const handleEdit = (id: number) => {
@@ -114,12 +141,12 @@ const AppnameForm = () => {
 
   setEditId(id);
 
-  formik.setValues({
-    id: selected.id,
-    name: selected.name,
-    description: selected.description,
-    about: selected.about,
-  });
+  // formik.setValues({
+  //   id: selected.id,
+  //   villageapp_name: selected.villageapp_name,
+  //   villageapp_desc: selected.villageapp_desc,
+  //   villageapp_about: selected.villageapp_about,
+  // });
 
   setShowForm(true);
 };
@@ -129,10 +156,7 @@ const AppnameForm = () => {
   setTableData(filtered);
 };
 
-  const handleTableChange = ({ page, sizePerPage }: any) => {
-    setPage(page+1);
-    setSizePerPage(sizePerPage);
-  };
+
 
   const columns = useMemo(
     () => [
@@ -144,17 +168,17 @@ const AppnameForm = () => {
       
       {
         header: 'Name',
-        accessorKey: 'name',
+        accessorKey: 'villageapp_name',
         enableColumnFilter: false,
       },
       {
         header: 'Description',
-        accessorKey: 'description',
+        accessorKey: 'villageapp_desc',
          enableColumnFilter: false,
       },
       {
         header: 'About',
-        accessorKey: 'about',
+        accessorKey: 'villageapp_about',
          enableColumnFilter: false,
       },
       {
@@ -188,11 +212,42 @@ const AppnameForm = () => {
     ],
     [page, sizePerPage, tableData]
   );
-  const paginatedData = useMemo(() => {
-  const start = (page - 1) * sizePerPage;
-  const end = start + sizePerPage;
-  return tableData.slice(start, end);
-}, [tableData, page, sizePerPage]);
+
+      const fetchData = async (requestdata: any) => {
+          const { start, numberOfRows } = requestdata;
+          try {
+              const response = await http.post(GET_VILLAGE_NAME, requestdata);
+              if (response.data) {
+                  setData(response.data.result);
+                  setTotalCount(response.data.totalCount);
+              }
+          } catch (error) {
+              console.error("Error fetching analytics data:", error);
+          }
+      };
+  
+      useEffect(() => {
+          fetchData(initialRequest);
+      }, []);
+  
+      const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
+          setPage(pages)
+          setSizePerPage(sizePerPages)
+          if (sortField !== "" && sortOrder !== "") {
+              sort = [{
+                  "columnName": sortField,
+                  "sortOrder": sortOrder
+              }]
+          }
+          fetchData({
+              "start": (pages - 1) * sizePerPages,
+              "sort": sort,
+              "numberOfRows": sizePerPages,
+              "filters": []
+          });
+          console.log("page", page)
+      }
+
 
   return (
     <div className="page-content">
@@ -256,18 +311,18 @@ const AppnameForm = () => {
                           <Label>App Name</Label>
 
                           <Input
-                            name="name"
-                            value={formik.values.name}
+                            name="villageapp_name"
+                            value={formik.values.villageapp_name}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={
-                              !!formik.errors.name &&
-                              !!formik.touched.name
+                              !!formik.errors.villageapp_name &&
+                              !!formik.touched.villageapp_name
                             }
                           />
 
                           <FormFeedback>
-                            {formik.errors.name}
+                            {formik.errors.villageapp_name}
                           </FormFeedback>
                         </FormGroup>
                       </Col>
@@ -281,18 +336,18 @@ const AppnameForm = () => {
                           <Input
                             type="textarea"
                             rows={3}
-                            name="description"
-                            value={formik.values.description}
+                            name="villageapp_desc"
+                            value={formik.values.villageapp_desc}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             invalid={
-                              !!formik.errors.description &&
-                              !!formik.touched.description
+                              !!formik.errors.villageapp_desc &&
+                              !!formik.touched.villageapp_desc
                             }
                           />
 
                           <FormFeedback>
-                            {formik.errors.description}
+                            {formik.errors.villageapp_desc}
                           </FormFeedback>
                         </FormGroup>
                       </Col>
@@ -306,8 +361,8 @@ const AppnameForm = () => {
                           <Input
                             type="textarea"
                             rows={4}
-                            name="about"
-                            value={formik.values.about}
+                            name="villageapp_about"
+                            value={formik.values.villageapp_about}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                           />
@@ -345,32 +400,61 @@ const AppnameForm = () => {
                   <h4 className="card-title mb-0">
                     Appnames
                   </h4>
+                   <div className="d-flex gap-2">
 
-                  <Button
-                    color="soft-success"
-                    size="sm"
-                    onClick={() => {
-                      formik.resetForm();
-                      setEditId(null);
-                      setShowForm(true);
-                    }}
-                  >
-                    + Add New
-                  </Button>
+                      <TableFilterDropdown
+                        isOpen={filterOpen}
+                        toggle={() => setFilterOpen(!filterOpen)}
+                        fields={[
+                          {
+                            label: "App Name",
+                            value: tempName,
+                            onChange: setTempName,
+                            placeholder: "Search Name",
+                          },
+                        ]}
+                        onClear={() => {
+                          setTempName("");
+                          setFilterName("");
+                        }}
+                        onApply={() => {
+                          setFilterName(tempName);
+                          setFilterOpen(false);
+                        }}
+                      />
+
+                    <Button
+                      color="soft-success"
+                      size="sm"
+                      onClick={() => {
+                        formik.resetForm();
+                        setEditId(null);
+                        setShowForm(true);
+                      }}
+                    >
+                      + Add New
+                    </Button>
+                    </div>
                 </CardHeader>
 
                 <CardBody>
-                  <TableContainer
-                    columns={columns}
-                    data={paginatedData}
-                    customPageSize={sizePerPage}
-                    page={page}
-                    sizePerPage={sizePerPage}
-                    totalCount={tableData.length}
-                    handleTableChange={handleTableChange}
-                    sorting={sorting}
-                    setSorting={setSorting}
-                  />
+                    {!loading?<TableContainer
+                              columns={(columns || [])}
+                              data={(data || [])}
+                              customPageSize={sizePerPage}
+                              tableClass="table-centered align-middle table-nowrap mb-0"
+                              theadClass="text-muted table-light"
+                              SearchPlaceholder='Search Users...'
+                              isGlobalFilter={false}
+                              page={page}
+                              sorting={sorting}
+                              setSorting={setSorting}
+                              sizePerPage={sizePerPage}
+                              clickable={false}
+                              totalCount={totalCount}
+                              handleTableChange={handleTableChange}
+                              loading={loading}
+                          />:"Loading..."}
                 </CardBody>
 
               </Card>

@@ -10,6 +10,7 @@ export const DEV_URL = 'http://localhost:5000'
 export const ADMIN_URL = "http://localhost:8070"
 export const PLANT_API_URL = 'http://localhost:5000'
 export const ELASTIC_URL = 'http://localhost:9201'
+export const VILLAGE_URL = 'http://localhost:5001'
 
 export const GET_MASTER_DATA = ADMIN_URL + '/keyValue';
 export const MASTER_API = ADMIN_URL + '/master';
