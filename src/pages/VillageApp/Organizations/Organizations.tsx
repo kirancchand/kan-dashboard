@@ -24,11 +24,13 @@ import OrganisationList from './OrganisationList';
 import {House} from 'lucide-react';
 import RSelect from 'Components/Common/RSelect/RSelect';
 import { toast } from 'react-toastify';
-import { ADD_VILLAGE_ORGANISATION,GET_VILLAGE_ORGANISATION, MD_URL } from '../Api';
+import { ADD_VILLAGE_ORGANISATION,DELETE_VILLAGE_ORGANISATION,GET_VILLAGE_ORGANISATION, MD_URL, UPDATE_VILLAGE_ORGANISATION } from '../Api';
 import mdurl from '../../../http/masterDataURL';
 import { http } from 'http/http';
+import { update } from 'lodash';
+import row from 'gridjs/dist/src/row';
 interface OrgRow {
-  organisation_id: number;
+  villageorganisation_id: number;
   organisation_name: string;
   f_organisation_id: string;
   f_villageapp_id: number;
@@ -163,9 +165,40 @@ const Organizations = () => {
           });
       }
 
+  
+    async function updateOrganisation(data:any) {
+        console.log('data', data);
+        setLoading(true);
+        await http({
+          method: 'POST',
+          url: UPDATE_VILLAGE_ORGANISATION,
+          data,
+        })
+          .then(function(response) {
+            if (response.status === 200) {
+              console.log(response.data);
+              fetchData(initialRequest)
+              toast(response.data.message, {
+                position: 'top-right',
+                type: 'success',
+              });
+            } else {
+              toast('Failed to Add State', {
+                position: 'top-right',
+                type: 'error',
+              });
+            }
+            setLoading(false);
+          })
+          .catch(err => {
+            toast(err, { position: 'top-right', type: 'error' });
+            setLoading(false);
+          });
+      }
+
   const formik = useFormik<OrgRow>({
     initialValues: {
-      organisation_id: 0,
+      villageorganisation_id: 0,
       organisation_name: '',
       f_organisation_id: '',
       f_villageapp_id: 0,
@@ -178,9 +211,7 @@ const Organizations = () => {
 
     onSubmit: (values, { resetForm }) => {
       if (editId) {
-        setData(data.map(d => d.organisation_id === editId ? { ...values, organisation_id: editId } : d));
-        setEditId(null);
-       // setSuccessMsg("Updated successfully");
+        updateOrganisation(values)
       } else {
         addOrganisation(values)
       }
@@ -190,22 +221,64 @@ const Organizations = () => {
     }
   });
 
-  const handleEdit = (row: OrgRow) => {
-    setEditId(row.organisation_id);
-    formik.setValues(row);
+
+    async function deleteUsers(data:any) {
+      console.log('data', data);
+      setLoading(true);
+      await http({
+      method: 'POST',
+      url: DELETE_VILLAGE_ORGANISATION,
+      data,
+      })
+      .then(function(response) {
+          if (response.status === 200) {
+          toast(response.data.message, {
+              position: 'top-right',
+              type: 'success',
+          });
+          fetchData(initialRequest)
+          } else {
+          toast('Failed to Delete Users', {
+              position: 'top-right',
+              type: 'error',
+          });
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
+    
+    const handleEdit = (row: any) => {
+    console.log(row)
+    setEditId(row.villageorganisation_id);
+    formik.setFieldValue("villageorganisation_id", row.villageorganisation_id);
+    formik.setFieldValue("organisation_name", row.organisation_name);
+    formik.setFieldValue("f_organisation_id", row.f_organisation_id);
+    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
+    formik.setFieldValue("isemergency", row.isemergency);
+    formik.setFieldValue("priority", row.priority);
+    formik.setFieldValue("contact", row.contact);
+    formik.setFieldValue("owner", row.owner);
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    setData(data.filter(d => d.organisation_id !== id));
+  const handleDelete = (row: any) => {
+     deleteUsers({villageorganisation_id: row.villageorganisation_id})
   };
+
+    const serialNo = (celldata: any) => {
+        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.index) + 1)}</span>
+    }
 
   const columns = useMemo(
     () => [
       {
         header: 'Sl No',
         enableColumnFilter: false,
-        cell: (cell: any) => cell.row.index + 1,
+        cell: (cell: any) => serialNo(cell),
       },
       {
         header: 'Name',
@@ -241,7 +314,7 @@ const Organizations = () => {
               <Button size="sm" color="warning" onClick={() => handleEdit(row)}>
                 Edit
               </Button>
-              <Button size="sm" color="danger" onClick={() => handleDelete(row.id)}>
+              <Button size="sm" color="danger" onClick={() => handleDelete(row)}>
                 Delete
               </Button>
             </div>

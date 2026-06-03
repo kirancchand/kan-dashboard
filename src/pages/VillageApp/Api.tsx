@@ -11,6 +11,8 @@ export const GET_ORGANISATION_LIST = ADMIN_URL + "/master/organisation/listOrgan
 
 export const ADD_VILLAGE_ORGANISATION = VILLAGE_URL + "/api/organisations"
 export const GET_VILLAGE_ORGANISATION = VILLAGE_URL + "/api/organisations/list"
+export const UPDATE_VILLAGE_ORGANISATION = VILLAGE_URL + "/api/organisations/update"
+export const DELETE_VILLAGE_ORGANISATION = VILLAGE_URL + "/api/organisations/delete"
 
 export const ADD_VILLAGE_ADVERTISEMENT = VILLAGE_URL + "/api/advertisements"
 export const GET_VILLAGE_ADVERTISEMENT = VILLAGE_URL + "/api/advertisements/list"

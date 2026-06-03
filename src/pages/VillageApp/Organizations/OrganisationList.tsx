@@ -203,7 +203,7 @@ const OrganisationList = ({returnFunc,formik_values}:any) => {
 
 
     const serialNo = (celldata: any) => {
-        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.id) + 1)}</span>
+        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.index) + 1)}</span>
     }
 
 

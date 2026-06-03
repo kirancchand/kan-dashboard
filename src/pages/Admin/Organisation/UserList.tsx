@@ -62,6 +62,8 @@ const UserList = ({returnFunc,formik_values}:any) => {
     const [branchData, setBranchData] = useState([]);
 
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
+    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+    const [totalCount, setTotalCount] = useState(0);
 
      useEffect(()=>{
        async function getState() {
@@ -203,7 +205,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
 
     const serialNo = (celldata: any) => {
-        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.id) + 1)}</span>
+        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.index) + 1)}</span>
     }
 
 
@@ -220,13 +222,73 @@ const UserList = ({returnFunc,formik_values}:any) => {
         return <span>{celldata.row.original.status?.label}</span>
     }
 
+    useEffect(() => {
+      if (!data.length) return;
+      const restoredSelection: Record<string, boolean> = {};
+      data.forEach((row: any) => {
+        const alreadySelected = selectedRows.some((r) => r.SerialNo === row.SerialNo);
+        if (alreadySelected) {
+          restoredSelection[String(row.SerialNo)] = true;
+        }
+      });
+      setRowSelection(restoredSelection);
+    }, [data]); // ← triggers on every page change since data updates
 
-  function handleSelectCheckboxRow(row:any,event: React.ChangeEvent<HTMLInputElement>){
-    console.log("celldata",row)
-    setSelectedRows([...selectedRows,row.original])
-    // row.getToggleSelectedHandler()
-    row.getToggleSelectedHandler()(event);
-  }
+
+    function handleSelectAllCheckboxRow(table: any, event: React.ChangeEvent<HTMLInputElement>) {
+      const allRows = table.getRowModel().rows;
+      const allData = allRows.map((row: any) => row.original);
+      const isAllSelected = table.getIsAllRowsSelected();
+    
+      if (isAllSelected) {
+        // Remove only current page rows from selectedRows
+        const currentPageIds = new Set(allData.map((r: any) => String(r.SerialNo)));
+        setSelectedRows((prev) => prev.filter((r) => !currentPageIds.has(String(r.SerialNo))));
+        setRowSelection({});
+      } else {
+        // Add current page rows (no duplicates)
+        setSelectedRows((prev) => {
+          const existingIds = new Set(prev.map((r) => String(r.SerialNo)));
+          const newRows = allData.filter((r: any) => !existingIds.has(String(r.SerialNo)));
+          return [...prev, ...newRows];
+        });
+        const newSelection: Record<string, boolean> = {};
+        allData.forEach((row: any) => {
+          newSelection[String(row.SerialNo)] = true;
+        });
+        setRowSelection(newSelection);
+      }
+    
+      table.getToggleAllRowsSelectedHandler()(event);
+    }
+    
+    function handleSelectCheckboxRow(row: any, event: React.ChangeEvent<HTMLInputElement>) {
+      const rowId = String(row.original.SerialNo);
+    
+      if (row.getIsSelected()) {
+        // Uncheck
+        setSelectedRows((prev) => prev.filter((r) => String(r.SerialNo) !== rowId));
+        setRowSelection((prev) => {
+          const updated = { ...prev };
+          delete updated[rowId];
+          return updated;
+        });
+      } else {
+        // Check
+        setSelectedRows((prev) => [...prev, row.original]);
+        setRowSelection((prev) => ({ ...prev, [rowId]: true }));
+      }
+    
+      row.getToggleSelectedHandler()(event);
+    }
+  // function handleSelectCheckboxRow(row:any,event: React.ChangeEvent<HTMLInputElement>){
+  //   console.log("celldata",row)
+  //   setSelectedRows([...selectedRows,row.original])
+  //   // row.getToggleSelectedHandler()
+  //   row.getToggleSelectedHandler()(event);
+  // }
+
+  
     const columns = useMemo(() => [
        {
         id: 'select-checkbox',
@@ -235,7 +297,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
             type="checkbox"
             checked={table.getIsAllRowsSelected()}
             indeterminate={table.getIsSomeRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()} // Toggle all rows
+            onChange={(e)=>handleSelectAllCheckboxRow(table,e)} // Toggle all rows
           />
         ),
         cell: ({ row }:any) => (
@@ -313,7 +375,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
     ], [toggle])
 
-    const [totalCount, setTotalCount] = useState(0);
+  
 
     let sort: SortInterface[] = [];
     const [sizePerPage, setSizePerPage] = useState(10);
@@ -331,6 +393,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
       for(let i=0;i<data.length;i++){
         if(formik_values.role.label!="SuperAdmin"){
           dataSet.push({
+              id:data[i].SerialNo,
               f_organisation_id:formik_values.organisation_id,
               f_user_id:data[i].SerialNo,
               role:formik_values.role,
@@ -346,6 +409,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
           });
         }else{
            dataSet.push({
+              id:data[i].user_id,
               f_organisation_id:formik_values.organisation_id,
               f_user_id:data[i].user_id,
               role:formik_values.role,
@@ -356,7 +420,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
               dateofbirth:data[i].dateofbirth,
               address:"",
               branch:data[i].branch,
-              f_elastic_id:data[i].user_id,
+              f_elastic_id:"",
               is_thepointofcontact:formik_values.is_thepointofcontact
           });
         }
@@ -610,6 +674,9 @@ const UserList = ({returnFunc,formik_values}:any) => {
                             totalCount={totalCount}
                             handleTableChange={handleTableChange}
                             loading={loading}
+                            rowSelection={rowSelection}
+                            setRowSelection={setRowSelection}
+                            rowIdKey="id" 
                         />:"Loading..."}
                         </CardBody>
                         <CardFooter className="d-flex justify-content-end">
