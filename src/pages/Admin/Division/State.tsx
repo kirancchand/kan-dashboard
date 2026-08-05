@@ -20,7 +20,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 import ListState from "./ListState";
-import { http, ADD_STATE,UPDATE_STATE,DELETE_STATE } from '../../../http/http';
+import { http, ADD_STATE_GEO,UPDATE_STATE,DELETE_STATE } from '../../../http/http';
 import { toast } from 'react-toastify';
 interface StateRow{
     state_id:number;
@@ -48,65 +48,103 @@ const State = () => {
   const [loading, setLoading] = useState(false);
 
 
-  async function addNewState(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-        method: 'POST',
-        url: ADD_STATE,
-        data,
-      })
-        .then(function(response) {
-          if (response.status === 200) {
-            console.log(response.data);
-  
-            toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
-            });
-          } else {
-            toast('Failed to Add State', {
-              position: 'top-right',
-              type: 'error',
-            });
-          }
-          setLoading(false);
-        })
-        .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
-        });
-    }
+  const createFormData = (data: StateRow) => {
+  const formData = new FormData();
 
-    async function updateState(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-        method: 'PUT',
-        url: UPDATE_STATE+'/'+data.state_id,
-        data,
-      })
-        .then(function(response) {
-          if (response.status === 200) {
-            console.log(response.data);
-  
-            toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
-            });
-          } else {
-            toast('Failed to Add State', {
-              position: 'top-right',
-              type: 'error',
-            });
-          }
-          setLoading(false);
-        })
-        .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
-        });
+  formData.append("state", data.state);
+
+  if (data.file) {
+    formData.append("file", data.file);
+  }
+
+  return formData;
+};
+
+  async function addNewState(data: StateRow) {
+  console.log("data", data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "POST",
+      url: ADD_STATE_GEO,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      console.log(response.data);
+
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+
+      setShowForm(false);
+    } else {
+      toast("Failed to Add State", {
+        position: "top-right",
+        type: "error",
+      });
     }
+  } catch (err: any) {
+    toast(err?.response?.data?.message || err.message, {
+      position: "top-right",
+      type: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+    async function updateState(data: StateRow) {
+  console.log("data", data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "PUT",
+      url: `${UPDATE_STATE}/${data.state_id}`,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      console.log(response.data);
+
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+
+      setShowForm(false);
+    } else {
+      toast("Failed to Update State", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(err?.response?.data?.message || err.message, {
+      position: "top-right",
+      type: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+}
+
 
     async function deleteState(state_id:any) {
       setLoading(true);
@@ -145,20 +183,18 @@ const State = () => {
         validationSchema: schema,
    
 
-    onSubmit: (values, { resetForm }) => {
-      if (editId) {
-        // setData(data.map(d => d.id === editId ? { ...values, id: editId } : d));
-        // addNewState(values);
-        updateState(values)
-        setEditId(null);
-      } else {
-        addNewState(values);
-      }
+onSubmit: async (values, { resetForm }) => {
+  if (editId) {
+    await updateState(values);
+    setEditId(null);
+  } else {
+    await addNewState(values);
+  }
 
-     // setSuccessMsg("Saved successfully");
-      resetForm();
-      setShowForm(false);
-    }
+  resetForm();
+  setImagePreview(null);
+}
+
   });
 
    const handleEdit = (row: StateRow) => {
@@ -247,23 +283,23 @@ const State = () => {
                              </div>
                                   ) : (
                                <Input
-                                     type="file"
-                                      onChange={(e: any) => {
-                                      const file = e.target.files[0];
+                                  type="file"
+                                  name="file"
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const file = e.target.files?.[0] || null;
 
-                                    if (file) {
-                                      formik.setFieldValue("file", file);
+                                    formik.setFieldValue("file", file);
 
-     
-                                     if (file.type.startsWith("image/")) {
-                                     setImagePreview(URL.createObjectURL(file));
-                                      } else {
-                                    setImagePreview(null);
-                                      }
-                                     }
-                                     }}
-                                 />
-                          )}
+                                    if (file && file.type.startsWith("image/")) {
+                                      setImagePreview(URL.createObjectURL(file));
+                                    } else {
+                                      setImagePreview(null);
+                                    }
+                                  }}
+                                />
+
+                          )
+                          }
                            </FormGroup>
                            
            

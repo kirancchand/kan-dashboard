@@ -24,7 +24,7 @@ import { TableContainer } from '../../../common/AnalyticsTable/TableContainerRea
 import { SortTanstackInterface,SortInterface } from '../../../Typecomponents/ComponentsType';
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import { http } from '../../../http/http';
-import { ADD_VILLAGE_ADVERTISEMENT,GET_VILLAGE_ADVERTISEMENT,MD_URL } from '../Api';
+import { ADD_VILLAGE_ADVERTISEMENT,GET_VILLAGE_ADVERTISEMENT,MD_URL,UPDATE_VILLAGE_ADVERTISEMENT, DELETE_VILLAGE_ADVERTISEMENT} from '../Api';
 import { toast } from 'react-toastify';
 import mdurl from '../../../http/masterDataURL';
 interface keyValue{
@@ -32,6 +32,7 @@ interface keyValue{
   label:string;
 }
 interface AdvRow {
+  villageadvertisement_id:number;
   advertisement_name: string;
   advertisement_image: File | null;
   advertisement_desc: string;
@@ -143,9 +144,36 @@ const Advertisement = () => {
       });
   }
   
+  async function updateVillageAdvertisement(data:any) {
+      setLoading(true);
+      await http({
+        method: 'POST',
+        url: UPDATE_VILLAGE_ADVERTISEMENT,
+        data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        
+      }).then(function(response) {
+          if (response.status === 200) {
+            formik.resetForm();
+            toast(response.data.message, { position: 'top-right',type: 'success' });
+            setShowForm(false);
+            fetchData(initialRequest);
 
+          } else {
+            toast('Failed to Add village', {position: 'top-right',type: 'error'});
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
   const formik = useFormik<AdvRow>({
     initialValues: {
+      villageadvertisement_id:0,
       advertisement_name: '',
       advertisement_image: null,
       advertisement_desc: '',
@@ -158,16 +186,22 @@ const Advertisement = () => {
     onSubmit: (values, { resetForm, setSubmitting }) => {
 
       if (editId) {
-        // setData(data.map(d =>
-        //   d.id === editId
-        //     ? {
-        //         ...values,
-        //         image: values.image || d.image, // ✅ preserve old image
-        //         id: editId
-        //       }
-        //     : d
-        // ));
-        // setEditId(null);
+         const formData = new FormData();
+        formData.append("villageadvertisement_id", values.villageadvertisement_id.toString());
+        formData.append("advertisement_name", values.advertisement_name);
+        formData.append("advertisement_desc", values.advertisement_desc);
+        formData.append("start_date", values.start_date || "");
+        formData.append("end_date", values.end_date || "");
+        formData.append("f_villageapp_id",values.f_villageapp_id?.value.toString() || "");
+        formData.append("f_villageorganisation_id",values.f_villageorganisation_id?.value.toString()||"");
+
+        if (values.advertisement_image) {
+          formData.append(
+            "advertisement_image",
+            values.advertisement_image
+          );
+        }
+        updateVillageAdvertisement(formData);
       } else {
         const formData = new FormData();
         formData.append("advertisement_name", values.advertisement_name);
@@ -194,26 +228,50 @@ const Advertisement = () => {
   });
 
   const handleEdit = (row: AdvRow) => {
-    // setEditId(row.id);
-
-    // formik.setValues({
-    //   ...row,
-    //   image: row.image, // ✅ keep existing image
-    // });
-
-    // if (row.image) {
-    //   setImagePreview(URL.createObjectURL(row.image));
-    // } else {
-    //   setImagePreview(null);
-    // }
-
-    // setShowForm(true);
+    console.log(row)
+    setEditId(row.villageadvertisement_id);
+    formik.setFieldValue("villageadvertisement_id", row.villageadvertisement_id);
+    formik.setFieldValue("advertisement_name", row.advertisement_name);
+    formik.setFieldValue("advertisement_image", row.advertisement_image);
+    formik.setFieldValue("advertisement_desc", row.advertisement_desc);
+    formik.setFieldValue("start_date", row.start_date);
+    formik.setFieldValue("end_date", row.end_date);
+    formik.setFieldValue("f_villageapp_id", villageAppData.find((vap:any)=>vap.value==row.f_villageapp_id));
+    formik.setFieldValue("f_villageorganisation_id", villageOrganisationData.find((vap:any)=>vap.value==row.f_villageorganisation_id));
+    setShowForm(true);
   };
 
 
-
-  const handleDelete = (id: number) => {
-    // setData(data.filter(d => d.id !== id));
+    async function deleteAdv(data:any) {
+      console.log('data', data);
+      setLoading(true);
+      await http({
+      method: 'POST',
+      url: DELETE_VILLAGE_ADVERTISEMENT,
+      data,
+      })
+      .then(function(response) {
+          if (response.status === 200) {
+          toast(response.data.message, {
+              position: 'top-right',
+              type: 'success',
+          });
+          fetchData(initialRequest)
+          } else {
+          toast('Failed to Delete Users', {
+              position: 'top-right',
+              type: 'error',
+          });
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
+  const handleDelete = (row: any) => {
+       deleteAdv({villageadvertisement_id: row.villageadvertisement_id})
   };
 
  
@@ -277,7 +335,7 @@ const Advertisement = () => {
             <Button size="sm" color="soft-warning" onClick={() => handleEdit(row)}>
               Edit
             </Button>
-            <Button size="sm" color="soft-danger" onClick={() => handleDelete(row.id)}>
+            <Button size="sm" color="soft-danger" onClick={() => handleDelete(row)}>
               Delete
             </Button>
           </div>
@@ -518,7 +576,7 @@ const Advertisement = () => {
                     columns={(columns || [])}
                     data={(data || [])}
                     customPageSize={sizePerPage}
-                    tableClass="table-centered align-middle table-nowrap mb-0"
+                    tableClass="table-centered align-middle table-wrap mb-0"
                     theadClass="text-muted table-light"
                     SearchPlaceholder='Search Users...'
                     isGlobalFilter={false}

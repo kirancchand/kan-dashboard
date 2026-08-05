@@ -23,7 +23,7 @@ import ListArea from "./ListArea";
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import md from '../../../http/masterData';
 import { toast } from 'react-toastify';
-import { http, ADD_AREA,UPDATE_AREA,DELETE_AREA } from '../../../http/http';
+import { http, ADD_AREA_GEO,UPDATE_AREA,DELETE_AREA } from '../../../http/http';
 interface KeyValue{
     value:string;
     label:string;
@@ -40,7 +40,11 @@ interface AreaRow {
 const schema = Yup.object({
   region: Yup.object().required("Required"),
   localbodytype: Yup.object().required("Required"),
-  area: Yup.string().required("Required"),
+  area: Yup.string().when('addAllLocalBody', {
+      is: 'False', // The condition to check
+      then: (schema) => schema.required('District is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   geoarea: Yup.mixed().nullable(),
   // .required("Required"),
   addAllLocalBody: Yup.boolean(),
@@ -83,66 +87,120 @@ const Area = () => {
     setSizePerPage(sizePerPage);
   };
 
-  async function addNewArea(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-        method: 'POST',
-        url: ADD_AREA,
-        data,
-      })
-        .then(function(response) {
-          if (response.status === 200) {
-            console.log(response.data);
-  
-            toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
-            });
-          } else {
-            toast('Failed to Add State', {
-              position: 'top-right',
-              type: 'error',
-            });
-          }
-          setLoading(false);
-        })
-        .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
-        });
-    }
+  const createFormData = (data: AreaRow) => {
+  const formData = new FormData();
+
+  formData.append("area", data.area);
+
+  // Backend expects objects
+  if (data.region) {
+    formData.append("region", JSON.stringify(data.region));
+  }
+
+  if (data.localbodytype) {
+    formData.append(
+      "localbodytype",
+      JSON.stringify(data.localbodytype)
+    );
+  }
+
+  if (data.geoarea) {
+    formData.append("geoarea", data.geoarea);
+  }
+
+  formData.append(
+    "addAllLocalBody",
+    JSON.stringify(data.addAllLocalBody)
+  );
+
+  return formData;
+};
 
 
-    async function updateArea(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-        method: 'PUT',
-        url: UPDATE_AREA+'/'+data.area_id,
-        data,
-      })
-        .then(function(response) {
-          if (response.status === 200) {
-            console.log(response.data);
-  
-            toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
-            });
-          } else {
-            toast('Failed to Add State', {
-              position: 'top-right',
-              type: 'error',
-            });
-          }
-          setLoading(false);
-        })
-        .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
-        });
+async function addNewArea(data: AreaRow) {
+  console.log(data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "POST",
+      url: ADD_AREA_GEO,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+    } else {
+      toast("Failed to Add Area", {
+        position: "top-right",
+        type: "error",
+      });
     }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
+      }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+
+async function updateArea(data: AreaRow) {
+  console.log(data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "PUT",
+      url: `${UPDATE_AREA}/${data.area_id}`,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+    } else {
+      toast("Failed to Update Area", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
+      }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   const formik = useFormik<AreaRow>({
     initialValues: {
@@ -156,23 +214,21 @@ const Area = () => {
 
     validationSchema: schema,
 
-    onSubmit: (values, { resetForm }) => {
+    onSubmit: async (values, { resetForm }) => {
+  if (editId) {
+    await updateArea(values);
+    setEditId(null);
+  } else {
+    await addNewArea(values);
+  }
 
-       if (editId) {
-        // setData(data.map(d => d.id === editId ? { ...values, id: editId } : d));
-        // addNewState(values);
-        updateArea(values)
-        setEditId(null);
-      } else {
-        addNewArea(values);
-      }
+  setSuccessMsg("Saved Successfully");
 
-      setSuccessMsg("Saved Successfully");
+  resetForm();
+  setGeoPreview(null);
+  setShowForm(false);
+},
 
-      resetForm();
-      setGeoPreview(null);
-      setShowForm(false);
-    },
   });
 
   // const handleEdit = (row: AreaRow) => {
@@ -254,98 +310,7 @@ const Area = () => {
     deleteArea(area_id)
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        header: "Sl No",
-        enableColumnFilter: false,
-        cell: (cell: any) =>
-          cell.row.index + 1,
-      },
 
-      {
-        header: "Region",
-        enableColumnFilter: false,
-        accessorKey: "region",
-      },
-
-      {
-        header: "Local Body Type",
-        enableColumnFilter: false,
-        accessorKey: "localbodytype",
-      },
-
-      {
-        header: "Area",
-        enableColumnFilter: false,
-        accessorKey: "area",
-      },
-
-      {
-        header: "Geo Area",
-        enableColumnFilter: false,
-        cell: (cell: any) => {
-
-          const file =
-            cell.row.original.geoarea;
-
-          return file ? (
-            <a
-              href={URL.createObjectURL(file)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View File
-            </a>
-          ) : null;
-        },
-      },
-
-      {
-        header: "Add All Local Body",
-        enableColumnFilter: false,
-        cell: (cell: any) =>
-          cell.row.original.addAllLocalBody
-            ? "Yes"
-            : "No",
-      },
-
-      {
-        header: "Actions",
-        cell: (cell: any) => {
-
-          const row = cell.row.original;
-
-          return (
-            <div className="d-flex gap-2">
-
-              <Button
-                size="sm"
-                color="soft-warning"
-                onClick={() =>
-                  handleEdit(row)
-                }
-              >
-                Edit
-              </Button>
-
-              <Button
-                size="sm"
-                color="soft-danger"
-                onClick={() =>
-                  handleDelete(row.area_id)
-                }
-              >
-                Delete
-              </Button>
-
-            </div>
-          );
-        },
-      },
-    ],
-    [data]
-  );
 
     async function getRegion(reqData:any) {
       setRegionLoading(true);
@@ -375,7 +340,7 @@ const Area = () => {
       "requestName": "getAll_RegionByDistrict",
       "params":[
         {
-          "paramValue":4,
+          "paramValue":1,
           "paramEncrypted": "Y"
         }
       ]
@@ -463,31 +428,61 @@ const Area = () => {
 
                 </FormGroup>
 
-                {/* AREA */}
-                <FormGroup>
 
-                  <Label>Area</Label>
+                    
+                {/* BOOLEAN */}
+                <FormGroup check>
 
-                  <Input
-                    type="text"
-                    name="area"
-                    value={formik.values.area}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    invalid={
-                      formik.touched.area &&
-                      !!formik.errors.area
-                    }
-                  />
+                  <Label check>
 
-                  {formik.touched.area &&
-                    formik.errors.area && (
-                      <div className="text-danger">
-                        {formik.errors.area}
-                      </div>
-                    )}
+                    <Input
+                      type="checkbox"
+                      name="addAllLocalBody"
+                      checked={
+                        formik.values
+                          .addAllLocalBody
+                      }
+                      onChange={
+                        formik.handleChange
+                      }
+                    />
+
+                    {" "}
+                    Add All Local Body
+
+                  </Label>
 
                 </FormGroup>
+                
+                {/* AREA */}
+
+                {
+                  !formik.values.addAllLocalBody&&
+                      <FormGroup>
+
+                        <Label>Area</Label>
+
+                        <Input
+                          type="text"
+                          name="area"
+                          value={formik.values.area}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          invalid={
+                            formik.touched.area &&
+                            !!formik.errors.area
+                          }
+                        />
+
+                        {formik.touched.area &&
+                          formik.errors.area && (
+                            <div className="text-danger">
+                              {formik.errors.area}
+                            </div>
+                          )}
+
+                      </FormGroup>
+                    }
 
                 {/* GEO AREA */}
                 <FormGroup>
@@ -526,28 +521,22 @@ const Area = () => {
 
                   ) : (
 
-                    <Input
+                  <Input
                       type="file"
-                      onChange={(e: any) => {
+                      name="geoarea"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
 
-                        const file =
-                          e.target.files[0];
+                        formik.setFieldValue("geoarea", file);
 
                         if (file) {
-
-                          formik.setFieldValue(
-                            "geoarea",
-                            file
-                          );
-
-                          setGeoPreview(
-                            URL.createObjectURL(
-                              file
-                            )
-                          );
+                          setGeoPreview(URL.createObjectURL(file));
+                        } else {
+                          setGeoPreview(null);
                         }
                       }}
                     />
+
 
                   )}
 
@@ -563,29 +552,6 @@ const Area = () => {
 
                 </FormGroup>
 
-                {/* BOOLEAN */}
-                <FormGroup check>
-
-                  <Label check>
-
-                    <Input
-                      type="checkbox"
-                      name="addAllLocalBody"
-                      checked={
-                        formik.values
-                          .addAllLocalBody
-                      }
-                      onChange={
-                        formik.handleChange
-                      }
-                    />
-
-                    {" "}
-                    Add All Local Body
-
-                  </Label>
-
-                </FormGroup>
 
                 {/* BUTTONS */}
                 <div className="d-flex gap-2 mt-3">

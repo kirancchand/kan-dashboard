@@ -86,10 +86,10 @@ const OrganisationMember = ({respValue,setRespValue}:any) => {
             accessorKey: "f_user_id",
             enableColumnFilter: false,
         },
-         {
-            id: "role_name",
-            header: "Role Name",
-            accessorKey: "role_name",
+        {
+            id: "usertype",
+            header: "User Type",
+            accessorKey: "usertype",
             enableColumnFilter: false,
         },
         {

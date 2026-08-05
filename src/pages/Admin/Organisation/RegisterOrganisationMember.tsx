@@ -46,8 +46,8 @@ interface OrgMember {
   organisation_id:number;
   area: KeyValue | null;
   branch: KeyValue | null;
-  user_id:string;
-  role:KeyValue | null;
+  user_id:string|null;
+  usertype:KeyValue | null;
   status:KeyValue | null;
   is_thepointofcontact:boolean;
 
@@ -71,8 +71,8 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const [statusLoading, setStatusLoading] = useState(false);
     const [statusData, setStatusData] = useState([]);
-    const [roleData,setRoleData]=useState([]);
-    const [roleLoading,setRoleLoading]=useState(false);
+    const [userTypeLoading, setUserTypeLoading] = useState(false);
+    const [userTypeData, setUserTypeData] = useState([]);
     const [userData,setUserData]=useState([]);
     const [userLoading,setUserLoading]=useState(false);
     const [selectedUser, setSelectedUser] = useState<any>([]);
@@ -90,19 +90,6 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
     };
 
 
-     async function getRole() {
-              setRoleLoading(true);
-              md('getAll_Role')
-                .then((r) => {
-                  setRoleData(r);
-                  setRoleLoading(false);
-                }).catch((error) => {
-                  toast(error, { position: 'top-right', type: 'error' });
-                  setRoleLoading(false);
-                });
-            }
-
-
     async function getStatus() {
       setStatusLoading(true);
       md('getAll_Status')
@@ -114,9 +101,21 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
           setStatusLoading(false);
         });
     }
+
+    async function getUserType() {
+      setUserTypeLoading(true);
+      md('getAll_Usertype')
+        .then((r) => {
+          setUserTypeData(r);
+          setUserTypeLoading(false);
+        }).catch((error) => {
+          toast(error, { position: 'top-right', type: 'error' });
+          setUserTypeLoading(false);
+        });
+    }
     useEffect(()=>{
-        getRole()
         getStatus()
+        getUserType()
     },[])
 
 
@@ -169,8 +168,8 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
           organisation_id:respValue.data.organisation_id,
           area:null,
           branch:null,
-          user_id:"",
-          role:null,
+          user_id:null,
+          usertype:null,
           status:null,
           is_thepointofcontact:false,
         },
@@ -222,7 +221,7 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
         //     });
         }
 
-
+console.log(formik.values)
     
     return (
         <React.Fragment>
@@ -237,13 +236,13 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
     
                     <Form onSubmit={formik.handleSubmit}>
                         <Row>
-                            <Col md="6">
+                            <Col md="4">
                                 <FormGroup>
                                     <Row>
                                         <Col md="12">
                                             <div className='d-flex justify-content-between'>
                                                 <Label >
-                                                    Role                    
+                                                    User Type                    
                                                 </Label>
                                                 <FormGroup switch>
                                                         <Input
@@ -264,7 +263,28 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
                                         </Col>
                                     </Row>
 
+
                                     <RSelect
+                                        name="usertype"
+                                        id="usertype"
+                                        value={formik.values.usertype}
+                                        onChange={(ev: any) =>
+                                            formik.setFieldValue("usertype", ev)
+                                        }
+                                        options={userTypeData}
+                                        placeholder="--Select usertype--"
+                                        error={formik.errors.usertype}
+                                        touched={formik.touched.usertype}
+                                        isLoading={userTypeLoading}
+                                        isClearable
+                                        />
+                                    {formik.touched.usertype &&
+                                        formik.errors.usertype && (
+                                        <div className="text-danger">
+                                            {formik.errors.usertype}
+                                        </div>
+                                        )}
+                                    {/* <RSelect
                                         name="role"
                                         id="role"
                                         value={formik.values.role}
@@ -283,11 +303,37 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
                                         <div className="text-danger">
                                             {formik.errors.role}
                                         </div>
-                                        )}
+                                        )} */}
 
                                 </FormGroup>
                             </Col> 
-                            <Col md="6">
+                            {/* <Col md="4">
+                                    <FormGroup>
+                                    <Label>User Type</Label>
+                                    <RSelect
+                                        name="usertype"
+                                        id="usertype"
+                                        value={formik.values.usertype}
+                                        onChange={(ev: any) =>
+                                            formik.setFieldValue("usertype", ev)
+                                        }
+                                        options={userTypeData}
+                                        placeholder="--Select usertype--"
+                                        error={formik.errors.usertype}
+                                        touched={formik.touched.usertype}
+                                        isLoading={userTypeLoading}
+                                        isClearable
+                                        />
+                                    {formik.touched.usertype &&
+                                        formik.errors.usertype && (
+                                        <div className="text-danger">
+                                            {formik.errors.usertype}
+                                        </div>
+                                        )}
+
+                                </FormGroup>
+                            </Col> */}
+                            <Col md="4">
                                     <FormGroup>
                                     <Label>Status</Label>
                                     <RSelect
@@ -328,7 +374,7 @@ const RegisterOrganisationMember = ({respValue,setRespValue}:any) => {
                                 <Button color="soft-secondary" onClick={() => setRespValue({
                                             nav:"OrganisationMember",
                                             mode:"",
-                                            data:null,
+                                            data:respValue.data,
                                             origin:"OrganisationMember",
                                             title:"Organisation Member"
                                             })}>

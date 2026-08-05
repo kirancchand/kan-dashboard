@@ -32,6 +32,7 @@ import row from 'gridjs/dist/src/row';
 interface OrgRow {
   villageorganisation_id: number;
   organisation_name: string;
+  organisation_type: string;
   f_organisation_id: string;
   f_villageapp_id: number;
   isemergency: boolean;
@@ -200,6 +201,7 @@ const Organizations = () => {
     initialValues: {
       villageorganisation_id: 0,
       organisation_name: '',
+      organisation_type: '',
       f_organisation_id: '',
       f_villageapp_id: 0,
       isemergency: false,
@@ -256,6 +258,7 @@ const Organizations = () => {
     setEditId(row.villageorganisation_id);
     formik.setFieldValue("villageorganisation_id", row.villageorganisation_id);
     formik.setFieldValue("organisation_name", row.organisation_name);
+    formik.setFieldValue("organisation_type",row.organisation_type);
     formik.setFieldValue("f_organisation_id", row.f_organisation_id);
     formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
     formik.setFieldValue("isemergency", row.isemergency);

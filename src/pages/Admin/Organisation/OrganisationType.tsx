@@ -171,13 +171,13 @@ const OrganisationType = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [data, setData] = useState<DataItem[]>([]);
     let sort: SortInterface[] = [];
-    const [sizePerPage, setSizePerPage] = useState(10);
+    const [sizePerPage, setSizePerPage] = useState(20);
     const [loading, setLoading] = useState(false);
 
     let initialRequest = {
         "start": 0,
         "sort": [],
-        "numberOfRows": 10,
+        "numberOfRows": sizePerPage,
         "filters": []
     }
     const fetchData = async (requestdata: any) => {

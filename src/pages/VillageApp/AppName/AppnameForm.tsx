@@ -23,10 +23,10 @@ import { TableContainer } from '../../../common/AnalyticsTable/TableContainerRea
 import TableFilterDropdown from '../../../common/AnalyticsTable/TableFilterDropdown';
 import { SortTanstackInterface,SortInterface } from '../../../Typecomponents/ComponentsType';
 import { http } from '../../../http/http';
-import { ADD_VILLAGE_NAME,GET_VILLAGE_NAME } from '../Api';
+import { ADD_VILLAGE_NAME,GET_VILLAGE_NAME,UPDATE_VILLAGE_NAME,DELETE_VILLAGE_NAME } from '../Api';
 import { toast } from 'react-toastify';
 interface AppnameRow {
-  id: number;
+  villageapp_id: number;
   villageapp_name: string;
   villageapp_desc: string;
   villageapp_about: string;
@@ -101,11 +101,41 @@ const AppnameForm = () => {
           setLoading(false);
       });
   }
+
+      async function updateVillageName(data:any) {
+        console.log('data', data);
+        setLoading(true);
+        await http({
+        method: 'POST',
+        url: UPDATE_VILLAGE_NAME,
+        data,
+        })
+        .then(function(response) {
+            if (response.status === 200) {
+               fetchData(initialRequest)
+               setShowForm(false);
+            toast(response.data.message, {
+                position: 'top-right',
+                type: 'success',
+            });
+            } else {
+            toast('Failed to Add Users', {
+                position: 'top-right',
+                type: 'error',
+            });
+            }
+            setLoading(false);
+        })
+        .catch(err => {
+            toast(err, { position: 'top-right', type: 'error' });
+            setLoading(false);
+        });
+    }
   
 
   const formik = useFormik<AppnameRow>({
     initialValues: {
-      id: 0, 
+      villageapp_id: 0, 
       villageapp_name: '',
       villageapp_desc: '',
       villageapp_about: '',
@@ -117,11 +147,7 @@ const AppnameForm = () => {
 
       try {
           if (editId) {
-                const updated = tableData.map((item) =>
-                  item.id === editId ? { ...values, id: editId } : item
-                );
-                setTableData(updated);
-                setEditId(null);
+                updateVillageName(values)
             } else {
               saveVillageName(values);
             }
@@ -135,25 +161,50 @@ const AppnameForm = () => {
     }
   });
 
- const handleEdit = (id: number) => {
-  const selected = tableData.find((item) => item.id === id);
-  if (!selected) return;
+ const handleEdit = (row: any) => {
 
-  setEditId(id);
+      console.log(row)
+    setEditId(row.villageapp_id);
+    formik.setFieldValue("villageapp_id", row.villageapp_id);
+    formik.setFieldValue("villageapp_name", row.villageapp_name);
+    formik.setFieldValue("villageapp_desc", row.villageapp_desc);
+    formik.setFieldValue("villageapp_about", row.villageapp_about);
+    setShowForm(true);
 
-  // formik.setValues({
-  //   id: selected.id,
-  //   villageapp_name: selected.villageapp_name,
-  //   villageapp_desc: selected.villageapp_desc,
-  //   villageapp_about: selected.villageapp_about,
-  // });
 
-  setShowForm(true);
 };
 
-  const handleDelete = (id: number) => {
-  const filtered = tableData.filter((item) => item.id !== id);
-  setTableData(filtered);
+    async function deleteVillage(data:any) {
+      console.log('data', data);
+      setLoading(true);
+      await http({
+      method: 'POST',
+      url: DELETE_VILLAGE_NAME,
+      data,
+      })
+      .then(function(response) {
+          if (response.status === 200) {
+          toast(response.data.message, {
+              position: 'top-right',
+              type: 'success',
+          });
+          fetchData(initialRequest)
+          } else {
+          toast('Failed to Delete Users', {
+              position: 'top-right',
+              type: 'error',
+          });
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
+
+  const handleDelete = (row: any) => {
+  deleteVillage({villageapp_id: row.villageapp_id})
 };
 
 
@@ -193,7 +244,7 @@ const AppnameForm = () => {
               <Button
                 size="sm"
                 color="soft-warning"
-                onClick={() => handleEdit(row.id)}
+                onClick={() => handleEdit(row)}
               >
                 Edit
               </Button>
@@ -201,7 +252,7 @@ const AppnameForm = () => {
               <Button
                 size="sm"
                 color="soft-danger"
-                onClick={() => handleDelete(row.id)}
+                onClick={() => handleDelete(row)}
               >
                 Delete
               </Button>
@@ -442,7 +493,7 @@ const AppnameForm = () => {
                               columns={(columns || [])}
                               data={(data || [])}
                               customPageSize={sizePerPage}
-                              tableClass="table-centered align-middle table-nowrap mb-0"
+                              tableClass="table-centered align-middle table-wrap mb-0"
                               theadClass="text-muted table-light"
                               SearchPlaceholder='Search Users...'
                               isGlobalFilter={false}

@@ -4,7 +4,8 @@ import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
 import { SortInterface } from '../../../Typecomponents/ComponentsType';
 // import AddUserModal from '../../AddUserModal';
-import { http, GET_BRANCH_LIST } from '../../../http/http';
+import { http, GET_BRANCH_LIST, SYNC_MY_AREA} from '../../../http/http';
+import { toast } from 'react-toastify';
 import {Button} from "reactstrap";
 interface DataItem {
     branch_id: number;
@@ -38,6 +39,45 @@ const ListBranch = (props:any) => {
         return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.index) + 1)}</span>
     }
 
+     async function syncMyArea(row:any) {
+             setLoading(true);
+             await http({
+               method: 'POST',
+               url: SYNC_MY_AREA,
+               data:{
+                "area":row.mapArea
+               }
+             })
+               .then(function(response) {
+                 if (response.status === 200) {
+                   console.log(response.data);
+          
+                   toast(response.data.message, {
+                     position: 'top-right',
+                     type: 'success',
+                   });
+                 } else {
+                   toast('Failed to Sync', {
+                     position: 'top-right',
+                     type: 'error',
+                   });
+                 }
+                 setLoading(false);
+               })
+               .catch(err => {
+                 toast(err, { position: 'top-right', type: 'error' });
+                 setLoading(false);
+               });
+            }
+
+    const AreaFunc = (celldata: any) => {
+        return <span>{celldata.row.original.area}{celldata.row.original.area!=celldata.row.original.mapArea?"("+celldata.row.original.mapArea+")":""} 
+                    
+                </span>
+    }
+
+    
+
     const handleEdit = (row: any) => {
         props.handleEdit(row)
     };
@@ -70,19 +110,20 @@ const ListBranch = (props:any) => {
             header: "Area Name",
             accessorKey: "area",
             enableColumnFilter: false,
+            cell: (cell: any) => AreaFunc(cell),
         },
-        {
-            id: "District Name",
-            header: "District Name",
-            accessorKey: "district",
-            enableColumnFilter: false,
-        },
-        {
-            id: "State Name",
-            header: "State Name",
-            accessorKey: "state",
-            enableColumnFilter: false,
-        },
+        // {
+        //     id: "District Name",
+        //     header: "District Name",
+        //     accessorKey: "district",
+        //     enableColumnFilter: false,
+        // },
+        // {
+        //     id: "State Name",
+        //     header: "State Name",
+        //     accessorKey: "state",
+        //     enableColumnFilter: false,
+        // },
         {
             header: "Actions",
             enableColumnFilter: false,
@@ -91,6 +132,8 @@ const ListBranch = (props:any) => {
 
             return (
                 <div className="d-flex gap-2">
+                    {row.area!=row.mapArea?<Button color="soft-success" size="sm" onClick={() => syncMyArea(row) }>Sync This Area</Button>:""}
+                
                 <Button
                     size="sm"
                     color="soft-warning"

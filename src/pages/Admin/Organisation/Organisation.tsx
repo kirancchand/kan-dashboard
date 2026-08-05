@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, Fragment } from 'react'
 import { TableContainer } from "../../../Responsive Table/TableContainerReactTable";
 import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
@@ -41,6 +41,9 @@ interface KeyValue{
 interface OrgRow {
   organisation_id: number;
   organisation: string;
+  organisation_address:string,
+  organisation_contact:string,
+  organisation_email:string,
   organisation_type: KeyValue | null;
   area: KeyValue | null;
   branch: KeyValue | null;
@@ -48,6 +51,7 @@ interface OrgRow {
   longitude: number | null;
   status:KeyValue | null;
   ownerId:string;
+  ownerName:string;
 }
 
 const schema = Yup.object({
@@ -225,6 +229,15 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
 
                   deleteOrganisation(organisation_id)
     }
+
+    const contactFunc = (celldata: any) => {
+        // console.log(celldata)
+        return <span>
+                <div>{celldata.row.original.organisation_address}</div>
+                <div>{celldata.row.original.organisation_contact}</div>
+                <div>{celldata.row.original.organisation_email }</div>
+                </span>
+    }
     const columns = useMemo(() => [
         {
             id: "slno",
@@ -241,9 +254,16 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
         },
         {
             id: "owner",
-            header: "ownerName",
+            header: "Owner Name",
             accessorKey: "ownerName",
             enableColumnFilter: false,
+        },
+        {
+            id: "contact",
+            header: "Contact",
+            accessorKey: "contact",
+            enableColumnFilter: false,
+            cell: (cell: any) => contactFunc(cell),
         },
         {
             id: "OrganisationType",
@@ -429,13 +449,17 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
         initialValues: {
           organisation_id: 0,
           organisation: '',
+          organisation_address:'',
+          organisation_contact:'',
+          organisation_email:'',
           organisation_type: null,
           area:null,
           branch:null,
           latitude:null,
           longitude:null,
           status:null,
-          ownerId:''
+          ownerId:'',
+          ownerName:''
         },
         // validationSchema: schema,
     
@@ -467,6 +491,18 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
                     <FormGroup>
                         <Label>Organisation Name</Label>
                         <Input name="organisation" onChange={formik.handleChange} value={formik.values.organisation} />
+                    </FormGroup>
+                     <FormGroup>
+                        <Label>Organisation Address</Label>
+                        <Input name="organisation_address" onChange={formik.handleChange} value={formik.values.organisation_address} />
+                    </FormGroup>
+                     <FormGroup>
+                        <Label>Organisation Contact</Label>
+                        <Input name="organisation_contact" onChange={formik.handleChange} value={formik.values.organisation_contact} />
+                    </FormGroup>
+                     <FormGroup>
+                        <Label>Organisation Email</Label>
+                        <Input name="organisation_email" onChange={formik.handleChange} value={formik.values.organisation_email} />
                     </FormGroup>
     
                     <FormGroup>
@@ -602,10 +638,14 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
 
                     </FormGroup>
     
-                    <FormGroup>
-                        <Label>Owner ID</Label>
-                        <Input name="ownerId" onChange={formik.handleChange} value={formik.values.ownerId} />
-                    </FormGroup>
+                    {editId!=null&&(
+                        <Fragment>
+                        <FormGroup>
+                            <Label>Owner Name</Label>
+                            <Input name="ownerName" onChange={formik.handleChange} value={formik.values.ownerName} disabled />
+                        </FormGroup>
+                        </Fragment>
+                    )}
     
                     <div className="d-flex gap-2 mt-3">
                         <Button color="soft-secondary" onClick={() => setShowForm(false)}>

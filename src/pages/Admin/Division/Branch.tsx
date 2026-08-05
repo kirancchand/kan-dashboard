@@ -1,4 +1,4 @@
-import React, { useMemo, useState,useEffect } from "react";
+import React, { useMemo, useState,useEffect, Fragment } from "react";
 import {
   Row,
   Col,
@@ -23,21 +23,22 @@ import ListBranch from "./ListBranch";
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import md from '../../../http/masterData';
 import { toast } from 'react-toastify';
-import { http, ADD_BRANCH,UPDATE_BRANCH,DELETE_BRANCH } from '../../../http/http';
+import { http, ADD_BRANCH_GEO,UPDATE_BRANCH,DELETE_BRANCH,SYNC_ALL_AREA } from '../../../http/http';
 interface KeyValue{
     value:string;
     label:string;
   };
 interface BranchRow {
   branch_id: number;
-  state:KeyValue | null,
-  district:KeyValue | null,
-  region:KeyValue | null,
-  area: string;
+  state: KeyValue | null;
+  district: KeyValue | null;
+  region: KeyValue | null;
+  area: KeyValue | null;   // <-- change this
   branch: string;
   geoarea: File | null;
   addAllBranch: boolean;
 }
+
 
 const schema = Yup.object({
   state: Yup.object(),
@@ -63,7 +64,7 @@ const Branch = () => {
 
   const [geoPreview, setGeoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-    const [stateData,setStateData]=useState([]);
+  const [stateData,setStateData]=useState([]);
   const [districtData,setDistrictData]=useState([]);
   const [regionData,setRegionData]=useState([]);
   const [areaData,setAreaData]=useState([]);
@@ -200,60 +201,120 @@ const Branch = () => {
         }
 
 
-    async function updateBranch(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-        method: 'PUT',
-        url: UPDATE_BRANCH+'/'+data.branch_id,
-        data,
-      })
-        .then(function(response) {
-          if (response.status === 200) {
-            console.log(response.data);
-  
-            toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
-            });
-          } else {
-            toast('Failed to Add State', {
-              position: 'top-right',
-              type: 'error',
-            });
-          }
-          setLoading(false);
-        })
-        .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
-        });
-    }
+async function updateBranch(data: BranchRow) {
+  setLoading(true);
 
-      async function addNewBranch(data:any) {
-        setLoading(true)
-        await http({
-          method: 'POST',
-          url: ADD_BRANCH,
-          data: data,
-        })
-          .then(function (response) {
-            if (response.status === 200) {
-              console.log(response.data)
-    
-              toast(response.data.message, { position: 'top-right', type: 'success' });
-    
-            }
-            else {
-              toast("Failed to Add State", { position: 'top-right', type: 'error' });
-            }
-            setLoading(false)
-          })
-          .catch(err => {
-            toast(err, { position: 'top-right', type: 'error' });
-            setLoading(false)
-          });
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "PUT",
+      url: `${UPDATE_BRANCH}/${data.branch_id}`,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+    } else {
+      toast("Failed to Update Branch", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
       }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+
+    const createFormData = (data: BranchRow) => {
+  const formData = new FormData();
+
+  formData.append("branch", data.branch);
+
+  if (data.state) {
+    formData.append("state", JSON.stringify(data.state));
+  }
+
+  if (data.district) {
+    formData.append("district", JSON.stringify(data.district));
+  }
+
+  if (data.region) {
+    formData.append("region", JSON.stringify(data.region));
+  }
+
+  if (data.area) {
+    formData.append("area", JSON.stringify(data.area));
+  }
+
+  if (data.geoarea) {
+    formData.append("geoarea", data.geoarea);
+  }
+
+  formData.append(
+    "addAllBranch",
+    JSON.stringify(data.addAllBranch)
+  );
+
+  return formData;
+};
+
+
+async function addNewBranch(data: BranchRow) {
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "POST",
+      url: ADD_BRANCH_GEO,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+    } else {
+      toast("Failed to Add Branch", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
+      }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   const formik = useFormik<BranchRow>({
     initialValues: {
@@ -261,7 +322,7 @@ const Branch = () => {
       state:null,
       district:null,
       region:null,
-      area: "",
+      area: null,
       branch: "",
       geoarea: null,
       addAllBranch: false,
@@ -269,22 +330,21 @@ const Branch = () => {
 
     validationSchema: schema,
 
-    onSubmit: (values, { resetForm }) => {
-       if (editId) {
-        // setData(data.map(d => d.id === editId ? { ...values, id: editId } : d));
-        // addNewState(values);
-        updateBranch(values)
-        setEditId(null);
-      } else {
-        addNewBranch(values);
-      }
+    onSubmit: async (values, { resetForm }) => {
+  if (editId) {
+    await updateBranch(values);
+    setEditId(null);
+  } else {
+    await addNewBranch(values);
+  }
 
-      setSuccessMsg("Saved Successfully");
+  setSuccessMsg("Saved Successfully");
 
-      resetForm();
-      setGeoPreview(null);
-      setShowForm(false);
-    },
+  resetForm();
+  setGeoPreview(null);
+  setShowForm(false);
+},
+
   });
 
   const handleEdit = (row: BranchRow) => {
@@ -318,6 +378,35 @@ const Branch = () => {
         deleteBranch(branch_id)
   };
 
+
+  async function syncAllArea() {
+         setLoading(true);
+         await http({
+           method: 'POST',
+           url: SYNC_ALL_AREA
+         })
+           .then(function(response) {
+             if (response.status === 200) {
+               console.log(response.data);
+      
+               toast(response.data.message, {
+                 position: 'top-right',
+                 type: 'success',
+               });
+             } else {
+               toast('Failed to Sync', {
+                 position: 'top-right',
+                 type: 'error',
+               });
+             }
+             setLoading(false);
+           })
+           .catch(err => {
+             toast(err, { position: 'top-right', type: 'error' });
+             setLoading(false);
+           });
+        }
+  
 
   return (
     <div className="page-content">
@@ -496,28 +585,22 @@ const Branch = () => {
 
                     </div>
                   ) : (
-                    <Input
+                   <Input
                       type="file"
-                      onChange={(e: any) => {
+                      name="geoarea"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
 
-                        const file =
-                          e.target.files[0];
+                        formik.setFieldValue("geoarea", file);
 
                         if (file) {
-
-                          formik.setFieldValue(
-                            "geoarea",
-                            file
-                          );
-
-                          setGeoPreview(
-                            URL.createObjectURL(
-                              file
-                            )
-                          );
+                          setGeoPreview(URL.createObjectURL(file));
+                        } else {
+                          setGeoPreview(null);
                         }
                       }}
                     />
+
                   )}
 
                   {formik.touched.geoarea &&
@@ -596,6 +679,15 @@ const Branch = () => {
 
                   <h4>Branch List</h4>
 
+                  <span>
+                    <Button
+                      color="soft-success"
+                      size="sm"
+                      onClick={() => syncAllArea() }
+                    >
+                      Sync All Area
+                    </Button>
+                    &nbsp;&nbsp;
                   <Button
                     color="soft-success"
                     size="sm"
@@ -612,7 +704,7 @@ const Branch = () => {
                   >
                     + Add New
                   </Button>
-
+                </span>
                 </CardHeader>
 
                 <CardBody>

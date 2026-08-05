@@ -22,7 +22,7 @@ import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 import ListDistrict from "./ListDistrict";
 import { toast } from 'react-toastify';
 import md from '../../../http/masterData';
-import { http, ADD_DISTRICT,UPDATE_DISTRICT,DELETE_DISTRICT } from '../../../http/http';
+import { http, ADD_DISTRICT_GEO,UPDATE_DISTRICT,DELETE_DISTRICT } from '../../../http/http';
 import { Formik, Field, ErrorMessage } from 'formik';
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 
@@ -39,7 +39,11 @@ interface DistrictRow {
 }
 
 const schema = Yup.object({
-  district: Yup.string().required("Required"),
+  district: Yup.string().when('addAllDistrict', {
+    is: 'False', // The condition to check
+    then: (schema) => schema.required('District is required'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   state: Yup.object()
   .nullable()
   .required("Required"),
@@ -77,35 +81,49 @@ const District = () => {
      getState()
    },[])
 
-       async function updateDistrict(data:any) {
-         console.log('data', data);
-         setLoading(true);
-         await http({
-           method: 'PUT',
-           url: UPDATE_DISTRICT+'/'+data.district_id,
-           data,
-         })
-           .then(function(response) {
-             if (response.status === 200) {
-               console.log(response.data);
-     
-               toast(response.data.message, {
-                 position: 'top-right',
-                 type: 'success',
-               });
-             } else {
-               toast('Failed to Add State', {
-                 position: 'top-right',
-                 type: 'error',
-               });
-             }
-             setLoading(false);
-           })
-           .catch(err => {
-             toast(err, { position: 'top-right', type: 'error' });
-             setLoading(false);
-           });
-       }
+async function updateDistrict(data: DistrictRow) {
+  console.log("data", data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "PUT",
+      url: `${UPDATE_DISTRICT}/${data.district_id}`,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+
+      setShowForm(false);
+    } else {
+      toast("Failed to Update District", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
+      }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
    
        async function deleteDistrict(district_id:any) {
          setLoading(true);
@@ -136,35 +154,71 @@ const District = () => {
        }
 
 
-       async function addNewDistrict(data:any) {
-            console.log('data', data);
-            setLoading(true);
-            await http({
-              method: 'POST',
-              url: ADD_DISTRICT,
-              data,
-            })
-              .then(function(response) {
-                if (response.status === 200) {
-                  console.log(response.data);
-        
-                  toast(response.data.message, {
-                    position: 'top-right',
-                    type: 'success',
-                  });
-                } else {
-                  toast('Failed to Add State', {
-                    position: 'top-right',
-                    type: 'error',
-                  });
-                }
-                setLoading(false);
-              })
-              .catch(err => {
-                toast(err, { position: 'top-right', type: 'error' });
-                setLoading(false);
-              });
+       const createFormData = (data: DistrictRow) => {
+          const formData = new FormData();
+
+          formData.append("district", data.district);
+
+         if (data.state) {
+            formData.append("state", JSON.stringify(data.state));
           }
+
+          if (data.geoarea) {
+            formData.append("geoarea", data.geoarea);
+          }
+
+          formData.append(
+            "addAllDistrict",
+            data.addAllDistrict ? "1" : "0"
+          );
+
+          return formData;
+        };
+
+
+ async function addNewDistrict(data: DistrictRow) {
+  console.log("data", data);
+
+  setLoading(true);
+
+  const formData = createFormData(data);
+
+  try {
+    const response = await http({
+      method: "POST",
+      url: ADD_DISTRICT_GEO,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status === 200) {
+      toast(response.data.message, {
+        position: "top-right",
+        type: "success",
+      });
+
+      setShowForm(false);
+    } else {
+      toast("Failed to Add District", {
+        position: "top-right",
+        type: "error",
+      });
+    }
+  } catch (err: any) {
+    toast(
+      err?.response?.data?.message || err.message,
+      {
+        position: "top-right",
+        type: "error",
+      }
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
 
 
   const formik = useFormik<DistrictRow>({
@@ -178,21 +232,18 @@ const District = () => {
 
     validationSchema: schema,
 
-    onSubmit: (values, { resetForm }) => {
-       if (editId) {
-        // setData(data.map(d => d.id === editId ? { ...values, id: editId } : d));
-        // addNewState(values);
-        updateDistrict(values)
+    onSubmit: async (values, { resetForm }) => {
+      if (editId) {
+        await updateDistrict(values);
         setEditId(null);
       } else {
-        addNewDistrict(values);
+        await addNewDistrict(values);
       }
 
       setSuccessMsg("Saved Successfully");
 
       resetForm();
       setGeoPreview(null);
-      setShowForm(false);
     },
   });
 
@@ -241,7 +292,24 @@ const District = () => {
 
               <Form onSubmit={formik.handleSubmit}>
 
-                
+                <FormGroup check>
+                  <Label check>
+                    <Input
+                      type="checkbox"
+                      name="addAllDistrict"
+                      checked={
+                        formik.values.addAllDistrict
+                      }
+                      onChange={formik.handleChange}
+                    />
+
+                    {" "}
+                    Add All District
+                  </Label>
+
+                </FormGroup>
+                {
+                  !formik.values.addAllDistrict&&
                 <FormGroup>
                   <Label>District</Label>
 
@@ -263,6 +331,8 @@ const District = () => {
                       </div>
                     )}
                 </FormGroup>
+
+                }
 
                 {/* STATE */}
                 <FormGroup>
@@ -323,21 +393,20 @@ const District = () => {
                   ) : (
                     <Input
                       type="file"
-                      onChange={(e: any) => {
-                        const file = e.target.files[0];
+                      name="geoarea"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
+
+                        formik.setFieldValue("geoarea", file);
 
                         if (file) {
-                          formik.setFieldValue(
-                            "geoarea",
-                            file
-                          );
-
-                          setGeoPreview(
-                            URL.createObjectURL(file)
-                          );
+                          setGeoPreview(URL.createObjectURL(file));
+                        } else {
+                          setGeoPreview(null);
                         }
                       }}
                     />
+
                   )}
 
                   {formik.touched.geoarea &&
@@ -349,21 +418,7 @@ const District = () => {
                 </FormGroup>
 
               
-                <FormGroup check>
-                  <Label check>
-                    <Input
-                      type="checkbox"
-                      name="addAllDistrict"
-                      checked={
-                        formik.values.addAllDistrict
-                      }
-                      onChange={formik.handleChange}
-                    />
 
-                    {" "}
-                    Add All District
-                  </Label>
-                </FormGroup>
 
                 {/* BUTTONS */}
                 <div className="d-flex gap-2 mt-3">

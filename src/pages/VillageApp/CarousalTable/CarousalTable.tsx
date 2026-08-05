@@ -23,7 +23,7 @@ import { TableContainer } from '../../../common/AnalyticsTable/TableContainerRea
 import { SortTanstackInterface,SortInterface } from '../../../Typecomponents/ComponentsType';
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import { http } from '../../../http/http';
-import { ADD_VILLAGE_CAROUSEL,GET_VILLAGE_CAROUSEL,MD_URL } from '../Api';
+import { ADD_VILLAGE_CAROUSEL,GET_VILLAGE_CAROUSEL,MD_URL,UPDATE_VILLAGE_CAROUSEL,DELETE_VILLAGE_CAROUSEL } from '../Api';
 import { toast } from 'react-toastify';
 import mdurl from '../../../http/masterDataURL';
 interface keyValue{
@@ -124,6 +124,33 @@ const CarousalTable = () => {
       });
   }
   
+  async function updateVillageCarousel(data:any) {
+      setLoading(true);
+      await http({
+        method: 'POST',
+        url: UPDATE_VILLAGE_CAROUSEL,
+        data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then(function(response) {
+          if (response.status === 200) {
+            formik.resetForm();
+            toast(response.data.message, { position: 'top-right',type: 'success' });
+            setShowForm(false);
+            fetchData(initialRequest);
+
+          } else {
+            toast('Failed to Add village', {position: 'top-right',type: 'error'});
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
+
 
   const formik = useFormik<CarousalRow>({
     initialValues: {
@@ -139,16 +166,25 @@ const CarousalTable = () => {
     onSubmit: (values, { resetForm, setSubmitting }) => {
 
       if (editId) {
-        // setData(data.map(d =>
-        //   d.id === editId
-        //     ? {
-        //         ...values,
-        //         image: values.image || d.image, // ✅ preserve old image
-        //         id: editId
-        //       }
-        //     : d
-        // ));
-        // setEditId(null);
+
+        const formData = new FormData();
+        formData.append("carousel_id", values.carousel_id.toString());
+        formData.append("carousel_name", values.carousel_name);
+        formData.append("carousel_desc", values.carousel_desc);
+        formData.append("carousel_position", values.carousel_position.toString());
+        formData.append("isenabled", values.isenabled.toString());
+        formData.append("f_villageapp_id",values.f_villageapp_id?.value.toString() || "");
+
+        if (values.carousel_image) {
+          formData.append(
+            "carousel_image",
+            values.carousel_image
+          );
+        }
+
+
+
+        updateVillageCarousel(formData);
       } else {
 
         const formData = new FormData();
@@ -178,26 +214,48 @@ const CarousalTable = () => {
   });
 
   const handleEdit = (row: CarousalRow) => {
-    // setEditId(row.id);
-
-    // formik.setValues({
-    //   ...row,
-    //   image: row.image, // ✅ keep existing image
-    // });
-
-    // if (row.image) {
-    //   setImagePreview(URL.createObjectURL(row.image));
-    // } else {
-    //   setImagePreview(null);
-    // }
-
-    // setShowForm(true);
+    setEditId(row.carousel_id);
+    formik.setFieldValue("carousel_id", row.carousel_id);
+    formik.setFieldValue("carousel_name", row.carousel_name);
+    formik.setFieldValue("carousel_desc", row.carousel_desc);
+    formik.setFieldValue("carousel_image", row.carousel_image);
+    formik.setFieldValue("carousel_position", row.carousel_position);
+    formik.setFieldValue("isenabled", row.isenabled);
+    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
+    setShowForm(true);
   };
 
 
-
-  const handleDelete = (id: number) => {
-    // setData(data.filter(d => d.id !== id));
+    async function deleteCarousel(data:any) {
+      console.log('data', data);
+      setLoading(true);
+      await http({
+      method: 'POST',
+      url: DELETE_VILLAGE_CAROUSEL,
+      data,
+      })
+      .then(function(response) {
+          if (response.status === 200) {
+          toast(response.data.message, {
+              position: 'top-right',
+              type: 'success',
+          });
+          fetchData(initialRequest)
+          } else {
+          toast('Failed to Delete Users', {
+              position: 'top-right',
+              type: 'error',
+          });
+          }
+          setLoading(false);
+      })
+      .catch(err => {
+          toast(err, { position: 'top-right', type: 'error' });
+          setLoading(false);
+      });
+  }
+  const handleDelete = (row: any) => {
+    deleteCarousel({carousel_id: row.carousel_id})
   };
 
   const columns = useMemo(() => [
@@ -256,7 +314,7 @@ const CarousalTable = () => {
             <Button size="sm" color="soft-warning" onClick={() => handleEdit(row)}>
               Edit
             </Button>
-            <Button size="sm" color="soft-danger" onClick={() => handleDelete(row.id)}>
+            <Button size="sm" color="soft-danger" onClick={() => handleDelete(row)}>
               Delete
             </Button>
           </div>

@@ -213,12 +213,13 @@ const UserList = ({returnFunc,formik_values,requestType}:any) => {
     }
 
 
-    // const contactFunc = (celldata: any) => {
-    //     // console.log(celldata)
-    //     return <span>
-    //             <div>{celldata.row.original.HouseName +" "+celldata.row.original.HouseNo}</div>
-    //             </span>
-    // }
+    const contactFunc = (celldata: any) => {
+        console.log(celldata)
+        return <span>
+                <div>{celldata.row.original.contact}</div>
+                <div>{celldata.row.original.address}</div>
+                </span>
+    }
 
 
 // Restore checkboxes whenever the page data changes
@@ -342,10 +343,10 @@ let selectionBox= {
         },
         {
             id: "contact",
-            header: "contact",
+            header: "contact/address",
             accessorKey: "contact",
             enableColumnFilter: false,
-            // cell: (cell: any) => contactFunc(cell),
+            cell: (cell: any) => contactFunc(cell),
         },
          {
             id: "branch",
@@ -376,7 +377,8 @@ let selectionBox= {
           dataSet.push({
               id:data[i].user_id,
               Name:data[i].first_name+" "+data[i].middle_name+" "+data[i].last_name,
-              contact:"",
+              contact:data[i].mobno,
+              address:"",
               f_elastic_id:"",
               f_user_id:data[i].user_id,
               branch:data[i].branch
@@ -385,7 +387,8 @@ let selectionBox= {
            dataSet.push({
               id:data[i].SerialNo,
               Name:data[i].Name,
-              contact:data[i].HouseName+" "+data[i].HouseNo,
+              contact:"",
+              address:data[i].HouseName+" "+data[i].HouseNo,
               f_elastic_id:data[i].SerialNo,
               f_user_id:"",
               branch:data[i].ward

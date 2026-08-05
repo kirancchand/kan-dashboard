@@ -44,7 +44,7 @@ interface OrgRow {
 }
 
 const UserList = ({returnFunc,formik_values}:any) => {
-  //console.log("formik_values",formik_values)
+  console.log("formik_values",formik_values)
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState<SortTanstackInterface[]>([]);
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -391,13 +391,14 @@ const UserList = ({returnFunc,formik_values}:any) => {
     const UserGeneralizeFunc=(data:any)=>{
       let dataSet:any=[]
       for(let i=0;i<data.length;i++){
-        if(formik_values.role.label!="SuperAdmin"){
+        if(formik_values.usertype.label!="SuperAdmin"&&formik_values.usertype.label!="Owner"){
           dataSet.push({
               id:data[i].SerialNo,
               f_organisation_id:formik_values.organisation_id,
-              f_user_id:data[i].SerialNo,
+              f_user_id:null,
               role:formik_values.role,
               status:formik_values.status,
+              usertype:formik_values.usertype,
               name:data[i].Name,
               gender:data[i].Gender,
               email_id:"",
@@ -414,13 +415,14 @@ const UserList = ({returnFunc,formik_values}:any) => {
               f_user_id:data[i].user_id,
               role:formik_values.role,
               status:formik_values.status,
+              usertype:formik_values.usertype,
               name:data[i].first_name+" "+data[i].middle_name+" "+data[i].last_name,
               gender:data[i].gender,
               email_id:data[i].email_id,
               dateofbirth:data[i].dateofbirth,
               address:"",
               branch:data[i].branch,
-              f_elastic_id:"",
+              f_elastic_id:null,
               is_thepointofcontact:formik_values.is_thepointofcontact
           });
         }
@@ -435,15 +437,15 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
     //console.log("data",data)
     const fetchData = async (requestdata: any) => {
-      if(formik_values.role!=null){
+      if(formik_values.usertype!=null){
         const { start, numberOfRows } = requestdata;
         try {
-            const response = await http.post(formik_values.role.label=="SuperAdmin"?GET_USER_LIST:LISTELASTICUSER, requestdata);
+            const response = await http.post(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"?GET_USER_LIST:LISTELASTICUSER, requestdata);
             //console.log(response.data)
             if (response.data) {
 
               
-              if(formik_values.role.label=="SuperAdmin"){
+              if(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"){
                   UserGeneralizeFunc(response.data.result)
                   // setData(response.data.result);
               }else{
@@ -466,11 +468,11 @@ const UserList = ({returnFunc,formik_values}:any) => {
     };
 
     useEffect(() => {
-      if(formik_values.role!=undefined){
+      if(formik_values.usertype!=undefined){
           fetchData(initialRequest);
       }
 
-    }, [formik_values.role]);
+    }, [formik_values.usertype]);
 
     const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
         setPage(pages)

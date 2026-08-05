@@ -27,7 +27,7 @@ import md from '../../../http/masterData';
 import mdurl from '../../../http/masterDataURL';
 import { http } from '../../../http/http';
 import { toast } from 'react-toastify';
-import { ADD_VILLAGE_USERS, MD_URL,GET_VILLAGE_USERS,DELETE_VILLAGE_USERS,UPDATE_VILLAGE_USERS } from '../Api';
+import { ADD_VILLAGE_USERS, MD_URL,GET_VILLAGE_USERS,DELETE_VILLAGE_USERS,UPDATE_VILLAGE_USERS,GET_VILLAGE_ALL_USERS } from '../Api';
 
 interface KeyValue {
   label: string;
@@ -37,9 +37,11 @@ interface KeyValue {
 interface UserRow {
   villageapp_userid: number;
   f_villageapp_id:KeyValue | null;
-  f_role_id:KeyValue | null;
+  // f_role_id:KeyValue | null;
+  f_usertype_id:KeyValue | null;
   villageapp_username: string;
   contact: string,
+  address:string,
   isimportant: boolean,
   priority: string;
   f_user_id: string;
@@ -74,11 +76,13 @@ const Users = () => {
   const [loading, setLoading] = useState(false);
   const [roleData,setRoleData]=useState<KeyValue[]>([]);
   const [roleLoading,setRoleLoading]=useState(false);
+  const [userTypeLoading, setUserTypeLoading] = useState(false);
+  const [userTypeData, setUserTypeData] = useState<KeyValue[]>([]);
   const [villageAppData,setVillageAppData]=useState<KeyValue[]>([])
   const [villageAppDataLoading,setVillageAppDataLoading]=useState(false)
   const [totalCount, setTotalCount] = useState(0);
   const [data, setData] = useState<[]>([]);
-  const [selectedRoleId,setSelectedRoleId]=useState<any>('');
+  const [selectedUserTypeId,setSelectedUserTypeId]=useState<any>('');
   let sort: SortInterface[] = [];
 
   let initialRequest = {
@@ -91,7 +95,7 @@ const Users = () => {
   const fetchData = async (requestdata: any) => {
       const { start, numberOfRows } = requestdata;
       try {
-          const response = await http.post(GET_VILLAGE_USERS, requestdata);
+          const response = await http.post(GET_VILLAGE_ALL_USERS, requestdata);
           //console.log(response.data)
           if (response.data) {
               setData(response.data.result)
@@ -118,17 +122,17 @@ const Users = () => {
       setShowModal(!showModal);
   };
 
-  async function getRole() {
-          setRoleLoading(true);
-          md('getAll_Role')
-            .then((r) => {
-              setRoleData(r);
-              setRoleLoading(false);
-            }).catch((error) => {
-              toast(error, { position: 'top-right', type: 'error' });
-              setRoleLoading(false);
-            });
-        }
+  // async function getRole() {
+  //         setRoleLoading(true);
+  //         md('getAll_Role')
+  //           .then((r) => {
+  //             setRoleData(r);
+  //             setRoleLoading(false);
+  //           }).catch((error) => {
+  //             toast(error, { position: 'top-right', type: 'error' });
+  //             setRoleLoading(false);
+  //           });
+  //       }
   async function fetchVillageApps() {
       setVillageAppDataLoading(true);
       mdurl(MD_URL,'getAll_VillageApp')
@@ -140,9 +144,22 @@ const Users = () => {
           setVillageAppDataLoading(false);
         });
     }
+
+    async function getUserType() {
+      setUserTypeLoading(true);
+      md('getAll_Usertype')
+        .then((r) => {
+          setUserTypeData(r);
+          setUserTypeLoading(false);
+        }).catch((error) => {
+          toast(error, { position: 'top-right', type: 'error' });
+          setUserTypeLoading(false);
+        });
+    }
   useEffect(() => {
     // Fetch initial data here and setTableData
-    getRole()
+    // getRole()
+    getUserType()
     fetchVillageApps()
     fetchData(initialRequest)
   }, []);
@@ -161,6 +178,7 @@ const Users = () => {
           console.log(response.data);
           formik.resetForm();
           setSelectedUser([]);
+          fetchData(initialRequest)
           toast(response.data.message, {
               position: 'top-right',
               type: 'success',
@@ -224,9 +242,11 @@ const Users = () => {
     initialValues: {
       villageapp_userid: 0,
       f_villageapp_id: null,
-      f_role_id: null,
+      // f_role_id: null,
+      f_usertype_id:null,
       villageapp_username: "",
       contact: "",
+      address:"",
       isimportant: false,
       priority: "",
       f_user_id: "",
@@ -270,17 +290,20 @@ const Users = () => {
 
   const handleEdit = (row: UserRow) => {
     console.log(row)
+     console.log(userTypeData)
     setEditId(row.villageapp_userid);
     formik.setFieldValue("villageapp_userid", row.villageapp_userid);
-    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
-    formik.setFieldValue("f_role_id", roleData.find((r: any) => r.value === row.f_role_id));
+    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value == row.f_villageapp_id));
+    // formik.setFieldValue("f_role_id", roleData.find((r: any) => r.value == row.f_role_id));
+    formik.setFieldValue("f_usertype_id", userTypeData.find((u: any) => u.value == row.f_usertype_id));
     formik.setFieldValue("villageapp_username", row.villageapp_username);
+    formik.setFieldValue("address", row.address);
     formik.setFieldValue("contact", row.contact);
     formik.setFieldValue("isimportant", row.isimportant);
     formik.setFieldValue("priority", row.priority);
     formik.setFieldValue("f_user_id", row.f_user_id);
     formik.setFieldValue("f_elastic_id", row.f_elastic_id);
-    setSelectedRoleId(row.f_role_id)
+    setSelectedUserTypeId(row.f_usertype_id)
     setShowForm(true);
   };
 
@@ -338,12 +361,35 @@ const Users = () => {
       //console.log("page", page)
   }
 
-  const roleFunc = (celldata: any) => {
+  const nameFunc = (celldata: any) => {
         // console.log(celldata)
         return <span>
-                <div>{roleData.find((r:any)=>r.value==celldata.row.original.f_role_id)?.label}</div>
+                <div>{celldata.row.original.villageapp_username}</div>
+                 <span className="badge bg-success">{celldata.row.original.f_user_id!=""?"Linked":""}</span>
                 </span>
     }
+
+  // const roleFunc = (celldata: any) => {
+  //       // console.log(celldata)
+  //       return <span>
+  //               <div>{roleData.find((r:any)=>r.value==celldata.row.original.f_role_id)?.label}</div>
+  //               </span>
+  //   }
+
+  const userTypeFunc = (celldata: any) => {
+      // console.log(celldata)
+      return <span>
+              <div>{userTypeData.find((r:any)=>r.value==celldata.row.original.f_usertype_id)?.label}</div>
+              </span>
+  }
+
+  const contactFunc = (celldata: any) => {
+      console.log(celldata)
+      return <span>
+              <div>{celldata.row.original.contact}</div>
+              <div>{celldata.row.original.address}</div>
+              </span>
+  }
 
   const columns = useMemo(
     () => [
@@ -356,22 +402,30 @@ const Users = () => {
         header: 'Name',
         accessorKey: 'villageapp_username',
         enableColumnFilter: false,
+        cell: (cell: any) => nameFunc(cell),
       },
       {
-        header: 'Contact',
+        header: 'Contact/Address',
         accessorKey: 'contact',
         enableColumnFilter: false,
+        cell: (cell: any) => contactFunc(cell),
       },
        {
         header: 'villageapp Name',
         accessorKey: 'villageapp_name',
         enableColumnFilter: false,
       },
+      // {
+      //   header: 'Role Name',
+      //   accessorKey: 'f_role_id',
+      //   enableColumnFilter: false,
+      //   cell: (cell: any) => roleFunc(cell),
+      // },
       {
-        header: 'Role Name',
-        accessorKey: 'f_role_id',
+        header: 'User Type',
+        accessorKey: 'f_usertype_id',
         enableColumnFilter: false,
-        cell: (cell: any) => roleFunc(cell),
+        cell: (cell: any) => userTypeFunc(cell),
       },
       // {
       //   header: 'Image',
@@ -401,7 +455,7 @@ const Users = () => {
         header: 'Important',
         enableColumnFilter: false,
         cell: (cell: any) =>
-          cell.row.original.isImportant ? (
+          cell.row.original.isimportant ? (
             <span className="badge bg-success">Yes</span>
           ) : (
             <span className="badge bg-secondary">No</span>
@@ -441,15 +495,16 @@ const Users = () => {
 
 
     async function returnFunc(data:any) {
-
+      console.log(data)
       if(editId==null){
           let revisedData = data.map((item:any)=>{
           return {
             "villageapp_username": item.Name,
             "contact": item.contact,
+            "address":item.address,
             "priority": "10",
             "isimportant": false,
-            "f_role_id": roleData.length>0?roleData.find((role) => role.label === "Unauthorised User")?? "":"",
+            "f_usertype_id":userTypeData.length>0?userTypeData.find((usertype:any) => usertype.label === "Unauthorised User")?? null:null,
             "f_user_id": item.f_user_id,
             "f_elastic_id": item.f_elastic_id,
             "f_villageapp_id": formik.values.f_villageapp_id
@@ -458,6 +513,7 @@ const Users = () => {
         setSelectedUser([...selectedUser,...revisedData])
 
       }else{
+        formik.setFieldValue("contact",data.contact)
         formik.setFieldValue("f_user_id",data.f_user_id)
 
       }
@@ -524,7 +580,7 @@ const Users = () => {
                   {
                     editId!==null?
                   <Col md="12">
-                    <FormGroup>
+                    {/* <FormGroup>
                       <Label>Select Role</Label>
                           <RSelect
                             name="f_role_id"
@@ -534,7 +590,7 @@ const Users = () => {
                                 formik.setFieldValue("f_role_id", ev)
                             }
                             options={roleData}
-                            placeholder="--Select Village--"
+                            placeholder="--Select Role--"
                             error={formik.errors.f_role_id}
                             touched={formik.touched.f_role_id}
                             isLoading={roleLoading}
@@ -547,13 +603,37 @@ const Users = () => {
                             </div>
                             )}
 
+                </FormGroup> */}
+                  <FormGroup>
+                      <Label>Select User Type</Label>
+                          <RSelect
+                            name="f_usertype_id"
+                            id="f_usertype_id"
+                            value={formik.values.f_usertype_id}
+                            onChange={(ev: any) =>
+                                formik.setFieldValue("f_usertype_id", ev)
+                            }
+                            options={userTypeData}
+                            placeholder="--Select User Type--"
+                            error={formik.errors.f_usertype_id}
+                            touched={formik.touched.f_usertype_id}
+                            isLoading={userTypeLoading}
+                            isClearable
+                            />
+                        {formik.touched.f_usertype_id &&
+                            formik.errors.f_usertype_id && (
+                            <div className="text-danger">
+                                {formik.errors.f_usertype_id}
+                            </div>
+                            )}
+
                 </FormGroup>
                 <FormGroup>
                   <Label>Name</Label>
                   <Input name="villageapp_username" value={formik.values.villageapp_username} onChange={formik.handleChange} />
                 </FormGroup>
                 {
-                  (selectedRoleId!=formik.values.f_role_id?.value)&&
+                  (selectedUserTypeId!=formik.values.f_usertype_id?.value)&&
                   <FormGroup>
                     <Label>Users <UserSearch onClick={()=>addToggle()}/></Label>
                     <Input name="f_user_id" value={formik.values.f_user_id} onChange={formik.handleChange} />
@@ -561,9 +641,12 @@ const Users = () => {
                   }
                 <FormGroup>
                   <Label>Contact</Label>
-                  <Input name="contact" value={formik.values.contact} onChange={formik.handleChange} />
+                  <Input name="contact" value={formik.values.contact} onChange={formik.handleChange} disabled/>
                 </FormGroup>
-
+                <FormGroup>
+                  <Label>Address</Label>
+                  <Input name="address" value={formik.values.address} onChange={formik.handleChange} />
+                </FormGroup>
                 <FormGroup>
                   <Label>Priority</Label>
                   <Input name="priority" value={formik.values.priority} onChange={formik.handleChange} />

@@ -22,22 +22,31 @@ export const GET_BRANCH_LIST = BRANCH_API + "/listBranch"
 
 //
 export const ADD_STATE = STATE_API + "/add"
+export const ADD_STATE_GEO = STATE_API + "/addgeo"
 export const UPDATE_STATE = STATE_API + "/update"
 export const DELETE_STATE = STATE_API + "/delete"
 
 export const ADD_DISTRICT = DISTRICT_API + "/add"
+export const ADD_DISTRICT_GEO = DISTRICT_API + "/addgeo"
 export const UPDATE_DISTRICT = DISTRICT_API + "/update"
 export const DELETE_DISTRICT = DISTRICT_API + "/delete"
 
 
 export const ADD_AREA = AREA_API + "/add"
+export const ADD_AREA_GEO = AREA_API + "/addgeo"
 export const UPDATE_AREA = AREA_API + "/update"
 export const DELETE_AREA = AREA_API + "/delete"
 
 
 export const ADD_BRANCH = BRANCH_API + "/add"
+export const ADD_BRANCH_GEO = BRANCH_API + "/addgeo"
 export const UPDATE_BRANCH = BRANCH_API + "/update"
 export const DELETE_BRANCH = BRANCH_API + "/delete"
+export const SYNC_ALL_AREA = BRANCH_API + "/syncAllArea"
+export const SYNC_MY_AREA = BRANCH_API + "/syncMyArea"
+
+
+
 // Registration & Authentication API's
 export const login_request = BASE_URL + '/auth/login';
 export const register_request = BASE_URL + "/auth/register"
