@@ -59,6 +59,9 @@ export const LISTELASTICUSERDATA=ELASTIC_URL+"/user/search_byFilterData"
 export const GET_MENU_LIST = ADMIN_URL + "/master/menu/listMenu"
 export const GET_ROLE_LIST = ADMIN_URL + "/master/role/listRole"
 export const GET_ROLE_MENU_LIST = ADMIN_URL + "/master/rolemenu/listRoleMenu"
+export const GET_USERTYPE_LIST=ADMIN_URL+"/"
+export const ADD_USERTYPE=ADMIN_URL+"/"
+
 export const GET_MENU_BY_ROLE_ID = ADMIN_URL + "/master/rolemenu/getmenu_byrole_id"
 export const UPDATE_ROLEMENU = ADMIN_URL + "/master/rolemenu/update_rolemenu"
 

@@ -2,633 +2,650 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Navdata = () => {
-    const history = useNavigate();
-    //state data
-    const [isDashboard, setIsDashboard] = useState<boolean>(false);
-    const [isApps, setIsApps] = useState<boolean>(false);
-    const [isUsers,setIsUsers] = useState<boolean>(false);
-    const [isCakes, setIsCakes] = useState<boolean>(false);
-    const [isPlants, setIsPlants] = useState<boolean>(false);
-    const [isBook, setIsBook] = useState<boolean>(false);
-    const [isDelivery, setIsDelivery] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [isAdminDivision, setIsAdminDivision] = useState<boolean>(false);
-    const [isAdminMenu, setIsAdminMenu] = useState<boolean>(false);
-    const [isAdminOrganisation, setIsAdminOrganisation] = useState<boolean>(false);
-    const [isVillage,setIsVillage]=useState<boolean>(false)
+  const history = useNavigate();
+  //state data
+  const [isDashboard, setIsDashboard] = useState<boolean>(false);
+  const [isApps, setIsApps] = useState<boolean>(false);
+  const [isUsers, setIsUsers] = useState<boolean>(false);
+  const [isCakes, setIsCakes] = useState<boolean>(false);
+  const [isPlants, setIsPlants] = useState<boolean>(false);
+  const [isBook, setIsBook] = useState<boolean>(false);
+  const [isDelivery, setIsDelivery] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isAdminDivision, setIsAdminDivision] = useState<boolean>(false);
+  const [isAdminMenu, setIsAdminMenu] = useState<boolean>(false);
+  const [isAdminOrganisation, setIsAdminOrganisation] =
+    useState<boolean>(false);
+  const [isVillage, setIsVillage] = useState<boolean>(false);
+const [isUserType, setIsUserType] = useState(false);
+  // Apps
+  const [isListcategories, setListcategories] = useState<boolean>(false);
+  const [isBooklist, setIsBooklist] = useState<boolean>(false);
+  const [iscurrentState, setIscurrentState] = useState("Dashboard");
 
-
-
-    // Apps
-    const [isListcategories, setListcategories] = useState<boolean>(false);
-    const [isBooklist, setIsBooklist] = useState<boolean>(false);
-    const [iscurrentState, setIscurrentState] = useState('Dashboard');
-
-    function updateIconSidebar(e: any) {
-        if (e && e.target && e.target.getAttribute("sub-items")) {
-            const ul: any = document.getElementById("two-column-menu");
-            const iconItems: any = ul.querySelectorAll(".nav-icon.active");
-            let activeIconItems = [...iconItems];
-            activeIconItems.forEach((item) => {
-                item.classList.remove("active");
-                var id = item.getAttribute("sub-items");
-                const getID = document.getElementById(id) as HTMLElement;
-                if (getID)
-                    getID.classList.remove("show");
-            });
-        }
+  function updateIconSidebar(e: any) {
+    if (e && e.target && e.target.getAttribute("sub-items")) {
+      const ul: any = document.getElementById("two-column-menu");
+      const iconItems: any = ul.querySelectorAll(".nav-icon.active");
+      let activeIconItems = [...iconItems];
+      activeIconItems.forEach((item) => {
+        item.classList.remove("active");
+        var id = item.getAttribute("sub-items");
+        const getID = document.getElementById(id) as HTMLElement;
+        if (getID) getID.classList.remove("show");
+      });
     }
+  }
 
-    useEffect(() => {
-        document.body.classList.remove('twocolumn-panel');
-        if (iscurrentState !== 'Dashboard') {
-            setIsDashboard(false);
-        }
-        if (iscurrentState !== 'Apps') {
-            setIsApps(false);
-        }
-        if (iscurrentState !== 'Cakes') {
-            setIsCakes(false);
-        }
-        if (iscurrentState !== 'Plants') {
-            setIsPlants(false);
-        }
-        if (iscurrentState !== 'Delivery') {
-            setIsDelivery(false);
-        }
-        if (iscurrentState !== 'Admin') {
-            setIsAdmin(false);
-        }
-        if (iscurrentState !== 'Village') {
-            setIsVillage(false);
-        }
-    }, [
-        history,
-        iscurrentState,
-        isDashboard,
-        isApps,
-        isBook,
-        isCakes,
-        isPlants,
-        isDelivery,
-        isAdmin,
-        isAdminDivision,
-        isAdminMenu,
-        isAdminOrganisation,
-        isVillage
-    ]);
+  useEffect(() => {
+    document.body.classList.remove("twocolumn-panel");
+    if (iscurrentState !== "Dashboard") {
+      setIsDashboard(false);
+    }
+    if (iscurrentState !== "Apps") {
+      setIsApps(false);
+    }
+    if (iscurrentState !== "Cakes") {
+      setIsCakes(false);
+    }
+    if (iscurrentState !== "Plants") {
+      setIsPlants(false);
+    }
+    if (iscurrentState !== "Delivery") {
+      setIsDelivery(false);
+    }
+    if (iscurrentState !== "Admin") {
+      setIsAdmin(false);
+    }
+    if (iscurrentState !== "Village") {
+      setIsVillage(false);
+    }
+  }, [
+    history,
+    iscurrentState,
+    isDashboard,
+    isApps,
+    isBook,
+    isCakes,
+    isPlants,
+    isDelivery,
+    isAdmin,
+    isAdminDivision,
+    isAdminMenu,
+    isAdminOrganisation,
+    isVillage,
+  ]);
 
-    const menuItems: any = [
+  const menuItems: any = [
+    {
+      label: "Menu",
+      isHeader: true,
+    },
+    {
+      id: "dashboard",
+      label: "Dashboards",
+      icon: "ri-dashboard-2-line",
+      link: "/#",
+      stateVariables: isDashboard,
+      click: function (e: any) {
+        e.preventDefault();
+        setIsDashboard(!isDashboard);
+        setIscurrentState("Dashboard");
+        updateIconSidebar(e);
+      },
+      subItems: [
         {
-            label: "Menu",
-            isHeader: true,
+          id: "ecommerce",
+          label: "Ecommerce",
+          link: "/dashboard",
+          parentId: "dashboard",
         },
         {
-            id: "dashboard",
-            label: "Dashboards",
-            icon: "ri-dashboard-2-line",
-            link: "/#",
-            stateVariables: isDashboard,
-            click: function (e: any) {
-                e.preventDefault();
-                setIsDashboard(!isDashboard);
-                setIscurrentState('Dashboard');
-                updateIconSidebar(e);
-            },
-            subItems: [
-                {
-                    id: "ecommerce",
-                    label: "Ecommerce",
-                    link: "/dashboard",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "userdashboard",
-                    label: "User",
-                    link: "/dashboard-user",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "useranalytics",
-                    label: "User Analytics",
-                    link: "/dashboard-useranalytics",
-                    parentId: "dashboard",
-                }
-            ],
+          id: "userdashboard",
+          label: "User",
+          link: "/dashboard-user",
+          parentId: "dashboard",
         },
         {
-            id: "users",
-            label: "Users",
-            icon: "ri-team-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
+          id: "useranalytics",
+          label: "User Analytics",
+          link: "/dashboard-useranalytics",
+          parentId: "dashboard",
+        },
+      ],
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: "ri-team-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
 
-                setIsUsers(!isUsers);
-                setIscurrentState('Users');
-                updateIconSidebar(e);
-            },
-            stateVariables: isUsers,
-            subItems: [
-                {
-                    id:"users",
-                    label:"Users Table",
-                    link:"/all-app-users",
-                    parentId:"list"
-                }
-            ]
+        setIsUsers(!isUsers);
+        setIscurrentState("Users");
+        updateIconSidebar(e);
+      },
+      stateVariables: isUsers,
+      subItems: [
+        {
+          id: "users",
+          label: "Users Table",
+          link: "/all-app-users",
+          parentId: "list",
+        },
+      ],
+    },
+    {
+      id: "booksapp",
+      label: "Books App",
+      icon: "ri-book-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
 
+        setIsBook(!isBook);
+        setIscurrentState("Books");
+        updateIconSidebar(e);
+      },
+      stateVariables: isBook,
+      subItems: [
+        {
+          id: "user",
+          label: "User Mangement",
+          link: "/Users-list",
+          parentId: "list",
         },
         {
-            id: "booksapp",
-            label: "Books App",
-            icon: "ri-book-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
+          id: "bookmanagement",
+          label: "Book Management",
 
-                setIsBook(!isBook);
-                setIscurrentState('Books');
-                updateIconSidebar(e);
-            },
-            stateVariables: isBook,
-            subItems: [
-                {
-                    id: "user",
-                    label: "User Mangement",
-                    link: "/Users-list",
-                    parentId: "list",
+          parentId: "bookmanagement",
+          isChildItem: true,
+          click: function (e: any) {
+            e.preventDefault();
+            setIsBooklist(!isBooklist);
+          },
+          stateVariables: isBooklist,
+          childItems: [
+            { id: 1, label: "Book List", link: "/book-list" },
+            { id: 2, label: "Sell Order", link: "/sell-order" },
+            { id: 3, label: "Buy Order", link: "/Buy-orders" },
+            { id: 4, label: "Rent Order", link: "/Rent-orders" },
+            { id: 5, label: "Book Category", link: "/book-category" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "cakesapp",
+      label: "Cakes App",
+      icon: "ri-cake-2-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
 
-                },
-                {
-                    id: "bookmanagement",
-                    label: "Book Management",
-
-                    parentId: "bookmanagement",
-                    isChildItem: true,
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsBooklist(!isBooklist);
-                    },
-                    stateVariables: isBooklist,
-                    childItems: [
-                        { id: 1, label: "Book List", link: "/book-list" },
-                        { id: 2, label: "Sell Order", link: "/sell-order" },
-                        { id: 3, label: "Buy Order", link: "/Buy-orders" },
-                        { id: 4, label: "Rent Order", link: "/Rent-orders" },
-                        { id: 5, label: "Book Category", link: "/book-category" },
-
-                    ]
-                },
-            ]
-
+        setIsCakes(!isCakes);
+        setIscurrentState("Cakes");
+        updateIconSidebar(e);
+      },
+      stateVariables: isCakes,
+      subItems: [
+        {
+          id: "user",
+          label: "User Mangement",
+          link: "/cakeUsers-list",
+          parentId: "list",
         },
         {
-            id: "cakesapp",
-            label: "Cakes App",
-            icon: "ri-cake-2-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
-
-                setIsCakes(!isCakes);
-                setIscurrentState('Cakes');
-                updateIconSidebar(e);
-            },
-            stateVariables: isCakes,
-            subItems: [
-                {
-                    id: "user",
-                    label: "User Mangement",
-                    link: "/cakeUsers-list",
-                    parentId: "list",
-
-                },
-                {
-                    id: "order",
-                    label: "Orders",
-                    link: "/order-table",
-                    parentId: "list",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setListcategories(!isListcategories);
-                    }
-                },
-
-                {
-                    id: "list",
-                    label: "Categories",
-                    link: "/list-categories",
-                    parentId: "list",
-                },
-
-                {
-                    id: "cakes",
-                    label: "Cakes",
-                    link: "/cake-table",
-                    parentId: "cakes",
-
-                },
-                {
-                    id: "splash",
-                    label: "Splash Screen",
-                    link: "/splash-table",
-                    parentId: "splash",
-                },
-                {
-                    id: "review",
-                    label: "Review",
-                    link: "/review",
-                    parentId: "review",
-                },
-                {
-                    id: "contact",
-                    label: "Contact",
-                    link: "/contact-table",
-                    parentId: "list",
-                }
-
-            ]
+          id: "order",
+          label: "Orders",
+          link: "/order-table",
+          parentId: "list",
+          click: function (e: any) {
+            e.preventDefault();
+            setListcategories(!isListcategories);
+          },
         },
 
         {
-            id: "plantsapp",
-            label: "Plants App",
-            icon: "ri-plant-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
-
-                setIsPlants(!isPlants);
-                setIscurrentState('Plants');
-                updateIconSidebar(e);
-            },
-            stateVariables: isPlants,
-            subItems: [
-                {
-                    id: "plants",
-                    label: "Products",
-                    link: "/plants",
-                    parentId: "plants",
-
-                },
-                {
-                    id: "categories",
-                    label: "Categories",
-                    link: "/plants-category",
-                    parentId: "list",
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setListcategories(!isListcategories);
-                    }
-                },
-
-                {
-                    id: "transactions",
-                    label: "Transactions",
-                    link: "/plants-transactions",
-                    parentId: "list",
-                },
-
-                {
-                    id: "orders",
-                    label: "Orders",
-                    link: "/plants-orders",
-                    parentId: "list",
-                },
-
-                {
-                    id: "carousel",
-                    label: "Carousels",
-                    link: "/plants-carousel",
-                    parentId: "list",
-                },
-                {
-                    id: "reviews",
-                    label: "Reviews",
-                    link: "/plants-reviews",
-                    parentId: "list",
-                },
-            ]
+          id: "list",
+          label: "Categories",
+          link: "/list-categories",
+          parentId: "list",
         },
-           {
-            id: "delivery",
-            label: "Delivery App",
-            icon: "ri-plant-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
 
-                setIsDelivery(!isDelivery);
-                setIscurrentState('Delivery');
-                updateIconSidebar(e);
-            },
-            stateVariables: isDelivery,
-            subItems: [
-                {
-                    id: "deliveryperson",
-                    label: "Delivery Person",
-                    link: "/deliveryperson",
-                    parentId: "delivery",
-                },
-                {
-                    id: "myorders",
-                    label: "My Orders",
-                    link: "/myorders",
-                    parentId: "delivery",
-                },
-                {
-                    id: "map",
-                    label: "Map",
-                    link: "/delivery-map",
-                    parentId: "delivery",
-                },
-            ]
+        {
+          id: "cakes",
+          label: "Cakes",
+          link: "/cake-table",
+          parentId: "cakes",
         },
-        //   {
-        //     id: "admin",
-        //     label: "Admin",
-        //     icon: "ri-plant-line",
-        //     link: "/#",
-        //     click: function (e: any) {
-        //         e.preventDefault();
-
-        //         setIsAdmin(!isAdmin);
-        //         setIscurrentState('Admin');
-        //         updateIconSidebar(e);
-        //     },
-        //     stateVariables: isAdmin,
-        //     subItems: [
-        //         {
-        //             id: "state",
-        //             label: "State",
-        //             link: "/state",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "district",
-        //             label: "District",
-        //             link: "/district",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "region",
-        //             label: "Region",
-        //             link: "/region",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "area",
-        //             label: "Area",
-        //             link: "/Area",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "branch",
-        //             label: "Branch",
-        //             link: "/Branch",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "sector",
-        //             label: "Sector",
-        //             link: "/Sector",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "unit",
-        //             label: "Unit",
-        //             link: "/Unit",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "menu",
-        //             label: "Menu",
-        //             link: "/Menu",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "role",
-        //             label: "Role",
-        //             link: "/Role",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "rolemenu",
-        //             label: "Role Menu",
-        //             link: "/RoleMenu",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "organisationtype",
-        //             label: "Organisation Type",
-        //             link: "/OrganisationType",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "organisation",
-        //             label: "Organisation",
-        //             link: "/Organisation",
-        //             parentId: "admin",
-        //         },
-        //         {
-        //             id: "organisationmember",
-        //             label: "Organisation Member",
-        //             link: "/OrganisationMember",
-        //             parentId: "admin",
-        //         },
-        //     ]
-        // },
-         {
-            id: "admin",
-            label: "Admin",
-            icon: "ri-book-line",
-            link: "/#",
-            click: function (e: any) {
-                e.preventDefault();
-
-                setIsAdmin(!isAdmin);
-                setIscurrentState('Admin');
-                updateIconSidebar(e);
-            },
-            stateVariables: isAdmin,
-            subItems: [
-                {
-                    id: "divisionmanagement",
-                    label: "Division",
-
-                    parentId: "divisionmanagement",
-                    isChildItem: true,
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsAdminDivision(!isAdminDivision);
-                    },
-                    stateVariables: isAdminDivision,
-                    childItems: [
-                       {
-                            id: "state",
-                            label: "State",
-                            link: "/state",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "district",
-                            label: "District",
-                            link: "/district",
-                            parentId: "admin",
-                        },
-                        // {
-                        //     id: "region",
-                        //     label: "Region",
-                        //     link: "/region",
-                        //     parentId: "admin",
-                        // },
-                        {
-                            id: "area",
-                            label: "Area",
-                            link: "/Area",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "branch",
-                            label: "Branch",
-                            link: "/Branch",
-                            parentId: "admin",
-                        },
-                        // {
-                        //     id: "sector",
-                        //     label: "Sector",
-                        //     link: "/Sector",
-                        //     parentId: "admin",
-                        // },
-                        // {
-                        //     id: "unit",
-                        //     label: "Unit",
-                        //     link: "/Unit",
-                        //     parentId: "admin",
-                        // }
-
-                    ]
-                },
-                {
-                    id: "menumanagement",
-                    label: "Menu",
-
-                    parentId: "menumanagement",
-                    isChildItem: true,
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsAdminMenu(!isAdminMenu);
-                    },
-                    stateVariables: isAdminMenu,
-                    childItems: [
-                         {
-                            id: "menu",
-                            label: "Menu",
-                            link: "/Menu",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "role",
-                            label: "Role",
-                            link: "/Role",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "rolemenu",
-                            label: "RoleMenu",
-                            link: "/RoleMenu",
-                            parentId: "admin",
-                        },
-                    ]
-                },
-                {
-                    id: "organisationmanagement",
-                    label: "Organisation",
-
-                    parentId: "organisationmanagement",
-                    isChildItem: true,
-                    click: function (e: any) {
-                        e.preventDefault();
-                        setIsAdminOrganisation(!isAdminOrganisation);
-                    },
-                    stateVariables: isAdminOrganisation,
-                    childItems: [
-                        {
-                            id: "organisationtype",
-                            label: "Organisation Type",
-                            link: "/OrganisationType",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "organisation",
-                            label: "Organisation",
-                            link: "/Organisation",
-                            parentId: "admin",
-                        },
-                        {
-                            id: "organisationmember",
-                            label: "Organisation Member",
-                            link: "/OrganisationMember",
-                            parentId: "admin",
-                        },
-                    ]
-                },
-
-
-              
-               
-            ]
-
+        {
+          id: "splash",
+          label: "Splash Screen",
+          link: "/splash-table",
+          parentId: "splash",
         },
-           {
-                    id: "village",
-                    label: "Village",
-                    icon: "ri-plant-line",
-                    link: "/#",
-                    click: function (e: any) {
-                        e.preventDefault();
+        {
+          id: "review",
+          label: "Review",
+          link: "/review",
+          parentId: "review",
+        },
+        {
+          id: "contact",
+          label: "Contact",
+          link: "/contact-table",
+          parentId: "list",
+        },
+      ],
+    },
 
-                        setIsVillage(!isVillage);
-                        setIscurrentState('Village');
-                        updateIconSidebar(e);
-                    },
-                    stateVariables: isVillage,
-                    subItems: [
-                        {
-                            id: "vappname",
-                            label: "Village App Name",
-                            link: "/vappname",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vappcarousel",
-                            label: "Village App Carousel",
-                            link: "/vappcarousal",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vappusers",
-                            label: "Village App Users",
-                            link: "/vappusers",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vappadvertisement",
-                            label: "Village App Advertisement",
-                            link: "/vappadvertisement",
-                            parentId: "village",
-                        },
-                        {
-                            id: "vapporganizations",
-                            label: "Village App Organisations",
-                            link: "/vapporganizations",
-                            parentId: "village",
-                        }
-                       
-                    ]
-                },
-    ];
-    return <React.Fragment>{menuItems}</React.Fragment>;
+    {
+      id: "plantsapp",
+      label: "Plants App",
+      icon: "ri-plant-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+
+        setIsPlants(!isPlants);
+        setIscurrentState("Plants");
+        updateIconSidebar(e);
+      },
+      stateVariables: isPlants,
+      subItems: [
+        {
+          id: "plants",
+          label: "Products",
+          link: "/plants",
+          parentId: "plants",
+        },
+        {
+          id: "categories",
+          label: "Categories",
+          link: "/plants-category",
+          parentId: "list",
+          click: function (e: any) {
+            e.preventDefault();
+            setListcategories(!isListcategories);
+          },
+        },
+
+        {
+          id: "transactions",
+          label: "Transactions",
+          link: "/plants-transactions",
+          parentId: "list",
+        },
+
+        {
+          id: "orders",
+          label: "Orders",
+          link: "/plants-orders",
+          parentId: "list",
+        },
+
+        {
+          id: "carousel",
+          label: "Carousels",
+          link: "/plants-carousel",
+          parentId: "list",
+        },
+        {
+          id: "reviews",
+          label: "Reviews",
+          link: "/plants-reviews",
+          parentId: "list",
+        },
+      ],
+    },
+    {
+      id: "delivery",
+      label: "Delivery App",
+      icon: "ri-plant-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+
+        setIsDelivery(!isDelivery);
+        setIscurrentState("Delivery");
+        updateIconSidebar(e);
+      },
+      stateVariables: isDelivery,
+      subItems: [
+        {
+          id: "deliveryperson",
+          label: "Delivery Person",
+          link: "/deliveryperson",
+          parentId: "delivery",
+        },
+        {
+          id: "myorders",
+          label: "My Orders",
+          link: "/myorders",
+          parentId: "delivery",
+        },
+        {
+          id: "map",
+          label: "Map",
+          link: "/delivery-map",
+          parentId: "delivery",
+        },
+      ],
+    },
+    //   {
+    //     id: "admin",
+    //     label: "Admin",
+    //     icon: "ri-plant-line",
+    //     link: "/#",
+    //     click: function (e: any) {
+    //         e.preventDefault();
+
+    //         setIsAdmin(!isAdmin);
+    //         setIscurrentState('Admin');
+    //         updateIconSidebar(e);
+    //     },
+    //     stateVariables: isAdmin,
+    //     subItems: [
+    //         {
+    //             id: "state",
+    //             label: "State",
+    //             link: "/state",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "district",
+    //             label: "District",
+    //             link: "/district",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "region",
+    //             label: "Region",
+    //             link: "/region",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "area",
+    //             label: "Area",
+    //             link: "/Area",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "branch",
+    //             label: "Branch",
+    //             link: "/Branch",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "sector",
+    //             label: "Sector",
+    //             link: "/Sector",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "unit",
+    //             label: "Unit",
+    //             link: "/Unit",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "menu",
+    //             label: "Menu",
+    //             link: "/Menu",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "role",
+    //             label: "Role",
+    //             link: "/Role",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "rolemenu",
+    //             label: "Role Menu",
+    //             link: "/RoleMenu",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "organisationtype",
+    //             label: "Organisation Type",
+    //             link: "/OrganisationType",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "organisation",
+    //             label: "Organisation",
+    //             link: "/Organisation",
+    //             parentId: "admin",
+    //         },
+    //         {
+    //             id: "organisationmember",
+    //             label: "Organisation Member",
+    //             link: "/OrganisationMember",
+    //             parentId: "admin",
+    //         },
+    //     ]
+    // },
+    {
+      id: "admin",
+      label: "Admin",
+      icon: "ri-book-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+
+        setIsAdmin(!isAdmin);
+        setIscurrentState("Admin");
+        updateIconSidebar(e);
+      },
+      stateVariables: isAdmin,
+      subItems: [
+        {
+          id: "divisionmanagement",
+          label: "Division",
+
+          parentId: "divisionmanagement",
+          isChildItem: true,
+          click: function (e: any) {
+            e.preventDefault();
+            setIsAdminDivision(!isAdminDivision);
+          },
+          stateVariables: isAdminDivision,
+          childItems: [
+            {
+              id: "state",
+              label: "State",
+              link: "/state",
+              parentId: "admin",
+            },
+            {
+              id: "district",
+              label: "District",
+              link: "/district",
+              parentId: "admin",
+            },
+            // {
+            //     id: "region",
+            //     label: "Region",
+            //     link: "/region",
+            //     parentId: "admin",
+            // },
+            {
+              id: "area",
+              label: "Area",
+              link: "/Area",
+              parentId: "admin",
+            },
+            {
+              id: "branch",
+              label: "Branch",
+              link: "/Branch",
+              parentId: "admin",
+            },
+            // {
+            //     id: "sector",
+            //     label: "Sector",
+            //     link: "/Sector",
+            //     parentId: "admin",
+            // },
+            // {
+            //     id: "unit",
+            //     label: "Unit",
+            //     link: "/Unit",
+            //     parentId: "admin",
+            // }
+          ],
+        },
+        {
+          id: "menumanagement",
+          label: "Menu",
+
+          parentId: "menumanagement",
+          isChildItem: true,
+          click: function (e: any) {
+            e.preventDefault();
+            setIsAdminMenu(!isAdminMenu);
+          },
+          stateVariables: isAdminMenu,
+          childItems: [
+            {
+              id: "menu",
+              label: "Menu",
+              link: "/Menu",
+              parentId: "admin",
+            },
+            {
+              id: "role",
+              label: "Role",
+              link: "/Role",
+              parentId: "admin",
+            },
+            {
+              id: "rolemenu",
+              label: "RoleMenu",
+              link: "/RoleMenu",
+              parentId: "admin",
+            },
+            {
+              id:"menurole",
+              label:"MenuRole",
+              link:"/MenuRole",
+              parentId:"admin",
+            }
+          ],
+        },
+        
+ {
+  id: "usertypemanagement",
+  label: "User Type",
+  parentId: "usertypemanagement",
+  isChildItem: true,
+  click: function (e: any) {
+    e.preventDefault();
+    setIsUserType(!isUserType);
+  },
+  stateVariables: isUserType,
+  childItems: [
+    {
+      id: "usertype",
+      label: "User Type",
+      link: "/UserType",
+      parentId: "usertypemanagement",
+    },
+    {
+      id:"usertyperole",
+      label:"User Type Role",
+      link:"/UserTypeRole",
+      parentId:"usertyperole"
+
+    },
+  ], 
+},
+        {
+          id: "organisationmanagement",
+          label: "Organisation",
+
+          parentId: "organisationmanagement",
+          isChildItem: true,
+          click: function (e: any) {
+            e.preventDefault();
+            setIsAdminOrganisation(!isAdminOrganisation);
+          },
+          stateVariables: isAdminOrganisation,
+          childItems: [
+            {
+              id: "organisationtype",
+              label: "Organisation Type",
+              link: "/OrganisationType",
+              parentId: "admin",
+            },
+            {
+              id: "organisation",
+              label: "Organisation",
+              link: "/Organisation",
+              parentId: "admin",
+            },
+            {
+              id: "organisationmember",
+              label: "Organisation Member",
+              link: "/OrganisationMember",
+              parentId: "admin",
+            },
+          ],
+        },
+        
+      ],
+    },
+    {
+      id: "village",
+      label: "Village",
+      icon: "ri-plant-line",
+      link: "/#",
+      click: function (e: any) {
+        e.preventDefault();
+
+        setIsVillage(!isVillage);
+        setIscurrentState("Village");
+        updateIconSidebar(e);
+      },
+      stateVariables: isVillage,
+      subItems: [
+        {
+          id: "vappname",
+          label: "Village App Name",
+          link: "/vappname",
+          parentId: "village",
+        },
+        {
+          id: "vappcarousel",
+          label: "Village App Carousel",
+          link: "/vappcarousal",
+          parentId: "village",
+        },
+        {
+          id: "vappusers",
+          label: "Village App Users",
+          link: "/vappusers",
+          parentId: "village",
+        },
+        {
+          id: "vappadvertisement",
+          label: "Village App Advertisement",
+          link: "/vappadvertisement",
+          parentId: "village",
+        },
+        {
+          id: "vapporganizations",
+          label: "Village App Organisations",
+          link: "/vapporganizations",
+          parentId: "village",
+        },
+      ],
+    },
+  ];
+  return <React.Fragment>{menuItems}</React.Fragment>;
 };
 export default Navdata;

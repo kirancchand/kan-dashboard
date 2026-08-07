@@ -97,10 +97,14 @@ import Unit from "pages/Admin/Division/Unit";
 import Menu from "pages/Admin/Menu/Management/Menu";
 import Role from "pages/Admin/Menu/Management/Role";
 import RoleMenu from "pages/Admin/Menu/Management/RoleMenu";
+import MenuRole from "pages/Admin/Menu/Management/MenuRole";
+import UserType from "pages/Admin/UserType/UserType";
+import UserTypeRole from "pages/Admin/UserType/UserTypeRole";
 
 import OrganisationType from "pages/Admin/Organisation/OrganisationType";
 import Organisation from "pages/Admin/Organisation/Organisation";
 import OrganisationMember from "pages/Admin/Organisation/OrganisationMemberIndex";
+
 
 //village
 import VillageApp from "../pages/VillageApp/VillageApp";
@@ -117,6 +121,8 @@ import VillageState from "../pages/VillageApp/State/State";
 import VillageDistrict from "../pages/VillageApp/District/District";
 import VillageArea from "../pages/VillageApp/Area/Area";
 import VillageBranch from "../pages/VillageApp/Branch/Branch";
+import { Component } from "gridjs";
+
 
 
 const authProtectedRoutes = [
@@ -177,10 +183,13 @@ const authProtectedRoutes = [
   { path: "/Menu", component: <Menu /> },
   { path: "/Role", component: <Role /> },
   { path: "/RoleMenu", component: <RoleMenu /> },
+  { path:"/MenuRole",component:<MenuRole />},
 
   { path: "/OrganisationType", component: <OrganisationType /> },
   { path: "/Organisation", component: <Organisation /> },
   { path: "/OrganisationMember", component: <OrganisationMember /> },
+  { path: "/UserType", component: <UserType /> },
+  {path:"/UserTypeRole",component:<UserTypeRole />},
 
   { path: "/vappname", component: <AppnameForm /> },
   { path: "/vappcarousal", component: <CarousalTable /> },

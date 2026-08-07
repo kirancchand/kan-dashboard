@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import React, { useEffect, useMemo, useState } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
   Row,
   Col,
@@ -15,19 +15,43 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Alert,
-} from 'reactstrap';
-import { Link } from 'react-router-dom';
-import { TableContainer } from '../../../common/AnalyticsTable/TableContainerReactTable';
-import { SortInterface, SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
-import UserList from './UserList';
-import {UserSearch} from 'lucide-react';
-import UserModal from './UserModal';
-import RSelect from '../../../Components/Common/RSelect/RSelect';
-import md from '../../../http/masterData';
-import mdurl from '../../../http/masterDataURL';
-import { http } from '../../../http/http';
-import { toast } from 'react-toastify';
-import { ADD_VILLAGE_USERS, MD_URL,GET_VILLAGE_USERS,DELETE_VILLAGE_USERS,UPDATE_VILLAGE_USERS,GET_VILLAGE_ALL_USERS } from '../Api';
+} from "reactstrap";
+import { Link } from "react-router-dom";
+import { TableContainer } from "../../../common/AnalyticsTable/TableContainerReactTable";
+import {
+  SortInterface,
+  SortTanstackInterface,
+} from "../../../Typecomponents/ComponentsType";
+import UserList from "./UserList";
+import { UserSearch } from "lucide-react";
+import UserModal from "./UserModal";
+import RSelect from "../../../Components/Common/RSelect/RSelect";
+import LocationFilter from "../../../Components/Common/LocationFilter";
+import md from "../../../http/masterData";
+import mdurl from "../../../http/masterDataURL";
+import { http } from "../../../http/http";
+import { toast } from "react-toastify";
+import {
+  ADD_VILLAGE_USERS,
+  MD_URL,
+  GET_VILLAGE_USERS,
+  DELETE_VILLAGE_USERS,
+  UPDATE_VILLAGE_USERS,
+  GET_VILLAGE_ALL_USERS,
+} from "../Api";
+
+interface SelectOption {
+  value: string | number;
+  label: string;
+}
+
+interface LocationValues {
+  state: SelectOption | null;
+  district: SelectOption | null;
+  region: SelectOption | null;
+  area: SelectOption | null;
+  branch: SelectOption | null;
+}
 
 interface KeyValue {
   label: string;
@@ -36,20 +60,16 @@ interface KeyValue {
 
 interface UserRow {
   villageapp_userid: number;
-  f_villageapp_id:KeyValue | null;
-  // f_role_id:KeyValue | null;
-  f_usertype_id:KeyValue | null;
+  f_villageapp_id: KeyValue | null;
+  f_usertype_id: KeyValue | null;
   villageapp_username: string;
-  contact: string,
-  address:string,
-  isimportant: boolean,
+  contact: string;
+  address: string;
+  isimportant: boolean;
   priority: string;
   f_user_id: string;
   f_elastic_id: string;
-  // image: File | null;
 }
-
-
 
 const schema = Yup.object({
   villageapp_username: Yup.string().required("Username is required"),
@@ -60,7 +80,6 @@ const schema = Yup.object({
 });
 
 const Users = () => {
-
   const [tableData, setTableData] = useState<UserRow[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -74,228 +93,203 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [roleData,setRoleData]=useState<KeyValue[]>([]);
-  const [roleLoading,setRoleLoading]=useState(false);
+  const [roleData, setRoleData] = useState<KeyValue[]>([]);
+  const [roleLoading, setRoleLoading] = useState(false);
   const [userTypeLoading, setUserTypeLoading] = useState(false);
   const [userTypeData, setUserTypeData] = useState<KeyValue[]>([]);
-  const [villageAppData,setVillageAppData]=useState<KeyValue[]>([])
-  const [villageAppDataLoading,setVillageAppDataLoading]=useState(false)
+  const [villageAppData, setVillageAppData] = useState<KeyValue[]>([]);
+  const [villageAppDataLoading, setVillageAppDataLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [data, setData] = useState<[]>([]);
-  const [selectedUserTypeId,setSelectedUserTypeId]=useState<any>('');
+  const [selectedUserTypeId, setSelectedUserTypeId] = useState<any>("");
+  const [filterName, setFilterName] = useState("");
+  const [filterVillageApp, setFilterVillageApp] = useState("");
+  const [filterUserType, setFilterUserType] = useState<any>(null);
+
+  // Location Filter State
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [locationValues, setLocationValues] = useState<LocationValues>({
+    state: null,
+    district: null,
+    region: null,
+    area: null,
+    branch: null,
+  });
+
+  const handleLocationChange = (field: string, value: SelectOption | null) => {
+    setLocationValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   let sort: SortInterface[] = [];
 
   let initialRequest = {
-    "start": 0,
-    "sort": [],
-    "numberOfRows": 10,
-    "filters": []
-}
-
-  const fetchData = async (requestdata: any) => {
-      const { start, numberOfRows } = requestdata;
-      try {
-          const response = await http.post(GET_VILLAGE_ALL_USERS, requestdata);
-          //console.log(response.data)
-          if (response.data) {
-              setData(response.data.result)
-              // setData(response.data.result);
-              setTotalCount(response.data.totalCount);
-          }
-      } catch (error) {
-          console.error("Error fetching analytics data:", error);
-      }
-
-
-
+    start: 0,
+    sort: [],
+    numberOfRows: 10,
+    filters: [],
   };
 
+  const fetchData = async (requestdata: any) => {
+    try {
+      const response = await http.post(GET_VILLAGE_ALL_USERS, requestdata);
+      if (response.data) {
+        setData(response.data.result);
+        setTotalCount(response.data.totalCount);
+      }
+    } catch (error) {
+      console.error("Error fetching analytics data:", error);
+    }
+  };
 
   const toggle = () => {
-      setShowModal(!showModal);
-      if (showModal) {
-          setSelectedUser([]);
-      }
+    setShowModal(!showModal);
+    if (showModal) {
+      setSelectedUser([]);
+    }
   };
 
   const addToggle = () => {
-      setShowModal(!showModal);
+    setShowModal(!showModal);
   };
 
-  // async function getRole() {
-  //         setRoleLoading(true);
-  //         md('getAll_Role')
-  //           .then((r) => {
-  //             setRoleData(r);
-  //             setRoleLoading(false);
-  //           }).catch((error) => {
-  //             toast(error, { position: 'top-right', type: 'error' });
-  //             setRoleLoading(false);
-  //           });
-  //       }
   async function fetchVillageApps() {
-      setVillageAppDataLoading(true);
-      mdurl(MD_URL,'getAll_VillageApp')
-        .then((r) => {
-          setVillageAppData(r);
-          setVillageAppDataLoading(false);
-        }).catch((error) => {
-          toast(error, { position: 'top-right', type: 'error' });
-          setVillageAppDataLoading(false);
-        });
-    }
+    setVillageAppDataLoading(true);
+    mdurl(MD_URL, "getAll_VillageApp")
+      .then((r) => {
+        setVillageAppData(r);
+        setVillageAppDataLoading(false);
+      })
+      .catch((error) => {
+        toast(error, { position: "top-right", type: "error" });
+        setVillageAppDataLoading(false);
+      });
+  }
 
-    async function getUserType() {
-      setUserTypeLoading(true);
-      md('getAll_Usertype')
-        .then((r) => {
-          setUserTypeData(r);
-          setUserTypeLoading(false);
-        }).catch((error) => {
-          toast(error, { position: 'top-right', type: 'error' });
-          setUserTypeLoading(false);
-        });
-    }
+  async function getUserType() {
+    setUserTypeLoading(true);
+    md("getAll_Usertype")
+      .then((r) => {
+        setUserTypeData(r);
+        setUserTypeLoading(false);
+      })
+      .catch((error) => {
+        toast(error, { position: "top-right", type: "error" });
+        setUserTypeLoading(false);
+      });
+  }
+
   useEffect(() => {
-    // Fetch initial data here and setTableData
-    // getRole()
-    getUserType()
-    fetchVillageApps()
-    fetchData(initialRequest)
+    getUserType();
+    fetchVillageApps();
+    fetchData(initialRequest);
   }, []);
 
-
-  async function saveUsers(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-      method: 'POST',
+  async function saveUsers(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
       url: ADD_VILLAGE_USERS,
       data,
-      })
-      .then(function(response) {
-          if (response.status === 200) {
-          console.log(response.data);
+    })
+      .then(function (response) {
+        if (response.status === 200) {
           formik.resetForm();
           setSelectedUser([]);
-          fetchData(initialRequest)
+          fetchData(initialRequest);
           toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
+            position: "top-right",
+            type: "success",
           });
-          } else {
-          toast('Failed to Add Users', {
-              position: 'top-right',
-              type: 'error',
+        } else {
+          toast("Failed to Add Users", {
+            position: "top-right",
+            type: "error",
           });
-          }
-          setLoading(false);
+        }
+        setLoading(false);
       })
-      .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
       });
   }
 
-    async function updateUsers(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-      method: 'POST',
+  async function updateUsers(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
       url: UPDATE_VILLAGE_USERS,
       data,
-      })
-      .then(function(response) {
-          if (response.status === 200) {
-             fetchData(initialRequest)
+    })
+      .then(function (response) {
+        if (response.status === 200) {
+          fetchData(initialRequest);
           toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
+            position: "top-right",
+            type: "success",
           });
-          } else {
-          toast('Failed to Add Users', {
-              position: 'top-right',
-              type: 'error',
+        } else {
+          toast("Failed to Add Users", {
+            position: "top-right",
+            type: "error",
           });
-          }
-          setLoading(false);
+        }
+        setLoading(false);
       })
-      .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
       });
   }
-
-
-  //  {
-  //         "villageapp_username": item.Name,
-  //         "contact": item.HouseName+" "+item.HouseNo,
-  //         "isimportant": false,
-  //         "f_role_id": roleData.length>0?roleData.find((role) => role.label === "Unauthorised User")?? "":"",
-  //         "f_user_id": "",
-  //         "f_elastic_id": item.SerialNo,
-  //         "f_villageapp_id": formik.values.f_villageapp_id
-  //       }
-
 
   const formik = useFormik<UserRow>({
     initialValues: {
       villageapp_userid: 0,
       f_villageapp_id: null,
-      // f_role_id: null,
-      f_usertype_id:null,
+      f_usertype_id: null,
       villageapp_username: "",
       contact: "",
-      address:"",
+      address: "",
       isimportant: false,
       priority: "",
       f_user_id: "",
       f_elastic_id: "",
-
     },
-    // validationSchema: schema,
-
     onSubmit: (values, { resetForm, setSubmitting }) => {
       setApiError(null);
       setSuccessMsg(null);
 
       try {
         if (editId !== null) {
-          // setTableData(prev =>
-          //   prev.map(d => (d.id === editId ? { ...values, id: editId } : d))
-          // );
-          // setEditId(null);
-          updateUsers(values)
+          updateUsers(values);
         } else {
-          saveUsers(selectedUser)
-
-          // const newId = tableData.length
-          //   ? Math.max(...tableData.map(d => d.id)) + 1
-          //   : 1;
-
-          // setTableData(prev => [...prev, { ...values, id: newId }]);
+          saveUsers(selectedUser);
         }
 
         resetForm();
         setShowForm(false);
-        // setSuccessMsg(editId ? "Updated successfully" : "Added successfully");
-
       } catch {
         setApiError("Something went wrong");
       }
 
       setSubmitting(false);
-    }
+    },
   });
 
   const handleEdit = (row: UserRow) => {
-    console.log(row)
-     console.log(userTypeData)
     setEditId(row.villageapp_userid);
     formik.setFieldValue("villageapp_userid", row.villageapp_userid);
-    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value == row.f_villageapp_id));
-    // formik.setFieldValue("f_role_id", roleData.find((r: any) => r.value == row.f_role_id));
-    formik.setFieldValue("f_usertype_id", userTypeData.find((u: any) => u.value == row.f_usertype_id));
+    formik.setFieldValue(
+      "f_villageapp_id",
+      villageAppData.find((v: any) => v.value == row.f_villageapp_id),
+    );
+    formik.setFieldValue(
+      "f_usertype_id",
+      userTypeData.find((u: any) => u.value == row.f_usertype_id),
+    );
     formik.setFieldValue("villageapp_username", row.villageapp_username);
     formik.setFieldValue("address", row.address);
     formik.setFieldValue("contact", row.contact);
@@ -303,156 +297,176 @@ const Users = () => {
     formik.setFieldValue("priority", row.priority);
     formik.setFieldValue("f_user_id", row.f_user_id);
     formik.setFieldValue("f_elastic_id", row.f_elastic_id);
-    setSelectedUserTypeId(row.f_usertype_id)
+    setSelectedUserTypeId(row.f_usertype_id);
     setShowForm(true);
   };
 
-
-    async function deleteUsers(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-      method: 'POST',
+  async function deleteUsers(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
       url: DELETE_VILLAGE_USERS,
       data,
-      })
-      .then(function(response) {
-          if (response.status === 200) {
+    })
+      .then(function (response) {
+        if (response.status === 200) {
           toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
+            position: "top-right",
+            type: "success",
           });
-          fetchData(initialRequest)
-          } else {
-          toast('Failed to Delete Users', {
-              position: 'top-right',
-              type: 'error',
+          fetchData(initialRequest);
+        } else {
+          toast("Failed to Delete Users", {
+            position: "top-right",
+            type: "error",
           });
-          }
-          setLoading(false);
+        }
+        setLoading(false);
       })
-      .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
       });
   }
 
   const handleDelete = (row: any) => {
-    // setTableData(prev => prev.filter(d => d.id !== id));
-    console.log(row)
-    deleteUsers({villageapp_userid: row.villageapp_userid})
+    deleteUsers({ villageapp_userid: row.villageapp_userid });
   };
 
-  const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
-      setPage(pages)
-      setSizePerPage(sizePerPages)
-      if (sortField !== "" && sortOrder !== "") {
-          sort = [{
-              "columnName": sortField,
-              "sortOrder": sortOrder
-          }]
-      }
-      fetchData({
-          "start": (pages - 1) * sizePerPages,
-          "sort": sort,
-          "numberOfRows": sizePerPages,
-          "filters": []
+  const getActiveFilters = () => {
+    const filters: any[] = [];
+    if (locationValues.state)
+      filters.push({ columnName: "state", value: locationValues.state.value });
+    if (locationValues.district)
+      filters.push({
+        columnName: "district",
+        value: locationValues.district.value,
       });
-      //console.log("page", page)
-  }
+    if (locationValues.region)
+      filters.push({
+        columnName: "region",
+        value: locationValues.region.value,
+      });
+    if (locationValues.area)
+      filters.push({ columnName: "area", value: locationValues.area.value });
+    if (locationValues.branch)
+      filters.push({
+        columnName: "branch",
+        value: locationValues.branch.value,
+      });
+    return filters;
+  };
+
+  const handleApplyFilter = () => {
+    fetchData({
+      start: 0,
+      sort: sort,
+      numberOfRows: sizePerPage,
+      filters: getActiveFilters(),
+    });
+  };
+
+  const handleClearFilter = () => {
+    setLocationValues({
+      state: null,
+      district: null,
+      region: null,
+      area: null,
+      branch: null,
+    });
+    fetchData(initialRequest);
+  };
+
+  const handleTableChange = ({
+    pages,
+    sizePerPages,
+    sortField,
+    sortOrder,
+  }: any) => {
+    setPage(pages);
+    setSizePerPage(sizePerPages);
+    if (sortField !== "" && sortOrder !== "") {
+      sort = [
+        {
+          columnName: sortField,
+          sortOrder: sortOrder,
+        },
+      ];
+    }
+    fetchData({
+      start: (pages - 1) * sizePerPages,
+      sort: sort,
+      numberOfRows: sizePerPages,
+      filters: getActiveFilters(),
+    });
+  };
 
   const nameFunc = (celldata: any) => {
-        // console.log(celldata)
-        return <span>
-                <div>{celldata.row.original.villageapp_username}</div>
-                 <span className="badge bg-success">{celldata.row.original.f_user_id!=""?"Linked":""}</span>
-                </span>
-    }
-
-  // const roleFunc = (celldata: any) => {
-  //       // console.log(celldata)
-  //       return <span>
-  //               <div>{roleData.find((r:any)=>r.value==celldata.row.original.f_role_id)?.label}</div>
-  //               </span>
-  //   }
+    return (
+      <span>
+        <div>{celldata.row.original.villageapp_username}</div>
+        <span className="badge bg-success">
+          {celldata.row.original.f_user_id !== "" ? "Linked" : ""}
+        </span>
+      </span>
+    );
+  };
 
   const userTypeFunc = (celldata: any) => {
-      // console.log(celldata)
-      return <span>
-              <div>{userTypeData.find((r:any)=>r.value==celldata.row.original.f_usertype_id)?.label}</div>
-              </span>
-  }
+    return (
+      <span>
+        <div>
+          {
+            userTypeData.find(
+              (r: any) => r.value == celldata.row.original.f_usertype_id,
+            )?.label
+          }
+        </div>
+      </span>
+    );
+  };
 
   const contactFunc = (celldata: any) => {
-      console.log(celldata)
-      return <span>
-              <div>{celldata.row.original.contact}</div>
-              <div>{celldata.row.original.address}</div>
-              </span>
-  }
+    return (
+      <span>
+        <div>{celldata.row.original.contact}</div>
+        <div>{celldata.row.original.address}</div>
+      </span>
+    );
+  };
 
   const columns = useMemo(
     () => [
       {
-        header: 'Sl No',
+        header: "Sl No",
         cell: (cell: any) => cell.row.index + 1,
         enableColumnFilter: false,
       },
       {
-        header: 'Name',
-        accessorKey: 'villageapp_username',
+        header: "Name",
+        accessorKey: "villageapp_username",
         enableColumnFilter: false,
         cell: (cell: any) => nameFunc(cell),
       },
       {
-        header: 'Contact/Address',
-        accessorKey: 'contact',
+        header: "Contact/Address",
+        accessorKey: "contact",
         enableColumnFilter: false,
         cell: (cell: any) => contactFunc(cell),
       },
-       {
-        header: 'villageapp Name',
-        accessorKey: 'villageapp_name',
+      {
+        header: "villageapp Name",
+        accessorKey: "villageapp_name",
         enableColumnFilter: false,
       },
-      // {
-      //   header: 'Role Name',
-      //   accessorKey: 'f_role_id',
-      //   enableColumnFilter: false,
-      //   cell: (cell: any) => roleFunc(cell),
-      // },
       {
-        header: 'User Type',
-        accessorKey: 'f_usertype_id',
+        header: "User Type",
+        accessorKey: "f_usertype_id",
         enableColumnFilter: false,
         cell: (cell: any) => userTypeFunc(cell),
       },
-      // {
-      //   header: 'Image',
-      //   enableColumnFilter: false,
-      //   cell: (cell: any) => {
-      //     const file = cell.row.original.image;
-      //     if (!file) return null;
-
-      //     const url = URL.createObjectURL(file);
-
-      //     return (
-      //       <img
-      //         src={url}
-      //         width="40"
-      //         alt="user"
-      //         onLoad={() => URL.revokeObjectURL(url)}
-      //       />
-      //     );
-      //   },
-      // },
-      // {
-      //   header: 'Position',
-      //   accessorKey: 'position',
-      //   enableColumnFilter: false,
-      // },
       {
-        header: 'Important',
+        header: "Important",
         enableColumnFilter: false,
         cell: (cell: any) =>
           cell.row.original.isimportant ? (
@@ -462,7 +476,7 @@ const Users = () => {
           ),
       },
       {
-        header: 'Actions',
+        header: "Actions",
         enableColumnFilter: false,
         cell: (cell: any) => {
           const row = cell.row.original;
@@ -489,49 +503,47 @@ const Users = () => {
         },
       },
     ],
-    [data]
+    [data],
   );
 
+  async function returnFunc(data: any) {
+    if (editId == null) {
+      let revisedData = data.map((item: any) => {
+        return {
+          villageapp_username: item.Name,
+          contact: item.contact,
+          address: item.address,
+          priority: "10",
+          isimportant: false,
+          f_usertype_id:
+            userTypeData.length > 0
+              ? (userTypeData.find(
+                  (usertype: any) => usertype.label === "Unauthorised User",
+                ) ?? null)
+              : null,
+          f_user_id: item.f_user_id,
+          f_elastic_id: item.f_elastic_id,
+          f_villageapp_id: formik.values.f_villageapp_id,
+        };
+      });
+      setSelectedUser([...selectedUser, ...revisedData]);
+    } else {
+      formik.setFieldValue("contact", data.contact);
+      formik.setFieldValue("f_user_id", data.f_user_id);
+    }
 
-
-    async function returnFunc(data:any) {
-      console.log(data)
-      if(editId==null){
-          let revisedData = data.map((item:any)=>{
-          return {
-            "villageapp_username": item.Name,
-            "contact": item.contact,
-            "address":item.address,
-            "priority": "10",
-            "isimportant": false,
-            "f_usertype_id":userTypeData.length>0?userTypeData.find((usertype:any) => usertype.label === "Unauthorised User")?? null:null,
-            "f_user_id": item.f_user_id,
-            "f_elastic_id": item.f_elastic_id,
-            "f_villageapp_id": formik.values.f_villageapp_id
-          }
-        })
-        setSelectedUser([...selectedUser,...revisedData])
-
-      }else{
-        formik.setFieldValue("contact",data.contact)
-        formik.setFieldValue("f_user_id",data.f_user_id)
-
-      }
-
-
-      setShowModal(!showModal);
+    setShowModal(!showModal);
   }
 
   return (
     <div className="page-content">
       <div className="container-fluid">
-
         <Row>
           <Col xs="12">
-            <div className="page-title-box d-flex justify-content-between">
-              <h4>Users Details</h4>
+            <div className="page-title-box d-flex justify-content-between align-items-center">
+              <h4 className="mb-0">Users Details</h4>
 
-              <Breadcrumb>
+              <Breadcrumb listClassName="m-0">
                 <BreadcrumbItem>
                   <Link to="/villageapp">VillageApp</Link>
                 </BreadcrumbItem>
@@ -544,160 +556,154 @@ const Users = () => {
         {/* FORM */}
         {showForm && (
           <Card>
-            <CardHeader><h4>User Form</h4></CardHeader>
+            <CardHeader>
+              <h4>User Form</h4>
+            </CardHeader>
 
             <CardBody>
-
               {apiError && <Alert color="danger">{apiError}</Alert>}
               {successMsg && <Alert color="success">{successMsg}</Alert>}
 
               <Form onSubmit={formik.handleSubmit}>
                 <FormGroup>
-                    <Label>Select Village App</Label>
-                          <RSelect
-                            name="f_villageapp_id"
-                            id="f_villageapp_id"
-                            value={formik.values.f_villageapp_id}
-                            onChange={(ev: any) =>
-                                formik.setFieldValue("f_villageapp_id", ev)
-                            }
-                            options={villageAppData}
-                            placeholder="--Select Village--"
-                            error={formik.errors.f_villageapp_id}
-                            touched={formik.touched.f_villageapp_id}
-                            isLoading={villageAppDataLoading}
-                            isClearable
-                            />
-                        {formik.touched.f_villageapp_id &&
-                            formik.errors.f_villageapp_id && (
-                            <div className="text-danger">
-                                {formik.errors.f_villageapp_id}
-                            </div>
-                            )}
-
-                </FormGroup>
-              
-                  {
-                    editId!==null?
-                  <Col md="12">
-                    {/* <FormGroup>
-                      <Label>Select Role</Label>
-                          <RSelect
-                            name="f_role_id"
-                            id="f_role_id"
-                            value={formik.values.f_role_id}
-                            onChange={(ev: any) =>
-                                formik.setFieldValue("f_role_id", ev)
-                            }
-                            options={roleData}
-                            placeholder="--Select Role--"
-                            error={formik.errors.f_role_id}
-                            touched={formik.touched.f_role_id}
-                            isLoading={roleLoading}
-                            isClearable
-                            />
-                        {formik.touched.f_role_id &&
-                            formik.errors.f_role_id && (
-                            <div className="text-danger">
-                                {formik.errors.f_role_id}
-                            </div>
-                            )}
-
-                </FormGroup> */}
-                  <FormGroup>
-                      <Label>Select User Type</Label>
-                          <RSelect
-                            name="f_usertype_id"
-                            id="f_usertype_id"
-                            value={formik.values.f_usertype_id}
-                            onChange={(ev: any) =>
-                                formik.setFieldValue("f_usertype_id", ev)
-                            }
-                            options={userTypeData}
-                            placeholder="--Select User Type--"
-                            error={formik.errors.f_usertype_id}
-                            touched={formik.touched.f_usertype_id}
-                            isLoading={userTypeLoading}
-                            isClearable
-                            />
-                        {formik.touched.f_usertype_id &&
-                            formik.errors.f_usertype_id && (
-                            <div className="text-danger">
-                                {formik.errors.f_usertype_id}
-                            </div>
-                            )}
-
-                </FormGroup>
-                <FormGroup>
-                  <Label>Name</Label>
-                  <Input name="villageapp_username" value={formik.values.villageapp_username} onChange={formik.handleChange} />
-                </FormGroup>
-                {
-                  (selectedUserTypeId!=formik.values.f_usertype_id?.value)&&
-                  <FormGroup>
-                    <Label>Users <UserSearch onClick={()=>addToggle()}/></Label>
-                    <Input name="f_user_id" value={formik.values.f_user_id} onChange={formik.handleChange} />
-                  </FormGroup>
-                  }
-                <FormGroup>
-                  <Label>Contact</Label>
-                  <Input name="contact" value={formik.values.contact} onChange={formik.handleChange} disabled/>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Address</Label>
-                  <Input name="address" value={formik.values.address} onChange={formik.handleChange} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Priority</Label>
-                  <Input name="priority" value={formik.values.priority} onChange={formik.handleChange} />
-                </FormGroup>
-
-                <FormGroup check className="mb-3">
-                  <Input
-                    type="checkbox"
-                    name="isimportant"
-                    checked={formik.values.isimportant}
-                    onChange={formik.handleChange}
-                  />
-                  <Label check>Is Important</Label>
-                </FormGroup>
-
-                {/* <FormGroup>
-                  <Label>Image</Label>
-                  <Input
-                    type="file"
-                    onChange={(e: any) =>
-                      formik.setFieldValue("image", e.target.files[0])
+                  <Label>Select Village App</Label>
+                  <RSelect
+                    name="f_villageapp_id"
+                    id="f_villageapp_id"
+                    value={formik.values.f_villageapp_id}
+                    onChange={(ev: any) =>
+                      formik.setFieldValue("f_villageapp_id", ev)
                     }
+                    options={villageAppData}
+                    placeholder="--Select Village--"
+                    error={formik.errors.f_villageapp_id}
+                    touched={formik.touched.f_villageapp_id}
+                    isLoading={villageAppDataLoading}
+                    isClearable
                   />
-                </FormGroup> */}
-                  </Col>:
-                    <Col md="12">
-                      <Label>Users <UserSearch onClick={()=>addToggle()}/></Label>
-                      <div>
-                      {
-                          selectedUser.length>0?selectedUser.map((selecteduser:any)=>{
-                              return <div>{selecteduser.f_elastic_id}&nbsp;&nbsp;{selecteduser.villageapp_username}</div>
-                          }):"No User Selected"
-                      }
+                  {formik.touched.f_villageapp_id &&
+                    formik.errors.f_villageapp_id && (
+                      <div className="text-danger">
+                        {formik.errors.f_villageapp_id as string}
                       </div>
+                    )}
+                </FormGroup>
+
+                {editId !== null ? (
+                  <Col md="12">
+                    <FormGroup>
+                      <Label>Select User Type</Label>
+                      <RSelect
+                        name="f_usertype_id"
+                        id="f_usertype_id"
+                        value={formik.values.f_usertype_id}
+                        onChange={(ev: any) =>
+                          formik.setFieldValue("f_usertype_id", ev)
+                        }
+                        options={userTypeData}
+                        placeholder="--Select User Type--"
+                        error={formik.errors.f_usertype_id}
+                        touched={formik.touched.f_usertype_id}
+                        isLoading={userTypeLoading}
+                        isClearable
+                      />
+                      {formik.touched.f_usertype_id &&
+                        formik.errors.f_usertype_id && (
+                          <div className="text-danger">
+                            {formik.errors.f_usertype_id as string}
+                          </div>
+                        )}
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Name</Label>
+                      <Input
+                        name="villageapp_username"
+                        value={formik.values.villageapp_username}
+                        onChange={formik.handleChange}
+                      />
+                    </FormGroup>
+                    {selectedUserTypeId !==
+                      formik.values.f_usertype_id?.value && (
+                      <FormGroup>
+                        <Label>
+                          Users <UserSearch onClick={() => addToggle()} />
+                        </Label>
+                        <Input
+                          name="f_user_id"
+                          value={formik.values.f_user_id}
+                          onChange={formik.handleChange}
+                        />
+                      </FormGroup>
+                    )}
+                    <FormGroup>
+                      <Label>Contact</Label>
+                      <Input
+                        name="contact"
+                        value={formik.values.contact}
+                        onChange={formik.handleChange}
+                        disabled
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Address</Label>
+                      <Input
+                        name="address"
+                        value={formik.values.address}
+                        onChange={formik.handleChange}
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Priority</Label>
+                      <Input
+                        name="priority"
+                        value={formik.values.priority}
+                        onChange={formik.handleChange}
+                      />
+                    </FormGroup>
+
+                    <FormGroup check className="mb-3">
+                      <Input
+                        type="checkbox"
+                        name="isimportant"
+                        checked={formik.values.isimportant}
+                        onChange={formik.handleChange}
+                      />
+                      <Label check>Is Important</Label>
+                    </FormGroup>
                   </Col>
+                ) : (
+                  <Col md="12">
+                    <Label>
+                      Users <UserSearch onClick={() => addToggle()} />
+                    </Label>
+                    <div>
+                      {selectedUser.length > 0
+                        ? selectedUser.map(
+                            (selecteduser: any, index: number) => {
+                              return (
+                                <div key={index}>
+                                  {selecteduser.f_elastic_id}&nbsp;&nbsp;
+                                  {selecteduser.villageapp_username}
+                                </div>
+                              );
+                            },
+                          )
+                        : "No User Selected"}
+                    </div>
+                  </Col>
+                )}
 
-                   }
                 <div className="d-flex gap-2 mt-3">
-                    <Button 
-                      color="soft-secondary" 
-                      onClick={() => setShowForm(false)}>
-                      Cancel
-                    </Button>
-                    <Button 
-                      color="primary"
-                      type="submit">
-                      {editId!=null ? 'Update' : 'Submit'}
-                    </Button>
-                  </div>
-
-          
+                  <Button
+                    color="soft-secondary"
+                    onClick={() => setShowForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button color="primary" type="submit">
+                    {editId != null ? "Update" : "Submit"}
+                  </Button>
+                </div>
               </Form>
             </CardBody>
           </Card>
@@ -708,66 +714,162 @@ const Users = () => {
           <Row>
             <Col md="12">
               <Card>
-                <CardHeader className="d-flex justify-content-between">
-                  <h4>Users List</h4>
+                <CardHeader className="d-flex justify-content-between align-items-center">
+                  <h4 className="card-title mb-0">Users List</h4>
 
-                  <Button
-                    color="soft-success"
-                    size="sm"
-                    onClick={() => {
-                      formik.resetForm();
-                      setEditId(null);
-                      setShowForm(true);
-                    }}
-                  >
-                    + Add New
-                  </Button>
+                  <div className="d-flex gap-2">
+                    <Button
+                      color={filterOpen ? "secondary" : "soft-primary"}
+                      size="sm"
+                      onClick={() => setFilterOpen(!filterOpen)}
+                    >
+                      <i className="mdi mdi-filter-outline me-1"></i>
+                      {filterOpen ? "Hide Filters" : "Filter"}
+                    </Button>
+
+                    <Button
+                      color="soft-success"
+                      size="sm"
+                      onClick={() => {
+                        formik.resetForm();
+                        setEditId(null);
+                        setShowForm(true);
+                      }}
+                    >
+                      + Add New
+                    </Button>
+                  </div>
                 </CardHeader>
 
+                {/* FILTER PANEL */}
+                {filterOpen && (
+                  <CardBody className="border-bottom bg-light">
+                    <Row className="g-2">
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            User Name
+                          </Label>
+                          <Input
+                            type="text"
+                            placeholder="Search user Name"
+                            value={filterName}
+                            onChange={(e) => setFilterName(e.target.value)}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            Village App name
+                          </Label>
+                          <RSelect
+                            value={filterVillageApp}
+                            onChange={(selected: any) =>
+                              setFilterVillageApp(selected)
+                            }
+                            options={villageAppData}
+                            placeholder="Select Village App"
+                            isLoading={villageAppDataLoading}
+                            isClearable
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            User Type
+                          </Label>
+                          <RSelect
+                            value={filterUserType}
+                            onChange={(selected: any) =>
+                              setFilterUserType(selected)
+                            }
+                            options={userTypeData}
+                            placeholder="Select User Type"
+                            isLoading={userTypeLoading}
+                            isClearable
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={12}>
+                        <Label className="form-label font-size-13 text-muted">
+                          Location Filters
+                        </Label>
+                        <div className="d-flex flex-wrap gap-2">
+                          <LocationFilter
+                            values={locationValues}
+                            setFieldValue={handleLocationChange}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        color="soft-secondary"
+                        size="sm"
+                        onClick={handleClearFilter}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        color="primary"
+                        size="sm"
+                        onClick={handleApplyFilter}
+                      >
+                        Apply Filter
+                      </Button>
+                    </div>
+                  </CardBody>
+                )}
+
                 <CardBody>
-                  {!loading?<TableContainer
-                              columns={(columns || [])}
-                              data={(data || [])}
-                              customPageSize={sizePerPage}
-                              tableClass="table-centered align-middle table-nowrap mb-0"
-                              theadClass="text-muted table-light"
-                              SearchPlaceholder='Search Users...'
-                              isGlobalFilter={false}
-                              page={page}
-                              sorting={sorting}
-                              setSorting={setSorting}
-                              sizePerPage={sizePerPage}
-                              clickable={false}
-                              totalCount={totalCount}
-                              handleTableChange={handleTableChange}
-                              loading={loading}
-                              rowIdKey="SerialNo" 
-                          />:"Loading..."}
+                  {!loading ? (
+                    <TableContainer
+                      columns={columns || []}
+                      data={data || []}
+                      customPageSize={sizePerPage}
+                      tableClass="table-centered align-middle table-nowrap mb-0"
+                      theadClass="text-muted table-light"
+                      SearchPlaceholder="Search Users..."
+                      isGlobalFilter={false}
+                      page={page}
+                      sorting={sorting}
+                      setSorting={setSorting}
+                      sizePerPage={sizePerPage}
+                      clickable={false}
+                      totalCount={totalCount}
+                      handleTableChange={handleTableChange}
+                      loading={loading}
+                      rowIdKey="SerialNo"
+                    />
+                  ) : (
+                    "Loading..."
+                  )}
                 </CardBody>
               </Card>
             </Col>
           </Row>
         )}
 
-  {showModal&&<UserModal
-                isShowing={showModal}
-                hide={toggle}
-                name="Users"
-                style={{ maxWidth: '80%', height: 'auto' }}
-                loading={loading}
-                setLoading={setLoading}
-                modal={showModal}
-                toggle={toggle}
-                >
-                <UserList 
-                    returnFunc={(ev:any)=>returnFunc(ev)}
-                    formik_values={formik.values}
-                    requestType={editId!=null?"mysql":"elastic"}
-                    />
-
-                </UserModal>
-                }
-
+        {showModal && (
+          <UserModal
+            isShowing={showModal}
+            hide={toggle}
+            name="Users"
+            style={{ maxWidth: "80%", height: "auto" }}
+            loading={loading}
+            setLoading={setLoading}
+            modal={showModal}
+            toggle={toggle}
+          >
+            <UserList
+              returnFunc={(ev: any) => returnFunc(ev)}
+              formik_values={formik.values}
+              requestType={editId != null ? "mysql" : "elastic"}
+            />
+          </UserModal>
+        )}
       </div>
     </div>
   );

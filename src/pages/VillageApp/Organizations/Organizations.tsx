@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Row,
   Col,
@@ -13,22 +13,44 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Alert,
-} from 'reactstrap';
-import { Link } from 'react-router-dom';
-import { TableContainer } from '../../../common/AnalyticsTable/TableContainerReactTable';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { SortInterface, SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
-import OrganisationModal from './OrganisationModal';
-import OrganisationList from './OrganisationList';
-import {House} from 'lucide-react';
-import RSelect from 'Components/Common/RSelect/RSelect';
-import { toast } from 'react-toastify';
-import { ADD_VILLAGE_ORGANISATION,DELETE_VILLAGE_ORGANISATION,GET_VILLAGE_ORGANISATION, MD_URL, UPDATE_VILLAGE_ORGANISATION } from '../Api';
-import mdurl from '../../../http/masterDataURL';
-import { http } from 'http/http';
-import { update } from 'lodash';
-import row from 'gridjs/dist/src/row';
+} from "reactstrap";
+import { Link } from "react-router-dom";
+import { TableContainer } from "../../../common/AnalyticsTable/TableContainerReactTable";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import {
+  SortInterface,
+  SortTanstackInterface,
+} from "../../../Typecomponents/ComponentsType";
+import OrganisationModal from "./OrganisationModal";
+import OrganisationList from "./OrganisationList";
+import LocationFilter from "../../../Components/Common/LocationFilter";
+import { House } from "lucide-react";
+import RSelect from "Components/Common/RSelect/RSelect";
+import { toast } from "react-toastify";
+import {
+  ADD_VILLAGE_ORGANISATION,
+  DELETE_VILLAGE_ORGANISATION,
+  GET_VILLAGE_ORGANISATION,
+  MD_URL,
+  UPDATE_VILLAGE_ORGANISATION,
+} from "../Api";
+import mdurl from "../../../http/masterDataURL";
+import { http } from "http/http";
+
+interface SelectOption {
+  value: string | number;
+  label: string;
+}
+
+interface LocationValues {
+  state: SelectOption | null;
+  district: SelectOption | null;
+  region: SelectOption | null;
+  area: SelectOption | null;
+  branch: SelectOption | null;
+}
+
 interface OrgRow {
   villageorganisation_id: number;
   organisation_name: string;
@@ -50,7 +72,6 @@ const schema = Yup.object({
 });
 
 const Organizations = () => {
-
   const [data, setData] = useState<OrgRow[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -62,205 +83,283 @@ const Organizations = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedOrganisation, setSelectedOrganisation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [villageAppData,setVillageAppData]=useState([])
-  const [villageAppDataLoading,setVillageAppDataLoading]=useState(false)
+  const [villageAppData, setVillageAppData] = useState([]);
+  const [villageAppDataLoading, setVillageAppDataLoading] = useState(false);
+  const [filterOrganiationName, setfilterOrganiationName] = useState<any>(null);
+  const [filterOwnerName, setfIlterOwnerName] = useState<any>(null);
+  const [filterImportant, setFilterImportant] = useState<any>(null);
+  const emergencyOptions = [
+    { label: "Yes", value: true },
+    { label: "No", value: false },
+  ];
+  const [filterContactNumber, setFilterContactNumber] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [locationValues, setLocationValues] = useState<LocationValues>({
+    state: null,
+    district: null,
+    region: null,
+    area: null,
+    branch: null,
+  });
+
+  const handleLocationChange = (field: string, value: SelectOption | null) => {
+    setLocationValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   let sort: SortInterface[] = [];
+
   let initialRequest = {
-        "start": 0,
-        "sort": [],
-        "numberOfRows": 10,
-        "filters": []
-    }
-      const fetchData = async (requestdata: any) => {
-          const { start, numberOfRows } = requestdata;
-          try {
-              const response = await http.post(GET_VILLAGE_ORGANISATION, requestdata);
-              if (response.data) {
-                  setData(response.data.result);
-                  setTotalCount(response.data.totalCount);
-              }
-          } catch (error) {
-              console.error("Error fetching analytics data:", error);
-          }
-      };
-  
-      useEffect(() => {
-          fetchData(initialRequest);
-      }, []);
-  
-      const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
-          setPage(pages)
-          setSizePerPage(sizePerPages)
-          if (sortField !== "" && sortOrder !== "") {
-              sort = [{
-                  "columnName": sortField,
-                  "sortOrder": sortOrder
-              }]
-          }
-          fetchData({
-              "start": (pages - 1) * sizePerPages,
-              "sort": sort,
-              "numberOfRows": sizePerPages,
-              "filters": []
-          });
-          console.log("page", page)
+    start: 0,
+    sort: [],
+    numberOfRows: 10,
+    filters: [],
+  };
+
+  const fetchData = async (requestdata: any) => {
+    try {
+      const response = await http.post(GET_VILLAGE_ORGANISATION, requestdata);
+      if (response.data) {
+        setData(response.data.result);
+        setTotalCount(response.data.totalCount);
       }
+    } catch (error) {
+      console.error("Error fetching analytics data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(initialRequest);
+  }, []);
+
+  const getActiveFilters = () => {
+    const filters: any[] = [];
+    if (filterContactNumber) {
+      filters.push({
+        columnName: "contact",
+        value: filterContactNumber,
+      });
+    }
+    if (filterImportant) {
+      filters.push({ columnName: "isemergency", value: filterImportant.value });
+    }
+    if (locationValues.state)
+      filters.push({ columnName: "state", value: locationValues.state.value });
+    if (locationValues.district)
+      filters.push({
+        columnName: "district",
+        value: locationValues.district.value,
+      });
+    if (locationValues.region)
+      filters.push({
+        columnName: "region",
+        value: locationValues.region.value,
+      });
+    if (locationValues.area)
+      filters.push({ columnName: "area", value: locationValues.area.value });
+    if (locationValues.branch)
+      filters.push({
+        columnName: "branch",
+        value: locationValues.branch.value,
+      });
+    return filters;
+  };
+
+  const handleApplyFilter = () => {
+    fetchData({
+      start: 0,
+      sort: sort,
+      numberOfRows: sizePerPage,
+      filters: getActiveFilters(),
+    });
+  };
+
+  const handleClearFilter = () => {
+    setFilterImportant(null);
+    setFilterContactNumber("");
+    setLocationValues({
+      state: null,
+      district: null,
+      region: null,
+      area: null,
+      branch: null,
+    });
+    fetchData(initialRequest);
+  };
+
+  const handleTableChange = ({
+    pages,
+    sizePerPages,
+    sortField,
+    sortOrder,
+  }: any) => {
+    setPage(pages);
+    setSizePerPage(sizePerPages);
+    if (sortField !== "" && sortOrder !== "") {
+      sort = [
+        {
+          columnName: sortField,
+          sortOrder: sortOrder,
+        },
+      ];
+    }
+    fetchData({
+      start: (pages - 1) * sizePerPages,
+      sort: sort,
+      numberOfRows: sizePerPages,
+      filters: getActiveFilters(),
+    });
+  };
 
   const toggle = () => {
-      setShowModal(!showModal);
-      if (showModal) {
-          setSelectedOrganisation([]);
-      }
+    setShowModal(!showModal);
+    if (showModal) {
+      setSelectedOrganisation([]);
+    }
   };
 
   const addToggle = () => {
-      setShowModal(!showModal);
+    setShowModal(!showModal);
   };
 
   async function fetchVillageApps() {
-      setVillageAppDataLoading(true);
-      mdurl(MD_URL,'getAll_VillageApp')
-        .then((r) => {
-          setVillageAppData(r);
-          setVillageAppDataLoading(false);
-        }).catch((error) => {
-          toast(error, { position: 'top-right', type: 'error' });
-          setVillageAppDataLoading(false);
-        });
-    }
-
+    setVillageAppDataLoading(true);
+    mdurl(MD_URL, "getAll_VillageApp")
+      .then((r) => {
+        setVillageAppData(r);
+        setVillageAppDataLoading(false);
+      })
+      .catch((error) => {
+        toast(error, { position: "top-right", type: "error" });
+        setVillageAppDataLoading(false);
+      });
+  }
 
   useEffect(() => {
-    fetchVillageApps()
+    fetchVillageApps();
     fetchData(initialRequest);
-  },[])
-  
+  }, []);
 
-    async function addOrganisation(data:any) {
-        console.log('data', data);
-        setLoading(true);
-        await http({
-          method: 'POST',
-          url: ADD_VILLAGE_ORGANISATION,
-          data,
-        })
-          .then(function(response) {
-            if (response.status === 200) {
-              console.log(response.data);
-              fetchData(initialRequest)
-              toast(response.data.message, {
-                position: 'top-right',
-                type: 'success',
-              });
-            } else {
-              toast('Failed to Add State', {
-                position: 'top-right',
-                type: 'error',
-              });
-            }
-            setLoading(false);
-          })
-          .catch(err => {
-            toast(err, { position: 'top-right', type: 'error' });
-            setLoading(false);
+  async function addOrganisation(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
+      url: ADD_VILLAGE_ORGANISATION,
+      data,
+    })
+      .then(function (response) {
+        if (response.status === 200) {
+          fetchData(initialRequest);
+          toast(response.data.message, {
+            position: "top-right",
+            type: "success",
           });
-      }
+        } else {
+          toast("Failed to Add State", {
+            position: "top-right",
+            type: "error",
+          });
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
+      });
+  }
 
-  
-    async function updateOrganisation(data:any) {
-        console.log('data', data);
-        setLoading(true);
-        await http({
-          method: 'POST',
-          url: UPDATE_VILLAGE_ORGANISATION,
-          data,
-        })
-          .then(function(response) {
-            if (response.status === 200) {
-              console.log(response.data);
-              fetchData(initialRequest)
-              toast(response.data.message, {
-                position: 'top-right',
-                type: 'success',
-              });
-            } else {
-              toast('Failed to Add State', {
-                position: 'top-right',
-                type: 'error',
-              });
-            }
-            setLoading(false);
-          })
-          .catch(err => {
-            toast(err, { position: 'top-right', type: 'error' });
-            setLoading(false);
+  async function updateOrganisation(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
+      url: UPDATE_VILLAGE_ORGANISATION,
+      data,
+    })
+      .then(function (response) {
+        if (response.status === 200) {
+          fetchData(initialRequest);
+          toast(response.data.message, {
+            position: "top-right",
+            type: "success",
           });
-      }
+        } else {
+          toast("Failed to Add State", {
+            position: "top-right",
+            type: "error",
+          });
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
+      });
+  }
 
   const formik = useFormik<OrgRow>({
     initialValues: {
       villageorganisation_id: 0,
-      organisation_name: '',
-      organisation_type: '',
-      f_organisation_id: '',
+      organisation_name: "",
+      organisation_type: "",
+      f_organisation_id: "",
       f_villageapp_id: 0,
       isemergency: false,
       priority: 0,
-      contact: '',
-      owner: '',
+      contact: "",
+      owner: "",
     },
-    // validationSchema: schema,
-
     onSubmit: (values, { resetForm }) => {
       if (editId) {
-        updateOrganisation(values)
+        updateOrganisation(values);
       } else {
-        addOrganisation(values)
+        addOrganisation(values);
       }
 
       resetForm();
       setShowForm(false);
-    }
+    },
   });
 
-
-    async function deleteUsers(data:any) {
-      console.log('data', data);
-      setLoading(true);
-      await http({
-      method: 'POST',
+  async function deleteUsers(data: any) {
+    setLoading(true);
+    await http({
+      method: "POST",
       url: DELETE_VILLAGE_ORGANISATION,
       data,
-      })
-      .then(function(response) {
-          if (response.status === 200) {
+    })
+      .then(function (response) {
+        if (response.status === 200) {
           toast(response.data.message, {
-              position: 'top-right',
-              type: 'success',
+            position: "top-right",
+            type: "success",
           });
-          fetchData(initialRequest)
-          } else {
-          toast('Failed to Delete Users', {
-              position: 'top-right',
-              type: 'error',
+          fetchData(initialRequest);
+        } else {
+          toast("Failed to Delete Users", {
+            position: "top-right",
+            type: "error",
           });
-          }
-          setLoading(false);
+        }
+        setLoading(false);
       })
-      .catch(err => {
-          toast(err, { position: 'top-right', type: 'error' });
-          setLoading(false);
+      .catch((err) => {
+        toast(err, { position: "top-right", type: "error" });
+        setLoading(false);
       });
   }
-    
-    const handleEdit = (row: any) => {
-    console.log(row)
+
+  const handleEdit = (row: any) => {
     setEditId(row.villageorganisation_id);
     formik.setFieldValue("villageorganisation_id", row.villageorganisation_id);
     formik.setFieldValue("organisation_name", row.organisation_name);
-    formik.setFieldValue("organisation_type",row.organisation_type);
+    formik.setFieldValue("organisation_type", row.organisation_type);
     formik.setFieldValue("f_organisation_id", row.f_organisation_id);
-    formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
+    formik.setFieldValue(
+      "f_villageapp_id",
+      villageAppData.find((v: any) => v.value === row.f_villageapp_id),
+    );
     formik.setFieldValue("isemergency", row.isemergency);
     formik.setFieldValue("priority", row.priority);
     formik.setFieldValue("contact", row.contact);
@@ -269,47 +368,49 @@ const Organizations = () => {
   };
 
   const handleDelete = (row: any) => {
-     deleteUsers({villageorganisation_id: row.villageorganisation_id})
+    deleteUsers({ villageorganisation_id: row.villageorganisation_id });
   };
 
-    const serialNo = (celldata: any) => {
-        return <span>{((page - 1) * sizePerPage) + (Number(celldata.row.index) + 1)}</span>
-    }
+  const serialNo = (celldata: any) => {
+    return (
+      <span>{(page - 1) * sizePerPage + (Number(celldata.row.index) + 1)}</span>
+    );
+  };
 
   const columns = useMemo(
     () => [
       {
-        header: 'Sl No',
+        header: "Sl No",
         enableColumnFilter: false,
         cell: (cell: any) => serialNo(cell),
       },
       {
-        header: 'Name',
-        accessorKey: 'organisation_name',
+        header: "Name",
+        accessorKey: "organisation_name",
         enableColumnFilter: false,
       },
       {
-        header: 'Owner Name',
-        accessorKey: 'owner',
+        header: "Owner Name",
+        accessorKey: "owner",
         enableColumnFilter: false,
       },
       {
-        header: 'Contact',
-        accessorKey: 'contact',
-        enableColumnFilter: false,
-      },
-       {
-        header: 'Is Emergency Service',
-        accessorKey: 'isemergency',
+        header: "Contact",
+        accessorKey: "contact",
         enableColumnFilter: false,
       },
       {
-        header: 'Priority',
-        accessorKey: 'priority',
+        header: "Is Emergency Service",
+        accessorKey: "isemergency",
         enableColumnFilter: false,
       },
       {
-        header: 'Actions',
+        header: "Priority",
+        accessorKey: "priority",
+        enableColumnFilter: false,
+      },
+      {
+        header: "Actions",
         cell: (cell: any) => {
           const row = cell.row.original;
           return (
@@ -317,7 +418,11 @@ const Organizations = () => {
               <Button size="sm" color="warning" onClick={() => handleEdit(row)}>
                 Edit
               </Button>
-              <Button size="sm" color="danger" onClick={() => handleDelete(row)}>
+              <Button
+                size="sm"
+                color="danger"
+                onClick={() => handleDelete(row)}
+              >
                 Delete
               </Button>
             </div>
@@ -325,40 +430,36 @@ const Organizations = () => {
         },
       },
     ],
-    [data]
+    [data],
   );
-  const sortedData = useMemo(() => {
-  return [...data].sort((a, b) => b.priority - a.priority);
-}, [data]);
-  
-async function returnFunc(data:any) {
-            console.log(data)
-            formik.setFieldValue("organisation_name",data.organisation);
-            formik.setFieldValue("organisation_type",data.organisation_type);
-            formik.setFieldValue("f_organisation_id",data.organisation_id);
-            formik.setFieldValue("contact",data.contact);
-            formik.setFieldValue("owner",data.ownerName);
-            setShowModal(!showModal);
-        }
 
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => b.priority - a.priority);
+  }, [data]);
+
+  async function returnFunc(data: any) {
+    formik.setFieldValue("organisation_name", data.organisation);
+    formik.setFieldValue("organisation_type", data.organisation_type);
+    formik.setFieldValue("f_organisation_id", data.organisation_id);
+    formik.setFieldValue("contact", data.contact);
+    formik.setFieldValue("owner", data.ownerName);
+    setShowModal(!showModal);
+  }
 
   return (
     <div className="page-content">
       <div className="container-fluid">
-
         {/* HEADER */}
         <Row>
           <Col xs="12">
-            <div className="page-title-box d-flex justify-content-between">
-              <h4>Organizations</h4>
+            <div className="page-title-box d-flex justify-content-between align-items-center">
+              <h4 className="mb-0">Organizations</h4>
 
-              <Breadcrumb>
+              <Breadcrumb listClassName="m-0">
                 <BreadcrumbItem>
                   <Link to="/villageapp">VillageApp</Link>
                 </BreadcrumbItem>
-                <BreadcrumbItem active>
-                   Organizations
-                </BreadcrumbItem>
+                <BreadcrumbItem active>Organizations</BreadcrumbItem>
               </Breadcrumb>
             </div>
           </Col>
@@ -375,94 +476,99 @@ async function returnFunc(data:any) {
               {successMsg && <Alert color="success">{successMsg}</Alert>}
 
               <Form onSubmit={formik.handleSubmit}>
-                              <FormGroup>
-                        <Label>Select Village App</Label>
-                             <RSelect
-                                name="f_villageapp_id"
-                                id="f_villageapp_id"
-                                value={formik.values.f_villageapp_id}
-                                onChange={(ev: any) =>
-                                    formik.setFieldValue("f_villageapp_id", ev)
-                                }
-                                options={villageAppData}
-                                placeholder="--Select Village--"
-                                error={formik.errors.f_villageapp_id}
-                                touched={formik.touched.f_villageapp_id}
-                                isLoading={villageAppDataLoading}
-                                isClearable
-                                />
-                            {formik.touched.f_villageapp_id &&
-                                formik.errors.f_villageapp_id && (
-                                <div className="text-danger">
-                                    {formik.errors.f_villageapp_id}
-                                </div>
-                                )}
+                <FormGroup>
+                  <Label>Select Village App</Label>
+                  <RSelect
+                    name="f_villageapp_id"
+                    id="f_villageapp_id"
+                    value={formik.values.f_villageapp_id}
+                    onChange={(ev: any) =>
+                      formik.setFieldValue("f_villageapp_id", ev)
+                    }
+                    options={villageAppData}
+                    placeholder="--Select Village--"
+                    error={formik.errors.f_villageapp_id}
+                    touched={formik.touched.f_villageapp_id}
+                    isLoading={villageAppDataLoading}
+                    isClearable
+                  />
+                  {formik.touched.f_villageapp_id &&
+                    formik.errors.f_villageapp_id && (
+                      <div className="text-danger">
+                        {formik.errors.f_villageapp_id as string}
+                      </div>
+                    )}
+                </FormGroup>
 
-                    </FormGroup>
                 <Col md="12">
-                    <Label>Organisations <House onClick={()=>addToggle()}/></Label>
-                    <div>
-                    {/* {
-                        selectedOrganisation.length>0?selectedOrganisation.map((selectedorg:any)=>{
-                            return <div>{selectedorg.f_organisation_id}&nbsp;&nbsp;{selectedorg.name}</div>
-                        }):"No Organisation Selected"
-                    } */}
-                    </div>
+                  <Label>
+                    Organisations <House onClick={() => addToggle()} />
+                  </Label>
+                  <div></div>
                 </Col>
+
                 <FormGroup>
                   <Label>Name</Label>
-                  <Input name="organisation_name" value={formik.values.organisation_name} disabled/>
+                  <Input
+                    name="organisation_name"
+                    value={formik.values.organisation_name}
+                    disabled
+                  />
                 </FormGroup>
 
                 <FormGroup>
                   <Label>Owner</Label>
-                  <Input name="owner" value={formik.values.owner} disabled/>
+                  <Input name="owner" value={formik.values.owner} disabled />
                 </FormGroup>
-
-                {/* <FormGroup>
-                  <Label>Location</Label>
-                  <Input name="location" onChange={formik.handleChange} value={formik.values.location} />
-                </FormGroup> */}
 
                 <FormGroup>
                   <Label>Contact</Label>
-                  <Input name="contact" onChange={formik.handleChange} value={formik.values.contact} />
+                  <Input
+                    name="contact"
+                    onChange={formik.handleChange}
+                    value={formik.values.contact}
+                  />
                 </FormGroup>
 
-                {/* <FormGroup>
-                  <Label>Category ID</Label>
-                  <Input name="idnumber" onChange={formik.handleChange} value={formik.values.idnumber} />
-                </FormGroup> */}
                 <FormGroup>
                   <Label>Priority</Label>
-                  <Input name="priority" type="number" onChange={formik.handleChange} value={formik.values.priority}/>
-              </FormGroup>
-               <Col md="12">
-                <div>
-                    <FormGroup switch>
-                            <Input
-                                type="checkbox"
-                                role="switch"
-                                name="isemergency"
-                                checked={formik.values.isemergency}
-                                onChange={formik.handleChange}
-                            />
+                  <Input
+                    name="priority"
+                    type="number"
+                    onChange={formik.handleChange}
+                    value={formik.values.priority}
+                  />
+                </FormGroup>
 
-                            <Label check className="ms-2">
-                                {formik.values.isemergency
-                                ? "Emergency Service"
-                                : "Not an Emergency Service"}
-                            </Label>
-                            </FormGroup>
-                </div>
-            </Col>
+                <Col md="12">
+                  <div>
+                    <FormGroup switch>
+                      <Input
+                        type="checkbox"
+                        role="switch"
+                        name="isemergency"
+                        checked={formik.values.isemergency}
+                        onChange={formik.handleChange}
+                      />
+
+                      <Label check className="ms-2">
+                        {formik.values.isemergency
+                          ? "Emergency Service"
+                          : "Not an Emergency Service"}
+                      </Label>
+                    </FormGroup>
+                  </div>
+                </Col>
 
                 <div className="d-flex gap-2 mt-3">
-                  <Button color="soft-secondary" onClick={() => setShowForm(false)}>
+                  <Button
+                    color="soft-secondary"
+                    onClick={() => setShowForm(false)}
+                  >
                     Cancel
                   </Button>
                   <Button color="primary" type="submit">
-                    {editId ? 'Update' : 'Submit'}
+                    {editId ? "Update" : "Submit"}
                   </Button>
                 </div>
               </Form>
@@ -475,61 +581,168 @@ async function returnFunc(data:any) {
           <Row>
             <Col md="12">
               <Card>
+                <CardHeader className="d-flex justify-content-between align-items-center">
+                  <h4 className="card-title mb-0">Organizations</h4>
 
-                <CardHeader className="d-flex justify-content-between">
-                  <h4>Organizations</h4>
+                  <div className="d-flex gap-2">
+                    <Button
+                      color={filterOpen ? "secondary" : "soft-primary"}
+                      size="sm"
+                      onClick={() => setFilterOpen(!filterOpen)}
+                    >
+                      <i className="mdi mdi-filter-outline me-1"></i>
+                      {filterOpen ? "Hide Filters" : "Filter"}
+                    </Button>
 
-                  <Button
-                    color="soft-success"
-                    size="sm"
-                    onClick={() => {
-                      formik.resetForm();
-                      setEditId(null);
-                      setShowForm(true);
-                    }}
-                  >
-                    + Add New
-                  </Button>
+                    <Button
+                      color="soft-success"
+                      size="sm"
+                      onClick={() => {
+                        formik.resetForm();
+                        setEditId(null);
+                        setShowForm(true);
+                      }}
+                    >
+                      + Add New
+                    </Button>
+                  </div>
                 </CardHeader>
 
+                {/* FILTER PANEL */}
+                {filterOpen && (
+                  <CardBody className="border-bottom bg-light">
+                    <Row className="g-2">
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            Organization name
+                          </Label>
+                          <RSelect
+                            value={filterOrganiationName}
+                            onChange={(selected: any) =>
+                              setfilterOrganiationName(selected)
+                            }
+                            options={villageAppData}
+                            placeholder="Select Organization Name"
+                            isLoading={villageAppDataLoading}
+                            isClearable
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            Contact Number
+                          </Label>
+                          <Input
+                            type="text"
+                            placeholder="Search Contact Number"
+                            value={filterContactNumber}
+                            onChange={(e) =>
+                              setFilterContactNumber(e.target.value)
+                            }
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            Emergency Service
+                          </Label>
+                          <RSelect
+                            value={filterImportant}
+                            onChange={(selected: any) =>
+                              setFilterImportant(selected)
+                            }
+                            options={emergencyOptions}
+                            placeholder="Select Emergency Service"
+                            isClearable
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={4}>
+                        <FormGroup className="mb-0">
+                          <Label className="form-label font-size-13 text-muted">
+                            owner name
+                          </Label>
+                          <RSelect
+                            value={filterOwnerName}
+                            onChange={(selected: any) =>
+                              setfIlterOwnerName(selected)
+                            }
+                            options={villageAppData}
+                            placeholder="Select owner Name"
+                            isLoading={villageAppDataLoading}
+                            isClearable
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md={12}>
+                        <Label className="form-label font-size-13 text-muted">
+                          Location Filters
+                        </Label>
+                        <div className="d-flex flex-wrap gap-2">
+                          <LocationFilter
+                            values={locationValues}
+                            setFieldValue={handleLocationChange}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        color="soft-secondary"
+                        size="sm"
+                        onClick={handleClearFilter}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        color="primary"
+                        size="sm"
+                        onClick={handleApplyFilter}
+                      >
+                        Apply Filter
+                      </Button>
+                    </div>
+                  </CardBody>
+                )}
+
                 <CardBody>
-                  
                   <TableContainer
                     columns={columns}
                     data={sortedData}
                     page={page}
                     sizePerPage={sizePerPage}
-                    totalCount={data.length}
+                    totalCount={totalCount}
                     handleTableChange={handleTableChange}
                     sorting={sorting}
                     setSorting={setSorting}
                   />
                 </CardBody>
-
               </Card>
             </Col>
           </Row>
         )}
 
-      {showModal&&<OrganisationModal
-                        isShowing={showModal}
-                        hide={toggle}
-                        name="Members"
-                        style={{ maxWidth: '80%', height: 'auto' }}
-                        loading={loading}
-                        setLoading={setLoading}
-                        modal={showModal}
-                        toggle={toggle}
-                        >
-                        <OrganisationList 
-                            returnFunc={(ev:any)=>returnFunc(ev)}
-                            formik_values={formik.values}
-                            
-                            />
-
-                        </OrganisationModal>
-                        }
-
+        {showModal && (
+          <OrganisationModal
+            isShowing={showModal}
+            hide={toggle}
+            name="Members"
+            style={{ maxWidth: "80%", height: "auto" }}
+            loading={loading}
+            setLoading={setLoading}
+            modal={showModal}
+            toggle={toggle}
+          >
+            <OrganisationList
+              returnFunc={(ev: any) => returnFunc(ev)}
+              formik_values={formik.values}
+            />
+          </OrganisationModal>
+        )}
       </div>
     </div>
   );
