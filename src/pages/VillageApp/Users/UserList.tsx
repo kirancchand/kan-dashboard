@@ -26,7 +26,8 @@ import * as Yup from "yup";
 import RSelect from "../../../Components/Common/RSelect/RSelect";
 import md from "../../../http/masterData";
 import { toast } from "react-toastify";
-
+import { Search } from "lucide-react";
+import { set } from "lodash";
 interface KeyValue {
   value: string;
   label: string;
@@ -64,6 +65,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
   const [totalCount, setTotalCount] = useState(0);
 
   let sort: SortInterface[] = [];
+  const [filters, setFilters] = useState<any[]>([]);
   const [sizePerPage, setSizePerPage] = useState(10);
   const [loading, setLoading] = useState(false);
 
@@ -127,6 +129,19 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   const stateFunc = (value: any, setFieldValue: any) => {
     setFieldValue("state", value);
+
+   setFilters(prevFilters => {
+    const hasState = prevFilters.some(filter => "state" in filter);
+
+    if (hasState) {
+      return prevFilters.map(filter =>
+        "state" in filter ? {"state": value.label} : filter
+      );
+    }
+
+    return [...prevFilters, {"state": value.label}];
+  });
+
     setFieldValue("district", null);
     getDistrict({
       requestName: "getAll_DistrictByState",
@@ -141,6 +156,17 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   const districtFunc = (value: any, setFieldValue: any) => {
     setFieldValue("district", value);
+    setFilters(prevFilters => {
+    const hasDistrict = prevFilters.some(filter => "district" in filter);
+
+    if (hasDistrict) {
+      return prevFilters.map(filter =>
+        "district" in filter ? {"district": value.label} : filter
+      );
+    }
+
+    return [...prevFilters, {"district": value.label}];
+  });
     getRegion({
       requestName: "getAll_RegionByDistrict",
       params: [
@@ -154,6 +180,17 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   const regionFunc = (value: any, setFieldValue: any) => {
     setFieldValue("region", value);
+    setFilters(prevFilters => {
+      const hasRegion = prevFilters.some(filter => "region" in filter);
+
+      if (hasRegion) {
+        return prevFilters.map(filter =>
+          "region" in filter ? {"region": value.label} : filter
+        );
+      }
+
+      return [...prevFilters, {"region": value.label}];
+    });
     getArea({
       requestName: "getAll_Area",
     });
@@ -170,6 +207,17 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   const handleAreaChange = (ev: any) => {
     formik.setFieldValue("area", ev);
+    setFilters(prevFilters => {
+      const hasArea = prevFilters.some(filter => "local_body_name" in filter);
+
+      if (hasArea) {
+        return prevFilters.map(filter =>
+          "local_body_name" in filter ? {"local_body_name": ev.label} : filter
+        );
+      }
+
+      return [...prevFilters, {"local_body_name": ev.label}];
+    });
     formik.setFieldValue("branch", null);
     async function getBranch() {
       setBranchLoading(true);
@@ -196,6 +244,17 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   const handleBranchChange = (ev: any) => {
     formik.setFieldValue("branch", ev);
+      setFilters(prevFilters => {
+      const hasBranch = prevFilters.some(filter => "ward" in filter);
+
+      if (hasBranch) {
+        return prevFilters.map(filter =>
+          "ward" in filter ? {"ward": ev.label} : filter
+        );
+      }
+
+      return [...prevFilters, {"ward": ev.label}];
+    });
     fetchData(initialRequest);
   };
 
@@ -378,7 +437,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
     start: 0,
     sort: [],
     numberOfRows: 10,
-    filters: [],
+    filters: filters,
   };
 
   const UserGeneralizeFunc = (data: any) => {
@@ -417,6 +476,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
   //console.log("data",data)
   const fetchData = async (requestdata: any) => {
+    console.log(requestdata)
     const { start, numberOfRows } = requestdata;
     try {
       const response = await http.post(
@@ -467,7 +527,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
       start: (pages - 1) * sizePerPages,
       sort: sort,
       numberOfRows: sizePerPages,
-      filters: [],
+      filters: filters,
     });
     //console.log("page", page)
   };
@@ -482,7 +542,13 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
       branch: null,
     },
     onSubmit: (values, { resetForm }) => {
-      fetchData(initialRequest);
+      console.log(values)
+      let newInitialRequest = {
+        ...initialRequest,
+        filters: filters,
+      };
+      fetchData(newInitialRequest);
+      // resetForm();
     },
   });
 
@@ -628,6 +694,14 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
                       />
                     </FormGroup>
                   </Col>
+                  </Row>
+                  <Row>
+                  <Col md="12" className="d-flex align-items-end">
+                    <Button color="primary" type="submit">
+                      <Search size={16} className="me-2" /> Search
+                    </Button>
+                  </Col>
+                        
                 </Row>
               </Form>
 

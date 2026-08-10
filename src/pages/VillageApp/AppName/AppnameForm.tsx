@@ -51,6 +51,8 @@ interface AppnameRow {
   villageapp_name: string;
   villageapp_desc: string;
   villageapp_about: string;
+  village_branch_id: number;
+  village_branch: string;
 }
 
 const AppnameFormSchema = Yup.object().shape({
@@ -177,9 +179,16 @@ const AppnameForm = () => {
       villageapp_name: "",
       villageapp_desc: "",
       villageapp_about: "",
+      village_branch_id: 0,
+      village_branch: "",
     },
     validationSchema: AppnameFormSchema,
     onSubmit: async (values, { setSubmitting }) => {
+      console.log("Form values:", locationValues);
+      values.village_branch_id = locationValues.branch ? Number(locationValues.branch.value) : 0;
+      values.village_branch = locationValues.branch
+        ? String(locationValues.branch.label)
+        : "";
       setApiError(null);
       setSuccessMsg(null);
 
@@ -203,6 +212,15 @@ const AppnameForm = () => {
     formik.setFieldValue("villageapp_name", row.villageapp_name);
     formik.setFieldValue("villageapp_desc", row.villageapp_desc);
     formik.setFieldValue("villageapp_about", row.villageapp_about);
+    formik.setFieldValue("village_branch_id", row.village_branch_id);
+    formik.setFieldValue("village_branch", row.village_branch);
+    setLocationValues((prev) => ({
+      ...prev,
+      branch: {
+        value: row.village_branch_id,
+        label: row.village_branch,
+      },
+    }));
     setShowForm(true);
   };
 
@@ -434,6 +452,17 @@ const AppnameForm = () => {
 
                   <Form onSubmit={formik.handleSubmit}>
                     <Row>
+                      <Col md={12}>
+                        <Label className="form-label font-size-13 text-muted">
+                          Location Filters
+                        </Label>
+                        <div className="d-flex flex-wrap gap-2">
+                          <LocationFilter
+                            values={locationValues}
+                            setFieldValue={handleLocationChange}
+                          />
+                        </div>
+                      </Col>
                       <Col md={6}>
                         <FormGroup>
                           <Label>App Name</Label>
