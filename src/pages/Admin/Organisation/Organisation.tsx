@@ -420,13 +420,13 @@ const Organisation = ({respValue=initialRoute,setRespValue}:any) => {
             setLoading(true);
             await http({
             method: 'PUT',
-            url: UPDATE_ORGANISATION+'/'+data.area_id,
+            url: UPDATE_ORGANISATION+'/'+data.organisation_id,
             data,
             })
             .then(function(response) {
                 if (response.status === 200) {
                 console.log(response.data);
-        
+                    fetchData(initialRequest)
                 toast(response.data.message, {
                     position: 'top-right',
                     type: 'success',

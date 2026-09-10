@@ -56,6 +56,10 @@ export const userinfo_request = BASE_URL + '/auth/user-info'
 export const GET_USER_LIST = ADMIN_URL + "/master/users/listUser"
 export const LISTELASTICUSER=ELASTIC_URL+"/user/search_byFilter"
 export const LISTELASTICUSERDATA=ELASTIC_URL+"/user/search_byFilterData"
+
+export const LISTVILLAGEELASTICUSER=ELASTIC_URL+"/villageuser/search_byFilter"
+export const LISTVILLAGEELASTICUSERDATA=ELASTIC_URL+"/villageuser/search_byFilterData"
+
 export const GET_MENU_LIST = ADMIN_URL + "/master/menu/listMenu"
 export const GET_ROLE_LIST = ADMIN_URL + "/master/role/listRole"
 export const GET_ROLE_MENU_LIST = ADMIN_URL + "/master/rolemenu/listRoleMenu"

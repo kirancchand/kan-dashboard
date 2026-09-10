@@ -4,7 +4,7 @@ import { SortTanstackInterface } from "../../../Typecomponents/ComponentsType";
 // import UsersFormModal from '../../UsersFormModal';
 import { SortInterface } from "../../../Typecomponents/ComponentsType";
 // import AddUserModal from '../../AddUserModal';
-import { http, GET_USER_LIST, LISTELASTICUSER } from "../../../http/http";
+import { http, GET_USER_LIST, LISTELASTICUSER,LISTVILLAGEELASTICUSER } from "../../../http/http";
 import {
   Row,
   Col,
@@ -208,15 +208,15 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
   const handleAreaChange = (ev: any) => {
     formik.setFieldValue("area", ev);
     setFilters(prevFilters => {
-      const hasArea = prevFilters.some(filter => "local_body_name" in filter);
+      const hasArea = prevFilters.some(filter => "area" in filter);
 
       if (hasArea) {
         return prevFilters.map(filter =>
-          "local_body_name" in filter ? {"local_body_name": ev.label} : filter
+          "area" in filter ? {"area": ev.label} : filter
         );
       }
 
-      return [...prevFilters, {"local_body_name": ev.label}];
+      return [...prevFilters, {"area": ev.label}];
     });
     formik.setFieldValue("branch", null);
     async function getBranch() {
@@ -245,15 +245,15 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
   const handleBranchChange = (ev: any) => {
     formik.setFieldValue("branch", ev);
       setFilters(prevFilters => {
-      const hasBranch = prevFilters.some(filter => "ward" in filter);
+      const hasBranch = prevFilters.some(filter => "branch" in filter);
 
       if (hasBranch) {
         return prevFilters.map(filter =>
-          "ward" in filter ? {"ward": ev.label} : filter
+          "branch" in filter ? {"branch": ev.label} : filter
         );
       }
 
-      return [...prevFilters, {"ward": ev.label}];
+      return [...prevFilters, {"branch": ev.label}];
     });
     fetchData(initialRequest);
   };
@@ -460,13 +460,13 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
         });
       } else {
         dataSet.push({
-          id: data[i].SerialNo,
-          Name: data[i].Name,
-          contact: "",
-          address: data[i].HouseName + " " + data[i].HouseNo,
+          id: data[i].serialNo,
+          Name: data[i].firstName + "" + data[i].lastName,
+          contact: data[i].mobno,
+          address: data[i].housename+" "+data[i].houseno+" "+data[i].area,
           f_elastic_id: data[i].SerialNo,
           f_user_id: "",
-          branch: data[i].ward,
+          branch: data[i].branch,
         });
       }
     }
@@ -480,7 +480,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
     const { start, numberOfRows } = requestdata;
     try {
       const response = await http.post(
-        requestType == "mysql" ? GET_USER_LIST : LISTELASTICUSER,
+        requestType == "mysql" ? GET_USER_LIST : LISTVILLAGEELASTICUSER,
         requestdata,
       );
       //console.log(response.data)

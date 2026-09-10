@@ -84,6 +84,7 @@ import MyOrders from "pages/Delivery/MyOrders";
 import Map from "pages/Delivery/Map";
 
 import KanDashboard from "pages/KanDashboard";
+import KanVillageDashboard from "pages/KanVillageDashboard";
 import UserAnalytics from "pages/UserAnalytics";
 
 import State from "pages/Admin/Division/State";
@@ -170,6 +171,7 @@ const authProtectedRoutes = [
   //Elastic Search
   { path: "/dashboard-user", component: <KanDashboard /> },
   { path: "/dashboard-useranalytics", component: <UserAnalytics /> },
+  { path: "/dashboard-uservillage", component: <KanVillageDashboard /> },
 
   //Admin
   { path: "/state", component: <State /> },

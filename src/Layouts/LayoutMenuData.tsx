@@ -112,6 +112,12 @@ const [isUserType, setIsUserType] = useState(false);
           link: "/dashboard-useranalytics",
           parentId: "dashboard",
         },
+        {
+          id: "uservillage",
+          label: "Village User",
+          link: "/dashboard-uservillage",
+          parentId: "dashboard",
+        },
       ],
     },
     {
@@ -632,17 +638,18 @@ const [isUserType, setIsUserType] = useState(false);
           parentId: "village",
         },
         {
-          id: "vappadvertisement",
-          label: "Village App Advertisement",
-          link: "/vappadvertisement",
-          parentId: "village",
-        },
-        {
           id: "vapporganizations",
           label: "Village App Organisations",
           link: "/vapporganizations",
           parentId: "village",
         },
+        {
+          id: "vappadvertisement",
+          label: "Village App Advertisement",
+          link: "/vappadvertisement",
+          parentId: "village",
+        },
+       
       ],
     },
   ];

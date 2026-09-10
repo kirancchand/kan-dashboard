@@ -61,6 +61,7 @@ interface OrgRow {
   priority: number;
   contact: string;
   owner: string;
+  icon:string;
 }
 
 const schema = Yup.object({
@@ -309,6 +310,7 @@ const Organizations = () => {
       priority: 0,
       contact: "",
       owner: "",
+      icon: "",
     },
     onSubmit: (values, { resetForm }) => {
       if (editId) {
@@ -364,6 +366,7 @@ const Organizations = () => {
     formik.setFieldValue("priority", row.priority);
     formik.setFieldValue("contact", row.contact);
     formik.setFieldValue("owner", row.owner);
+    formik.setFieldValue("icon", row.icon);
     setShowForm(true);
   };
 
@@ -527,6 +530,14 @@ const Organizations = () => {
                     name="contact"
                     onChange={formik.handleChange}
                     value={formik.values.contact}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Icon</Label>
+                  <Input
+                    name="icon"
+                    onChange={formik.handleChange}
+                    value={formik.values.icon}
                   />
                 </FormGroup>
 

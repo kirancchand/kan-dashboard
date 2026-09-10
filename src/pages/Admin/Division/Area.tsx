@@ -203,6 +203,7 @@ async function updateArea(data: AreaRow) {
 
 
   const formik = useFormik<AreaRow>({
+    
     initialValues: {
       area_id: 0,
       region: null,
@@ -355,7 +356,7 @@ async function updateArea(data: AreaRow) {
         {/* FORM */}
         {showForm && (
 
-          <Card>
+          !loading?<Card>
 
             <CardHeader>
               <h4>Area Form</h4>
@@ -579,7 +580,7 @@ async function updateArea(data: AreaRow) {
 
               </Form>
             </CardBody>
-          </Card>
+          </Card>:"Loading..."
         )}
 
         {/* TABLE */}

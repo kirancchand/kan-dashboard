@@ -4,7 +4,7 @@ import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
 import { SortInterface } from '../../../Typecomponents/ComponentsType';
 // import AddUserModal from '../../AddUserModal';
-import { http, GET_USER_LIST,LISTELASTICUSER } from '../../../http/http';
+import { http, GET_USER_LIST,LISTELASTICUSER,LISTVILLAGEELASTICUSER } from '../../../http/http';
 import {
   Row,
   Col,
@@ -210,13 +210,25 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
 
     const contactFunc = (celldata: any) => {
-        // console.log(celldata)
+        console.log(celldata)
         return <span>
                 <div>{celldata.row.original.email_id!=undefined?celldata.row.original.email_id:null}</div>
                 <div>{celldata.row.original.mobno!=undefined?celldata.row.original.mobno:null}</div>
                 <div>{celldata.row.original.address!=undefined?celldata.row.original.address:null }</div>
                 </span>
     }
+
+
+    const nameFunc = (celldata: any) => {
+        console.log(celldata)
+        return <span>
+                <div>{celldata.row.original.email_id!=undefined?celldata.row.original.email_id:null}</div>
+                <div>{celldata.row.original.mobno!=undefined?celldata.row.original.mobno:null}</div>
+                <div>{celldata.row.original.address!=undefined?celldata.row.original.address:null }</div>
+                </span>
+    }
+
+    
 
     const statusFunc = (celldata: any) => {
         return <span>{celldata.row.original.status?.label}</span>
@@ -323,6 +335,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
             header: "Name",
             accessorKey: "name",
             enableColumnFilter: false,
+            // cell: (cell: any) => nameFunc(cell),
             
         },
         {
@@ -388,24 +401,24 @@ const UserList = ({returnFunc,formik_values}:any) => {
         "filters": []
     }
 
-    const UserGeneralizeFunc=(data:any)=>{
+    const UserGeneralizeFunc=async(data:any)=>{
       let dataSet:any=[]
       for(let i=0;i<data.length;i++){
         if(formik_values.usertype.label!="SuperAdmin"&&formik_values.usertype.label!="Owner"){
           dataSet.push({
-              id:data[i].SerialNo,
+              id:data[i].serialNo,
               f_organisation_id:formik_values.organisation_id,
               f_user_id:null,
               role:formik_values.role,
               status:formik_values.status,
               usertype:formik_values.usertype,
-              name:data[i].Name,
-              gender:data[i].Gender,
+              name:data[i].firstName + "" + data[i].lastName,
+              gender:data[i].gender,
               email_id:"",
-              dateofbirth:data[i].Age,
-              address:data[i].HouseName+" "+data[i].HouseNo+" "+data[i].local_body_name,
-              branch:data[i].ward,
-              f_elastic_id:data[i].SerialNo,
+              dateofbirth:data[i].age,
+              address:data[i].housename+" "+data[i].houseno+" "+data[i].area,
+              branch:data[i].branch,
+              f_elastic_id:data[i].serialNo,
               is_thepointofcontact:formik_values.is_thepointofcontact
           });
         }else{
@@ -440,7 +453,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
       if(formik_values.usertype!=null){
         const { start, numberOfRows } = requestdata;
         try {
-            const response = await http.post(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"?GET_USER_LIST:LISTELASTICUSER, requestdata);
+            const response = await http.post(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"?GET_USER_LIST:LISTVILLAGEELASTICUSER, requestdata);
             //console.log(response.data)
             if (response.data) {
 
