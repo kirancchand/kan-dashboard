@@ -6,10 +6,10 @@ import {
 } from "../../../../src/Typecomponents/ComponentsType";
 import {
   http,
-  GET_ROLE_MENU_LIST,
-  addRoleMenu,
-  GET_MENU_BY_ROLE_ID,
-  UPDATE_ROLEMENU,
+  ADD_USERTYPE_ROLE,
+  GET_USERTYPE_ROLE_LIST,
+  UPDATE_USERTYPE_ROLE,
+  GET_ROLE_BY_USERTYPE_ID
 } from "../../../http/http";
 import { toast } from "react-toastify";
 import { Formik, Field, Form, ErrorMessage } from "formik";
@@ -25,22 +25,6 @@ interface DataItem {
   role: string;
 }
 
-const staticRoleData = [
-  { value: "1", label: "Admin" },
-  { value: "2", label: "Owner" },
-  { value: "3", label: "Manager" },
-  { value: "4", label: "User" },
-  { value: "5", label: "Guest" },
-];
-
-const staticUserTypeData = [
-  { value: "1", label: "Admin" },
-  { value: "2", label: "Owner" },
-  { value: "3", label: "Manager" },
-  { value: "4", label: "User" },
-  { value: "5", label: "Guest" },
-];
-
 const UserTypeRole = () => {
   const [page, setPage] = useState(1);
   const [sizePerPage, setSizePerPage] = useState(10);
@@ -49,8 +33,8 @@ const UserTypeRole = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [data, setData] = useState<DataItem[]>([]);
 
-  const [roleData, setRoleData] = useState<any[]>(staticRoleData);
-  const [userTypeData, setUserTypeData] = useState<any[]>(staticUserTypeData);
+  const [roleData, setRoleData] = useState<any[]>([]);
+  const [userTypeData, setUserTypeData] = useState<any[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
   const [userTypeLoading, setUserTypeLoading] = useState(false);
   const [editData, setEditData] = useState<any>([]);
@@ -119,7 +103,7 @@ const UserTypeRole = () => {
     setLoading(true);
     await http({
       method: "GET",
-      url: GET_MENU_BY_ROLE_ID + "/" + usertype_id,
+      url: GET_ROLE_BY_USERTYPE_ID + "/" + usertype_id,
     })
       .then(function (response) {
         if (response.status === 200) {
@@ -196,7 +180,7 @@ const UserTypeRole = () => {
 
   const fetchData = async (requestdata: any) => {
     try {
-      const response = await http.post(GET_ROLE_MENU_LIST, requestdata);
+      const response = await http.post(GET_USERTYPE_ROLE_LIST, requestdata);
       if (response.data) {
         setData(response.data.result);
         setTotalCount(response.data.totalCount);
@@ -234,7 +218,7 @@ const UserTypeRole = () => {
     setLoading(true);
     await http({
       method: "POST",
-      url: addRoleMenu,
+      url: ADD_USERTYPE_ROLE,
       data,
     })
       .then(function (response) {
@@ -262,7 +246,7 @@ const UserTypeRole = () => {
     setLoading(true);
     await http({
       method: "POST",
-      url: UPDATE_ROLEMENU,
+      url: UPDATE_USERTYPE_ROLE,
       data,
     })
       .then(function (response) {

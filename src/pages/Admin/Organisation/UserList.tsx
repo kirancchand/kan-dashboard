@@ -4,7 +4,7 @@ import { SortTanstackInterface } from '../../../Typecomponents/ComponentsType';
 // import UsersFormModal from '../../UsersFormModal';
 import { SortInterface } from '../../../Typecomponents/ComponentsType';
 // import AddUserModal from '../../AddUserModal';
-import { http, GET_USER_LIST,LISTELASTICUSER,LISTVILLAGEELASTICUSER } from '../../../http/http';
+import { http, GET_USER_LIST,LISTVILLAGEELASTICUSER } from '../../../http/http';
 import {
   Row,
   Col,
@@ -26,7 +26,7 @@ import * as Yup from 'yup';
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import md from '../../../http/masterData';
 import { toast } from 'react-toastify';
-
+import { Search } from "lucide-react";
 
 interface KeyValue{
     value:string;
@@ -35,7 +35,7 @@ interface KeyValue{
 
 
 interface OrgRow {
-  username: string;
+  name: string;
   state: KeyValue | null;
   district: KeyValue | null;
   region: KeyValue | null;
@@ -43,7 +43,7 @@ interface OrgRow {
   branch: KeyValue | null;
 }
 
-const UserList = ({returnFunc,formik_values}:any) => {
+const UserList = ({returnFunc,formik_values,requestType}:any) => {
   console.log("formik_values",formik_values)
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState<SortTanstackInterface[]>([]);
@@ -64,6 +64,11 @@ const UserList = ({returnFunc,formik_values}:any) => {
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const [totalCount, setTotalCount] = useState(0);
+   
+    let sort: SortInterface[] = [];
+    const [filters, setFilters] = useState<any[]>([]);
+    const [sizePerPage, setSizePerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
 
      useEffect(()=>{
        async function getState() {
@@ -122,78 +127,201 @@ const UserList = ({returnFunc,formik_values}:any) => {
      }
    
      const stateFunc=(value:any,setFieldValue:any)=>{
-       setFieldValue("state",value)
-       setFieldValue("district",null)
-       getDistrict({
-         "requestName": "getAll_DistrictByState",
-         "params":[
-           {
-             "paramValue":value.value,
-             "paramEncrypted": "Y"
-           }
-         ]
-       });
+           if(value!==null){
+            setFieldValue("state", value);
+            setFilters(prevFilters => {
+              const hasState = prevFilters.some(filter => "state" in filter);
+
+              if (hasState) {
+                return prevFilters.map(filter =>
+                  "state" in filter ? {"state": { label: value.label, value: value.value }} : filter
+                );
+              }
+
+              return [...prevFilters, {"state": { label: value.label, value: value.value }}];
+            });
+
+              setFieldValue("district", null);
+              getDistrict({
+                requestName: "getAll_DistrictByState",
+                params: [
+                  {
+                    paramValue: value.value,
+                    paramEncrypted: "Y",
+                  },
+                ],
+              });
+          }else{
+            setFieldValue("state", null);
+            setFilters(prevFilters => prevFilters.filter(filter => !("state" in filter)));
+            setFieldValue("district", null);
+            setFieldValue("region", null);
+            setFieldValue("area", null);
+            setFieldValue("branch", null);
+          }
      }
    
      const districtFunc=(value:any,setFieldValue:any)=>{
-       setFieldValue("district",value)
-       getRegion({
-         "requestName": "getAll_RegionByDistrict",
-         "params":[
-           {
-             "paramValue":value.value,
-             "paramEncrypted": "Y"
-           }
-         ]
-       })
+           if(value!==null){
+            setFieldValue("district", value);
+            setFilters(prevFilters => {
+            const hasDistrict = prevFilters.some(filter => "district" in filter);
+
+            if (hasDistrict) {
+              return prevFilters.map(filter =>
+                "district" in filter ? {"district": { label: value.label, value: value.value }} : filter
+              );
+            }
+
+            return [...prevFilters, {"district": { label: value.label, value: value.value }}];
+          });
+            getRegion({
+              requestName: "getAll_RegionByDistrict",
+              params: [
+                {
+                  paramValue: value.value,
+                  paramEncrypted: "Y",
+                },
+              ],
+            });
+          }else{
+            setFieldValue("district", null);
+            setFilters(prevFilters => prevFilters.filter(filter => !("district" in filter)));
+            setFieldValue("region", null);
+            setFieldValue("area", null);
+            setFieldValue("branch", null);
+          }
      }
    
-     const regionFunc=(value:any,setFieldValue:any)=>{
-       setFieldValue("region",value)
-       getArea({
-         "requestName": "getAll_Area",
-       })
-       // getArea({
-       //   "requestName": "getAll_AreaByRegion",
-       //   "params":[
-       //     {
-       //       "paramValue":value.value,
-       //       "paramEncrypted": "Y"
-       //     }
-       //   ]
-       // })
+    const regionFunc=(value:any,setFieldValue:any)=>{
+      setFieldValue("region", value);
+      setFilters(prevFilters => {
+        const hasRegion = prevFilters.some(filter => "region" in filter);
+
+        if (hasRegion) {
+          return prevFilters.map(filter =>
+            "region" in filter ? {"region": { label: value.label, value: value.value }} : filter
+          );
+        }
+
+        return [...prevFilters, {"region": { label: value.label, value: value.value }}];
+      });
+      getArea({
+        requestName: "getAll_Area",
+      });
+      // getArea({
+      //   "requestName": "getAll_AreaByRegion",
+      //   "params":[
+      //     {
+      //       "paramValue":value.value,
+      //       "paramEncrypted": "Y"
+      //     }
+      //   ]
+      // })
      }
 
+
+    async function getBranch(ev: any) {
+      setBranchLoading(true);
+      md({
+        requestName: "getAll_BranchByArea",
+        params: [
+          {
+            paramValue: ev.value,
+            paramEncrypted: "Y",
+          },
+        ],
+      })
+        .then((r) => {
+          setBranchData(r);
+          setBranchLoading(false);
+        })
+        .catch((error) => {
+          toast(error, { position: "top-right", type: "error" });
+          setBranchLoading(false);
+        });
+    }
+
     const handleAreaChange=(ev:any)=>{
-        formik.setFieldValue("area", ev)
-        formik.setFieldValue("branch", null)
-        async function getBranch() {
-            setBranchLoading(true);
-            md({
-                    "requestName": "getAll_BranchByArea",
-                    "params":[
-                        {
-                            "paramValue":ev.value,
-                            "paramEncrypted": "Y"
-                        }
-                    ]
-                })
-                .then((r) => {
-                setBranchData(r);
-                setBranchLoading(false);
-                }).catch((error) => {
-                toast(error, { position: 'top-right', type: 'error' });
-                setBranchLoading(false);
-                });
-        }
-        getBranch()
+             if(ev!==null){
+        formik.setFieldValue("area", ev);
+        setFilters(prevFilters => {
+          const hasArea = prevFilters.some(filter => "area" in filter);
+
+          if (hasArea) {
+            return prevFilters.map(filter =>
+              "area" in filter ? {"area": { label: ev.label, value: ev.value }} : filter
+            );
+          }
+
+          return [...prevFilters, {"area": { label: ev.label, value: ev.value }}];
+        });
+        formik.setFieldValue("branch", null);
+        getBranch(ev);
+     }else{
+        formik.setFieldValue("area", null);
+        setFilters(prevFilters => prevFilters.filter(filter => !("area" in filter)));
+        formik.setFieldValue("branch", null);
+     }
     }
 
 
     const handleBranchChange=(ev:any)=>{
-        formik.setFieldValue("branch", ev)
-        fetchData(initialRequest)
+      if(ev!==null){
+        formik.setFieldValue("branch", ev);
+          setFilters(prevFilters => {
+          const hasBranch = prevFilters.some(filter => "branch" in filter);
+
+          if (hasBranch) {
+            return prevFilters.map(filter =>
+              "branch" in filter ? {"branch": { label: ev.label, value: ev.value }} : filter
+            );
+          }
+
+          return [...prevFilters, {"branch": { label: ev.label, value: ev.value }}];
+        });
+        fetchData(initialRequest);
+      }else{
+        formik.setFieldValue("branch", null);
+        setFilters(prevFilters => prevFilters.filter(filter => !("branch" in filter)));
+        fetchData(initialRequest);
+      }
     }
+
+
+      const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        formik.setFieldValue("name", val);
+        setFilters((prevFilters) => {
+          const hasName = prevFilters.some((filter) => "name" in filter);
+          if (val === "") {
+            return prevFilters.filter((filter) => !("name" in filter));
+          }
+          if (hasName) {
+            return prevFilters.map((filter) =>
+              "name" in filter ? { name: val } : filter
+            );
+          }
+          return [...prevFilters, { name: val }];
+        });
+      };
+
+  const buildRequestFilters = (currentFilters: any[]) => {
+    if (requestType === "mysql") {
+      return currentFilters.map((filter) => {
+        const key = Object.keys(filter)[0];
+        const filterVal = filter[key];
+        // name is a plain string; dropdowns store { label, value }
+        return { columnName: key, value: typeof filterVal === "object" ? filterVal.value : filterVal };
+      });
+    }
+    // For elastic, extract label from dropdown objects; name stays as string
+    return currentFilters.map((filter) => {
+      const key = Object.keys(filter)[0];
+      const filterVal = filter[key];
+      return { [key]: typeof filterVal === "object" ? filterVal.label : filterVal };
+    });
+  };
 
     // const [data, setData] = useState<DataItem[]>([]);
     const toggle = () => {
@@ -218,20 +346,9 @@ const UserList = ({returnFunc,formik_values}:any) => {
                 </span>
     }
 
-
-    const nameFunc = (celldata: any) => {
-        console.log(celldata)
-        return <span>
-                <div>{celldata.row.original.email_id!=undefined?celldata.row.original.email_id:null}</div>
-                <div>{celldata.row.original.mobno!=undefined?celldata.row.original.mobno:null}</div>
-                <div>{celldata.row.original.address!=undefined?celldata.row.original.address:null }</div>
-                </span>
-    }
-
-    
-
     const statusFunc = (celldata: any) => {
-        return <span>{celldata.row.original.status?.label}</span>
+      console.log("celldata",celldata)
+        return <span>{celldata.row.original.current_status}</span>
     }
 
     useEffect(() => {
@@ -300,7 +417,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
   //   row.getToggleSelectedHandler()(event);
   // }
 
-  
+
     const columns = useMemo(() => [
        {
         id: 'select-checkbox',
@@ -358,76 +475,31 @@ const UserList = ({returnFunc,formik_values}:any) => {
             enableColumnFilter: false,
             cell: (cell: any) => statusFunc(cell),
         },
-        // {
-        //         header: "Actions",
-        //         cell: (cell: any) => {
-        
-        //           const row = cell.row.original;
-        //           //console.log(row)
-        
-        //           return (
-                    
-        //         <div className="d-flex gap-2">
-        
-        //               <Button
-        //                 size="sm"
-        //                 color="soft-warning"
-        //                 onClick={() =>
-        //                   returnFunc(row)
-        //                 }
-        //               >
-        //                 Add
-        //               </Button>
-        
-        
-        //             </div>
-                    
-        //           );
-        //         },
-        //       },
 
     ], [toggle])
 
   
 
-    let sort: SortInterface[] = [];
-    const [sizePerPage, setSizePerPage] = useState(10);
-    const [loading, setLoading] = useState(false);
-
     let initialRequest = {
         "start": 0,
         "sort": [],
         "numberOfRows": 10,
-        "filters": []
+        "filters":  buildRequestFilters(filters),
     }
 
     const UserGeneralizeFunc=async(data:any)=>{
       let dataSet:any=[]
       for(let i=0;i<data.length;i++){
-        if(formik_values.usertype.label!="SuperAdmin"&&formik_values.usertype.label!="Owner"){
-          dataSet.push({
-              id:data[i].serialNo,
-              f_organisation_id:formik_values.organisation_id,
-              f_user_id:null,
-              role:formik_values.role,
-              status:formik_values.status,
-              usertype:formik_values.usertype,
-              name:data[i].firstName + "" + data[i].lastName,
-              gender:data[i].gender,
-              email_id:"",
-              dateofbirth:data[i].age,
-              address:data[i].housename+" "+data[i].houseno+" "+data[i].area,
-              branch:data[i].branch,
-              f_elastic_id:data[i].serialNo,
-              is_thepointofcontact:formik_values.is_thepointofcontact
-          });
-        }else{
+        // if(formik_values.usertype.label!="SuperAdmin"&&formik_values.usertype.label!="Owner"){
+       
+        if (requestType == "mysql") {
            dataSet.push({
               id:data[i].user_id,
               f_organisation_id:formik_values.organisation_id,
               f_user_id:data[i].user_id,
               role:formik_values.role,
               status:formik_values.status,
+              current_status:data[i].status,
               usertype:formik_values.usertype,
               name:data[i].first_name+" "+data[i].middle_name+" "+data[i].last_name,
               gender:data[i].gender,
@@ -438,7 +510,26 @@ const UserList = ({returnFunc,formik_values}:any) => {
               f_elastic_id:null,
               is_thepointofcontact:formik_values.is_thepointofcontact
           });
+        }else{
+           dataSet.push({
+              id:data[i].serialNo,
+              f_organisation_id:formik_values.organisation_id,
+              f_user_id:null,
+              role:formik_values.role,
+              status:formik_values.status,
+              current_status:data[i].status,
+              usertype:formik_values.usertype,
+              name:data[i].firstName + "" + data[i].lastName,
+              gender:data[i].gender,
+              email_id:"",
+              dateofbirth:data[i].age,
+              address:data[i].housename+" "+data[i].houseno+" "+data[i].area,
+              branch:data[i].branch,
+              f_elastic_id:data[i].serialNo,
+              is_thepointofcontact:formik_values.is_thepointofcontact
+          });
         }
+       
           
       }
 
@@ -450,42 +541,36 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
     //console.log("data",data)
     const fetchData = async (requestdata: any) => {
-      if(formik_values.usertype!=null){
+        console.log(requestdata)
         const { start, numberOfRows } = requestdata;
         try {
-            const response = await http.post(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"?GET_USER_LIST:LISTVILLAGEELASTICUSER, requestdata);
-            //console.log(response.data)
-            if (response.data) {
-
-              
-              if(formik_values.usertype.label=="SuperAdmin"||formik_values.usertype.label=="Owner"){
-                  UserGeneralizeFunc(response.data.result)
-                  // setData(response.data.result);
-              }else{
-                  //console.log(response.data.data)
-                  UserGeneralizeFunc(response.data.data)
-              }
-
-
-                // setData(response.data.result);
-                setTotalCount(response.data.totalCount);
+          const response = await http.post(
+            requestType == "mysql" ? GET_USER_LIST : LISTVILLAGEELASTICUSER,
+            requestdata,
+          );
+          //console.log(response.data)
+          if (response.data) {
+            if (requestType == "mysql") {
+              UserGeneralizeFunc(response.data.result);
+              // setData(response.data.result);
+            } else {
+              //console.log(response.data.data)
+              UserGeneralizeFunc(response.data.data);
+              // setData(response.data.data)
             }
+
+            //  setData(response.data.data)
+            // setData(response.data.result);
+            setTotalCount(response.data.totalCount);
+          }
         } catch (error) {
-            console.error("Error fetching analytics data:", error);
+          console.error("Error fetching analytics data:", error);
         }
+      };
 
-      }else{
-        console.error("Select Role");
-      }
-
-    };
-
-    useEffect(() => {
-      if(formik_values.usertype!=undefined){
-          fetchData(initialRequest);
-      }
-
-    }, [formik_values.usertype]);
+     useEffect(() => {
+       fetchData(initialRequest);
+     }, []);
 
     const handleTableChange = ({ pages, sizePerPages, sortField, sortOrder }: any) => {
         setPage(pages)
@@ -500,7 +585,7 @@ const UserList = ({returnFunc,formik_values}:any) => {
             "start": (pages - 1) * sizePerPages,
             "sort": sort,
             "numberOfRows": sizePerPages,
-            "filters": []
+            "filters":  buildRequestFilters(filters),
         });
         //console.log("page", page)
     }
@@ -508,17 +593,24 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
     const formik = useFormik<OrgRow>({
         initialValues: {
-          username: '',
+          name: "",
           state: null,
-          district:null,
-          region:null,
-          area:null,
-          branch:null,
+          district: null,
+          region: null,
+          area: null,
+          branch: null,
         },
         onSubmit: (values, { resetForm }) => {
-          fetchData(initialRequest)
-        }
+          console.log("values", values);
+          let newInitialRequest = {
+            ...initialRequest,
+            filters: buildRequestFilters(filters),
+          };
+          fetchData(newInitialRequest);
+          // resetForm();
+        },
       });
+    
     return (
         <React.Fragment> 
                <Row>
@@ -527,150 +619,146 @@ const UserList = ({returnFunc,formik_values}:any) => {
 
                         <CardBody>
 
-                           <Form onSubmit={formik.handleSubmit}>
-                            <Row>
-                              <Col md="2">
-                                  <FormGroup>
-
-                                  <Label>State</Label>
-                                    <RSelect
-                                        name="state"
-                                        id="state"
-                                        value={formik.values.state}
-                                        onChange={(ev: any) =>stateFunc(ev,formik.setFieldValue)}
-                                        options={stateData}
-                                        placeholder="--Select State--"
-                                        error={formik.errors.state}
-                                        touched={formik.touched.state}
-                                        isLoading={stateLoading}
-                                        isClearable
-                                      />
-                                    {formik.touched.state &&
-                                      formik.errors.state && (
-                                        <div className="text-danger">
-                                          {formik.errors.state}
-                                        </div>
-                                      )}
-
-                                </FormGroup>
-                              </Col>
-                              <Col md="2">
-                                    <FormGroup>
-                                    <Label>District</Label>
-                                      <RSelect
-                                          name="district"
-                                          id="district"
-                                          value={formik.values.district}
-                                          onChange={(ev: any) =>districtFunc(ev,formik.setFieldValue)}
-                                          options={districtData}
-                                          placeholder="--Select District--"
-                                          error={formik.errors.district}
-                                          touched={formik.touched.district}
-                                          isLoading={districtLoading}
-                                          isClearable
-                                        />
-                                      {formik.touched.district &&
-                                        formik.errors.district && (
-                                          <div className="text-danger">
-                                            {formik.errors.district}
-                                          </div>
-                                        )}
-
-                                  </FormGroup>
-                              
-                              </Col>
-                              <Col md="2">
-                                  <FormGroup>
-                                  <Label>Region</Label>
-                                    <RSelect
-                                        name="region"
-                                        id="region"
-                                        value={formik.values.region}
-                                        onChange={(ev: any) =>regionFunc(ev,formik.setFieldValue)}
-                                        options={regionData}
-                                        placeholder="--Select Region--"
-                                        error={formik.errors.region}
-                                        touched={formik.touched.region}
-                                        isLoading={regionLoading}
-                                        isClearable
-                                      />
-                                    {formik.touched.region &&
-                                      formik.errors.region && (
-                                        <div className="text-danger">
-                                          {formik.errors.region}
-                                        </div>
-                                      )}
-
-                                </FormGroup>
-                              </Col>
-                              <Col md="2">
-                                  <FormGroup>
-                                  <Label>Area</Label>
-                                    <RSelect
-                                        name="area"
-                                        id="area"
-                                        value={formik.values.area}
-                                        onChange={(ev: any) =>handleAreaChange(ev)
-                                          // formik.setFieldValue("area", ev)
-                                        }
-                                        options={areaData}
-                                        placeholder="--Select Area--"
-                                        error={formik.errors.area}
-                                        touched={formik.touched.area}
-                                        isLoading={areaLoading}
-                                        isClearable
-                                      />
-                                    {formik.touched.area &&
-                                      formik.errors.area && (
-                                        <div className="text-danger">
-                                          {formik.errors.area}
-                                        </div>
-                                      )}
-
-                                </FormGroup>
-                              </Col>
-                              <Col md="2">                
-                                  <FormGroup>
-                                  <Label>Branch</Label>
-                                      <RSelect
-                                        name="branch"
-                                        id="branch"
-                                        value={formik.values.branch}
-                                        onChange={(ev: any) =>handleBranchChange(ev)
-                                          // formik.setFieldValue("branch", ev)
-                                        }
-                                        options={branchData}
-                                        placeholder="--Select Branch--"
-                                        error={formik.errors.branch}
-                                        touched={formik.touched.branch}
-                                        isLoading={branchLoading}
-                                        isClearable
-                                      />
-                                    {formik.touched.branch &&
-                                      formik.errors.branch && (
-                                        <div className="text-danger">
-                                          {formik.errors.branch}
-                                        </div>
-                                      )}
-                                </FormGroup>
-                                </Col>
-                                <Col md="2">
-                                  <FormGroup>
-                                  <Label>User Name</Label>
-                                      <Input
-                                        type="text"
-                                        name="username"
-                                        value={formik.values.username}
-                                        onChange={(e) =>formik.setFieldValue("username",e.target.value === "")}
-                                    />
-                                  </FormGroup>
-                                </Col>
-                            </Row>
-
-                
-            
-
-
+                          <Form onSubmit={formik.handleSubmit}>
+                <Row>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>State</Label>
+                      <RSelect
+                        name="state"
+                        id="state"
+                        value={formik.values.state}
+                        onChange={(ev: any) =>
+                          stateFunc(ev, formik.setFieldValue)
+                        }
+                        options={stateData}
+                        placeholder="--Select State--"
+                        error={formik.errors.state}
+                        touched={formik.touched.state}
+                        isLoading={stateLoading}
+                        isClearable
+                      />
+                      {formik.touched.state && formik.errors.state && (
+                        <div className="text-danger">{formik.errors.state}</div>
+                      )}
+                    </FormGroup>
+                  </Col>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>District</Label>
+                      <RSelect
+                        name="district"
+                        id="district"
+                        value={formik.values.district}
+                        onChange={(ev: any) =>
+                          districtFunc(ev, formik.setFieldValue)
+                        }
+                        options={districtData}
+                        placeholder="--Select District--"
+                        error={formik.errors.district}
+                        touched={formik.touched.district}
+                        isLoading={districtLoading}
+                        isClearable
+                      />
+                      {formik.touched.district && formik.errors.district && (
+                        <div className="text-danger">
+                          {formik.errors.district}
+                        </div>
+                      )}
+                    </FormGroup>
+                  </Col>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>Region</Label>
+                      <RSelect
+                        name="region"
+                        id="region"
+                        value={formik.values.region}
+                        onChange={(ev: any) =>
+                          regionFunc(ev, formik.setFieldValue)
+                        }
+                        options={regionData}
+                        placeholder="--Select Region--"
+                        error={formik.errors.region}
+                        touched={formik.touched.region}
+                        isLoading={regionLoading}
+                        isClearable
+                      />
+                      {formik.touched.region && formik.errors.region && (
+                        <div className="text-danger">
+                          {formik.errors.region}
+                        </div>
+                      )}
+                    </FormGroup>
+                  </Col>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>Area</Label>
+                      <RSelect
+                        name="area"
+                        id="area"
+                        value={formik.values.area}
+                        onChange={
+                          (ev: any) => handleAreaChange(ev)
+                          // formik.setFieldValue("area", ev)
+                        }
+                        options={areaData}
+                        placeholder="--Select Area--"
+                        error={formik.errors.area}
+                        touched={formik.touched.area}
+                        isLoading={areaLoading}
+                        isClearable
+                      />
+                      {formik.touched.area && formik.errors.area && (
+                        <div className="text-danger">{formik.errors.area}</div>
+                      )}
+                    </FormGroup>
+                  </Col>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>Branch</Label>
+                      <RSelect
+                        name="branch"
+                        id="branch"
+                        value={formik.values.branch}
+                        onChange={
+                          (ev: any) => handleBranchChange(ev)
+                          // formik.setFieldValue("branch", ev)
+                        }
+                        options={branchData}
+                        placeholder="--Select Branch--"
+                        error={formik.errors.branch}
+                        touched={formik.touched.branch}
+                        isLoading={branchLoading}
+                        isClearable
+                      />
+                      {formik.touched.branch && formik.errors.branch && (
+                        <div className="text-danger">
+                          {formik.errors.branch}
+                        </div>
+                      )}
+                    </FormGroup>
+                  </Col>
+                  <Col md="2">
+                    <FormGroup>
+                      <Label>User Name</Label>
+                      <Input
+                        type="text"
+                        name="name"
+                        value={formik.values.name}
+                        onChange={handleNameChange}
+                      />
+                    </FormGroup>
+                  </Col>
+                  </Row>
+                  <Row>
+                  <Col md="12" className="d-flex align-items-end">
+                    <Button color="primary" type="submit">
+                      <Search size={16} className="me-2" /> Search
+                    </Button>
+                  </Col>
+                        
+                </Row>
               </Form>
                         
                         {!loading?<TableContainer

@@ -112,12 +112,7 @@ const [isUserType, setIsUserType] = useState(false);
           link: "/dashboard-useranalytics",
           parentId: "dashboard",
         },
-        {
-          id: "uservillage",
-          label: "Village User",
-          link: "/dashboard-uservillage",
-          parentId: "dashboard",
-        },
+       
       ],
     },
     {
@@ -134,9 +129,15 @@ const [isUserType, setIsUserType] = useState(false);
       },
       stateVariables: isUsers,
       subItems: [
+         {
+          id: "uservillage",
+          label: "Available Village Users",
+          link: "/dashboard-uservillage",
+          parentId: "dashboard",
+        },
         {
           id: "users",
-          label: "Users Table",
+          label: "Registered Users",
           link: "/all-app-users",
           parentId: "list",
         },

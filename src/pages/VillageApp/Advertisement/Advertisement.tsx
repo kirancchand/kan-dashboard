@@ -63,6 +63,7 @@ interface AdvRow {
   advertisement_desc: string;
   start_date: string;
   end_date: string;
+  isExclusive: boolean;
   f_villageapp_id: keyValue | null;
   f_villageorganisation_id: keyValue | null;
 }
@@ -239,6 +240,7 @@ const Advertisement = () => {
       advertisement_desc: "",
       start_date: "",
       end_date: "",
+      isExclusive: false,
       f_villageapp_id: null,
       f_villageorganisation_id: null,
     },
@@ -248,6 +250,7 @@ const Advertisement = () => {
       formData.append("advertisement_desc", values.advertisement_desc);
       formData.append("start_date", values.start_date || "");
       formData.append("end_date", values.end_date || "");
+      formData.append("isExclusive", values.isExclusive.toString());
       formData.append(
         "f_villageapp_id",
         values.f_villageapp_id?.value.toString() || "",
@@ -289,6 +292,7 @@ const Advertisement = () => {
     formik.setFieldValue("advertisement_desc", row.advertisement_desc);
     formik.setFieldValue("start_date", row.start_date);
     formik.setFieldValue("end_date", row.end_date);
+    formik.setFieldValue("isExclusive", row.isExclusive);
     formik.setFieldValue(
       "f_villageapp_id",
       villageAppData.find((vap: any) => vap.value == row.f_villageapp_id),
@@ -334,6 +338,16 @@ const Advertisement = () => {
     deleteAdv({ villageadvertisement_id: row.villageadvertisement_id });
   };
 
+  const nameFunc = (celldata: any) => {
+    return (
+      <span>
+        <div>{celldata.row.original.advertisement_name}</div>
+        <span className="badge bg-success">
+          {celldata.row.original.isexclusive? "Exclusive" : "Not Exclusive"}
+        </span>
+      </span>
+    );
+  };
   const columns = useMemo(
     () => [
       {
@@ -345,6 +359,7 @@ const Advertisement = () => {
         header: "Name",
         enableColumnFilter: false,
         accessorKey: "advertisement_name",
+        cell: (cell: any) => nameFunc(cell),
       },
       {
         header: "Image",
@@ -677,6 +692,26 @@ const Advertisement = () => {
                     value={formik.values.end_date || ""}
                   />
                 </FormGroup>
+
+                <Col md="12">
+                      <div>
+                        <FormGroup switch>
+                          <Input
+                            type="checkbox"
+                            role="switch"
+                            name="isExclusive"
+                            checked={formik.values.isExclusive}
+                            onChange={formik.handleChange}
+                          />
+    
+                          <Label check className="ms-2">
+                            {formik.values.isExclusive
+                              ? "Exclusive Advertisement"
+                              : "Not an Exclusive Advertisement"}
+                          </Label>
+                        </FormGroup>
+                      </div>
+                    </Col>
 
                 <div className="d-flex gap-2 mt-3">
                   <Button

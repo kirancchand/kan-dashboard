@@ -63,8 +63,14 @@ export const LISTVILLAGEELASTICUSERDATA=ELASTIC_URL+"/villageuser/search_byFilte
 export const GET_MENU_LIST = ADMIN_URL + "/master/menu/listMenu"
 export const GET_ROLE_LIST = ADMIN_URL + "/master/role/listRole"
 export const GET_ROLE_MENU_LIST = ADMIN_URL + "/master/rolemenu/listRoleMenu"
-export const GET_USERTYPE_LIST=ADMIN_URL+"/"
-export const ADD_USERTYPE=ADMIN_URL+"/"
+export const GET_USERTYPE_LIST=ADMIN_URL+"/master/usertype/listUserType"
+export const ADD_USERTYPE = ADMIN_URL+"/master/usertype/add"
+
+export const ADD_USERTYPE_ROLE = ADMIN_URL+"/master/usertype/addRole"
+export const UPDATE_USERTYPE_ROLE = ADMIN_URL+"/master/usertype/updateRole"
+export const GET_USERTYPE_ROLE_LIST=ADMIN_URL+"/master/usertype/listUserTypeRole"
+export const GET_ROLE_BY_USERTYPE_ID = ADMIN_URL + "/master/usertype/getrole_byusertype_id"
+
 
 export const GET_MENU_BY_ROLE_ID = ADMIN_URL + "/master/rolemenu/getmenu_byrole_id"
 export const UPDATE_ROLEMENU = ADMIN_URL + "/master/rolemenu/update_rolemenu"

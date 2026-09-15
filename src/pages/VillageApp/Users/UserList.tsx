@@ -27,14 +27,13 @@ import RSelect from "../../../Components/Common/RSelect/RSelect";
 import md from "../../../http/masterData";
 import { toast } from "react-toastify";
 import { Search } from "lucide-react";
-import { set } from "lodash";
 interface KeyValue {
   value: string;
   label: string;
 }
 
 interface OrgRow {
-  username: string;
+  name: string;
   state: KeyValue | null;
   district: KeyValue | null;
   region: KeyValue | null;
@@ -128,54 +127,70 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
   }
 
   const stateFunc = (value: any, setFieldValue: any) => {
-    setFieldValue("state", value);
+    if(value!==null){
+      setFieldValue("state", value);
+      setFilters(prevFilters => {
+        const hasState = prevFilters.some(filter => "state" in filter);
 
-   setFilters(prevFilters => {
-    const hasState = prevFilters.some(filter => "state" in filter);
+        if (hasState) {
+          return prevFilters.map(filter =>
+            "state" in filter ? {"state": { label: value.label, value: value.value }} : filter
+          );
+        }
 
-    if (hasState) {
-      return prevFilters.map(filter =>
-        "state" in filter ? {"state": value.label} : filter
-      );
+        return [...prevFilters, {"state": { label: value.label, value: value.value }}];
+      });
+
+        setFieldValue("district", null);
+        getDistrict({
+          requestName: "getAll_DistrictByState",
+          params: [
+            {
+              paramValue: value.value,
+              paramEncrypted: "Y",
+            },
+          ],
+        });
+    }else{
+      setFieldValue("state", null);
+      setFilters(prevFilters => prevFilters.filter(filter => !("state" in filter)));
+      setFieldValue("district", null);
+      setFieldValue("region", null);
+      setFieldValue("area", null);
+      setFieldValue("branch", null);
     }
-
-    return [...prevFilters, {"state": value.label}];
-  });
-
-    setFieldValue("district", null);
-    getDistrict({
-      requestName: "getAll_DistrictByState",
-      params: [
-        {
-          paramValue: value.value,
-          paramEncrypted: "Y",
-        },
-      ],
-    });
   };
 
   const districtFunc = (value: any, setFieldValue: any) => {
-    setFieldValue("district", value);
-    setFilters(prevFilters => {
-    const hasDistrict = prevFilters.some(filter => "district" in filter);
+    if(value!==null){
+      setFieldValue("district", value);
+      setFilters(prevFilters => {
+      const hasDistrict = prevFilters.some(filter => "district" in filter);
 
-    if (hasDistrict) {
-      return prevFilters.map(filter =>
-        "district" in filter ? {"district": value.label} : filter
-      );
-    }
+      if (hasDistrict) {
+        return prevFilters.map(filter =>
+          "district" in filter ? {"district": { label: value.label, value: value.value }} : filter
+        );
+      }
 
-    return [...prevFilters, {"district": value.label}];
-  });
-    getRegion({
-      requestName: "getAll_RegionByDistrict",
-      params: [
-        {
-          paramValue: value.value,
-          paramEncrypted: "Y",
-        },
-      ],
+      return [...prevFilters, {"district": { label: value.label, value: value.value }}];
     });
+      getRegion({
+        requestName: "getAll_RegionByDistrict",
+        params: [
+          {
+            paramValue: value.value,
+            paramEncrypted: "Y",
+          },
+        ],
+      });
+    }else{
+      setFieldValue("district", null);
+      setFilters(prevFilters => prevFilters.filter(filter => !("district" in filter)));
+      setFieldValue("region", null);
+      setFieldValue("area", null);
+      setFieldValue("branch", null);
+    }
   };
 
   const regionFunc = (value: any, setFieldValue: any) => {
@@ -185,11 +200,11 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
 
       if (hasRegion) {
         return prevFilters.map(filter =>
-          "region" in filter ? {"region": value.label} : filter
+          "region" in filter ? {"region": { label: value.label, value: value.value }} : filter
         );
       }
 
-      return [...prevFilters, {"region": value.label}];
+      return [...prevFilters, {"region": { label: value.label, value: value.value }}];
     });
     getArea({
       requestName: "getAll_Area",
@@ -205,21 +220,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
     // })
   };
 
-  const handleAreaChange = (ev: any) => {
-    formik.setFieldValue("area", ev);
-    setFilters(prevFilters => {
-      const hasArea = prevFilters.some(filter => "area" in filter);
-
-      if (hasArea) {
-        return prevFilters.map(filter =>
-          "area" in filter ? {"area": ev.label} : filter
-        );
-      }
-
-      return [...prevFilters, {"area": ev.label}];
-    });
-    formik.setFieldValue("branch", null);
-    async function getBranch() {
+    async function getBranch(ev: any) {
       setBranchLoading(true);
       md({
         requestName: "getAll_BranchByArea",
@@ -239,23 +240,84 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
           setBranchLoading(false);
         });
     }
-    getBranch();
+
+  const handleAreaChange = (ev: any) => {
+     if(ev!==null){
+        formik.setFieldValue("area", ev);
+        setFilters(prevFilters => {
+          const hasArea = prevFilters.some(filter => "area" in filter);
+
+          if (hasArea) {
+            return prevFilters.map(filter =>
+              "area" in filter ? {"area": { label: ev.label, value: ev.value }} : filter
+            );
+          }
+
+          return [...prevFilters, {"area": { label: ev.label, value: ev.value }}];
+        });
+        formik.setFieldValue("branch", null);
+        getBranch(ev);
+     }else{
+        formik.setFieldValue("area", null);
+        setFilters(prevFilters => prevFilters.filter(filter => !("area" in filter)));
+        formik.setFieldValue("branch", null);
+     }
   };
 
   const handleBranchChange = (ev: any) => {
-    formik.setFieldValue("branch", ev);
-      setFilters(prevFilters => {
-      const hasBranch = prevFilters.some(filter => "branch" in filter);
+    if(ev!==null){
+      formik.setFieldValue("branch", ev);
+        setFilters(prevFilters => {
+        const hasBranch = prevFilters.some(filter => "branch" in filter);
 
-      if (hasBranch) {
-        return prevFilters.map(filter =>
-          "branch" in filter ? {"branch": ev.label} : filter
+        if (hasBranch) {
+          return prevFilters.map(filter =>
+            "branch" in filter ? {"branch": { label: ev.label, value: ev.value }} : filter
+          );
+        }
+
+        return [...prevFilters, {"branch": { label: ev.label, value: ev.value }}];
+      });
+      fetchData(initialRequest);
+    }else{
+      formik.setFieldValue("branch", null);
+      setFilters(prevFilters => prevFilters.filter(filter => !("branch" in filter)));
+      fetchData(initialRequest);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    formik.setFieldValue("name", val);
+    setFilters((prevFilters) => {
+      const hasName = prevFilters.some((filter) => "name" in filter);
+      if (val === "") {
+        return prevFilters.filter((filter) => !("name" in filter));
+      }
+      if (hasName) {
+        return prevFilters.map((filter) =>
+          "name" in filter ? { name: val } : filter
         );
       }
-
-      return [...prevFilters, {"branch": ev.label}];
+      return [...prevFilters, { name: val }];
     });
-    fetchData(initialRequest);
+  };
+
+  const buildRequestFilters = (currentFilters: any[]) => {
+    if (requestType === "mysql") {
+      return currentFilters.map((filter) => {
+        const key = Object.keys(filter)[0];
+        const filterVal = filter[key];
+        // name is a plain string; dropdowns store { label, value }
+        return { columnName: key, value: typeof filterVal === "object" ? filterVal.value : filterVal };
+      });
+    }
+    // For elastic, extract label from dropdown objects; name stays as string
+    return currentFilters.map((filter) => {
+      const key = Object.keys(filter)[0];
+      const filterVal = filter[key];
+      return { [key]: typeof filterVal === "object" ? filterVal.label : filterVal };
+    });
   };
 
   // const [data, setData] = useState<DataItem[]>([]);
@@ -437,7 +499,7 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
     start: 0,
     sort: [],
     numberOfRows: 10,
-    filters: filters,
+    filters: buildRequestFilters(filters),
   };
 
   const UserGeneralizeFunc = (data: any) => {
@@ -461,9 +523,9 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
       } else {
         dataSet.push({
           id: data[i].serialNo,
-          Name: data[i].firstName + "" + data[i].lastName,
+          Name: data[i].firstName + " " + (data[i].middleName ? data[i].middleName + " " : "") + data[i].lastName,
           contact: data[i].mobno,
-          address: data[i].housename+" "+data[i].houseno+" "+data[i].area,
+          address: data[i].housename!=undefined?data[i].housename+" "+data[i].houseno+" "+data[i].area:null,
           f_elastic_id: data[i].SerialNo,
           f_user_id: "",
           branch: data[i].branch,
@@ -527,14 +589,14 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
       start: (pages - 1) * sizePerPages,
       sort: sort,
       numberOfRows: sizePerPages,
-      filters: filters,
+      filters: buildRequestFilters(filters),
     });
     //console.log("page", page)
   };
 
   const formik = useFormik<OrgRow>({
     initialValues: {
-      username: "",
+      name: "",
       state: null,
       district: null,
       region: null,
@@ -542,10 +604,10 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
       branch: null,
     },
     onSubmit: (values, { resetForm }) => {
-      console.log(values)
+      console.log("values", values);
       let newInitialRequest = {
         ...initialRequest,
-        filters: filters,
+        filters: buildRequestFilters(filters),
       };
       fetchData(newInitialRequest);
       // resetForm();
@@ -683,14 +745,9 @@ const UserList = ({ returnFunc, formik_values, requestType }: any) => {
                       <Label>User Name</Label>
                       <Input
                         type="text"
-                        name="username"
-                        value={formik.values.username}
-                        onChange={(e) =>
-                          formik.setFieldValue(
-                            "username",
-                            e.target.value === "",
-                          )
-                        }
+                        name="name"
+                        value={formik.values.name}
+                        onChange={handleNameChange}
                       />
                     </FormGroup>
                   </Col>

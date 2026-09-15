@@ -400,7 +400,7 @@ console.log(formik.values)
                             <UserList 
                                 returnFunc={(ev:any)=>returnFunc(ev)}
                                 formik_values={formik.values}
-                                
+                                requestType={formik?.values?.usertype?.label==="Unauthorised User" ?"elastic":"mysql" }
                                 />
 
                             </UserModal>

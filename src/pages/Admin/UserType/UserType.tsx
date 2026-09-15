@@ -12,7 +12,7 @@ import { Row, Col, Input, Button } from "reactstrap";
 
 interface DataItem {
   usertype_id: number;
-  usertype_name: string;
+  usertype: string;
 }
 
 const UserType = () => {
@@ -54,7 +54,7 @@ const UserType = () => {
       {
         id: "UserType Name",
         header: "UserType Name",
-        accessorKey: "usertype_name",
+        accessorKey: "usertype",
         enableColumnFilter: false,
       },
     ],
@@ -105,7 +105,7 @@ const UserType = () => {
     console.log("page", page);
   };
   const initialValue = {
-    usertype_name: "",
+    usertype: "",
   };
   async function addNewUserType(data: any) {
     console.log("data", data);
@@ -155,13 +155,13 @@ const UserType = () => {
                         <div className="input-group">
                           <Field
                             type="text"
-                            name="usertype_name"
-                            id="usertype_name"
-                            value={values.usertype_name}
+                            name="usertype"
+                            id="usertype"
+                            value={values.usertype}
                             placeholder="usertype"
                             as={Input}
                             invalid={
-                              errors.usertype_name && touched.usertype_name
+                              errors.usertype && touched.usertype
                             }
                             autoComplete="off"
                           />
