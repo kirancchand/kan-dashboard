@@ -650,7 +650,12 @@ const [isUserType, setIsUserType] = useState(false);
           link: "/vappadvertisement",
           parentId: "village",
         },
-       
+        {
+          id:"marketplace",
+          label:"Market Place" ,
+          link: "/vappmarketplace",
+          parentId:"village",
+      },     
       ],
     },
   ];

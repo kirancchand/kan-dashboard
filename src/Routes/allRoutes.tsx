@@ -122,6 +122,7 @@ import VillageState from "../pages/VillageApp/State/State";
 import VillageDistrict from "../pages/VillageApp/District/District";
 import VillageArea from "../pages/VillageApp/Area/Area";
 import VillageBranch from "../pages/VillageApp/Branch/Branch";
+import MarketPlace from "../pages/VillageApp/MarketPlace/MarketPlace";
 import { Component } from "gridjs";
 
 
@@ -205,6 +206,7 @@ const authProtectedRoutes = [
   { path: "/vapparea",component:<VillageArea/>},
   { path: "/vappbranch",component:<VillageBranch />},
   { path: "/vapporganizationmember",component:<OrganizationMember />},
+  { path: "/vappmarketplace",component:<MarketPlace />},
 
 
   { path: "/apps-calendar", component: <Calendar /> },
