@@ -110,6 +110,13 @@ export const ADD_VILLAGE_ORGANIZATION = VILLAGE_URL + "/api/organisations"
 export const ADD_VILLAGE_ADVERTISEMENT = VILLAGE_URL + "/api/advertisements"
 export const ADD_VILLAGE_USERS = VILLAGE_URL + "/api/users"
 
+export const ADD_MARKET_PRODUCT_ITEM = VILLAGE_URL + "/api/market/add"
+export const LIST_MARKET_PRODUCT_ITEM = VILLAGE_URL + "/api/market/list"
+export const UPDATE_MARKET_PRODUCT_ITEM = VILLAGE_URL + "/api/market/update"
+export const DELETE_MARKET_PRODUCT_ITEM = VILLAGE_URL + "/api/market/delete"
+export const GET_PRODUCT_IMAGES = VILLAGE_URL + "/api/market/get_product_images"
+
+
 
 export const http = axios.create({})
 

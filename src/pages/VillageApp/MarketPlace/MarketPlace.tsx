@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -27,81 +27,28 @@ import {
 
 import RSelect from '../../../Components/Common/RSelect/RSelect';
 import { toast } from 'react-toastify';
-
+import { http, LIST_MARKET_PRODUCT_ITEM,GET_PRODUCT_IMAGES,ADD_MARKET_PRODUCT_ITEM,UPDATE_MARKET_PRODUCT_ITEM,DELETE_MARKET_PRODUCT_ITEM } from '../../../http/http';
 interface SelectOption {
   value: string | number;
   label: string;
 }
 
 interface MarketplaceRow {
+  market_id?: number;
   category_id: number;
   category_name: string;
   product_name: string;
   product_desc: string;
-  images: string[];
+  product_images: (File | string)[];
   price: number;
   location: string;
   type: string;
   registered_userid: string;
 }
-
+const imageCache:any = {};
 const MarketPlace = () => {
-  const [data, setData] = useState<MarketplaceRow[]>([
-    {
-      category_id: 1,
-      category_name: 'Electronics',
-      product_name: 'Samsung Mobile',
-      product_desc: 'Good condition Samsung mobile phone',
-      images: [
-        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500',
-        'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500',
-      ],
-      price: 15000,
-      location: 'Thiruvananthapuram',
-      type: 'Sell',
-      registered_userid: 'USER001',
-    },
-    {
-      category_id: 2,
-      category_name: 'Furniture',
-      product_name: 'Wooden Table',
-      product_desc: 'Strong wooden dining table',
-      images: [
-        'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=500',
-      ],
-      price: 8500,
-      location: 'Kollam',
-      type: 'Sell',
-      registered_userid: 'USER002',
-    },
-    {
-      category_id: 3,
-      category_name: 'Vehicles',
-      product_name: 'Honda Activa',
-      product_desc: 'Well maintained scooter',
-      images: [
-        'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=500',
-        'https://images.unsplash.com/photo-1558980664-10ea7b4f1c6c?w=500',
-      ],
-      price: 65000,
-      location: 'Kochi',
-      type: 'Sell',
-      registered_userid: 'USER003',
-    },
-    {
-      category_id: 4,
-      category_name: 'Books',
-      product_name: 'Engineering Books',
-      product_desc: 'Engineering reference books',
-      images: [
-        'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=500',
-      ],
-      price: 1200,
-      location: 'Kottayam',
-      type: 'Exchange',
-      registered_userid: 'USER004',
-    },
-  ]);
+
+  const [data, setData] = useState<MarketplaceRow[]>([]);
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -121,7 +68,7 @@ const MarketPlace = () => {
   const [filterType, setFilterType] =
     useState<SelectOption | null>(null);
 
-
+  const [totalCount, setTotalCount] = useState(0);
 
   const categoryData: SelectOption[] = [
     {
@@ -167,15 +114,22 @@ const MarketPlace = () => {
   ];
 
 
-  const fetchData = async (requestdata?: any) => {
-    setLoading(true);
 
-    console.log('FAKE GET MARKETPLACE API:', requestdata);
+    const fetchData = async (requestdata: any) => {
+        try {
+            const response = await http.post(LIST_MARKET_PRODUCT_ITEM, requestdata);
+            //console.log(response.data)
+            if (response.data) {
+                setData(response.data.result);
+                setTotalCount(response.data.totalCount);
+            }
+        } catch (error) {
+            console.error("Error fetching analytics data:", error);
+        }
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    setLoading(false);
-  };
+
+    };
 
  
   const initialRequest = {
@@ -186,7 +140,10 @@ const MarketPlace = () => {
   };
 
   
-
+   useEffect(() => {
+      fetchData(initialRequest);
+    }, []);
+    
   const validationSchema = Yup.object({
     category_id: Yup.number()
       .required('Category is required')
@@ -200,7 +157,7 @@ const MarketPlace = () => {
       .min(10, 'Minimum 10 characters')
       .required('Product description is required'),
 
-    images: Yup.array()
+    product_images: Yup.array()
       .min(1, 'At least one image is required')
       .required('Image is required'),
 
@@ -217,15 +174,77 @@ const MarketPlace = () => {
     ),
   });
 
-  
+    const buildFormData = (item: any) => {
+      const formDataToSend = new FormData();
+      Object.keys(item).forEach((key: any) => {
+        if (key === 'product_images') {
+          if (Array.isArray(item[key])) {
+            item[key].forEach((file: any) => {
+              if (file instanceof File) {
+                formDataToSend.append('product_images', file);
+              }
+            });
+          }
+        } else if (item[key] !== undefined && item[key] !== null) {
+          formDataToSend.append(key, item[key]);
+        }
+      });
+      return formDataToSend;
+    };
+
+    const handlePublish = async (item: any) => {
+      console.log('New Item:', item);
+      try {
+        const formDataToSend = buildFormData(item);
+        const res = await http.post(ADD_MARKET_PRODUCT_ITEM, formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (res.status === 200 || res.status === 201) {
+          console.log('Saved Product Data');
+          toast('Marketplace item added successfully', {
+            position: 'top-right',
+            type: 'success',
+          });
+          fetchData(initialRequest);
+        }
+      } catch (err) {
+        console.error('Failed to add data', err);
+      }
+    };
+
+    const handleUpdate = async (item: any) => {
+      console.log('Update Item:', item);
+      try {
+        const formDataToSend = buildFormData(item);
+        formDataToSend.append('id', item.market_id);
+        const res = await http.post(UPDATE_MARKET_PRODUCT_ITEM, formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (res.status === 200 || res.status === 201) {
+          console.log('Updated Product Data');
+          toast('Marketplace item updated successfully', {
+            position: 'top-right',
+            type: 'success',
+          });
+          fetchData(initialRequest);
+        }
+      } catch (err) {
+        console.error('Failed to update data', err);
+      }
+    };
 
   const formik = useFormik<MarketplaceRow>({
     initialValues: {
+      market_id: undefined,
       category_id: 0,
       category_name: '',
       product_name: '',
       product_desc: '',
-      images: [],
+      product_images: [],
       price: 0,
       location: '',
       type: '',
@@ -253,31 +272,17 @@ const MarketPlace = () => {
 
       
       if (editId !== null) {
-        setData((prevData) =>
-          prevData.map((item, index) =>
-            index === editId
-              ? marketplaceData
-              : item
-          )
-        );
-
-        toast('Marketplace item updated successfully', {
-          position: 'top-right',
-          type: 'success',
-        });
+        await handleUpdate(marketplaceData);
       }
 
      
       else {
-        setData((prevData) => [
-          ...prevData,
-          marketplaceData,
-        ]);
-
-        toast('Marketplace item added successfully', {
-          position: 'top-right',
-          type: 'success',
-        });
+        // setData((prevData) => [
+        //   ...prevData,
+        //   marketplaceData,
+        // ]);
+        await handlePublish(marketplaceData);
+       
       }
 
       setLoading(false);
@@ -299,43 +304,39 @@ const MarketPlace = () => {
       return;
     }
 
-    const imageUrls = files.map((file) =>
-      URL.createObjectURL(file)
-    );
-
-    formik.setFieldValue('images', [
-      ...formik.values.images,
-      ...imageUrls,
+    formik.setFieldValue('product_images', [
+      ...formik.values.product_images,
+      ...files,
     ]);
   };
 
  
 
   const removeImage = (index: number) => {
-    const updatedImages = formik.values.images.filter(
+    const updatedImages = formik.values.product_images.filter(
       (_, imageIndex) => imageIndex !== index
     );
 
-    formik.setFieldValue('images', updatedImages);
+    formik.setFieldValue('product_images', updatedImages);
   };
 
   
 
-  const handleEdit = (row: MarketplaceRow) => {
+  const handleEdit = (row: any) => {
     const rowIndex = data.findIndex(
-      (item) =>
-        item.product_name === row.product_name &&
-        item.registered_userid === row.registered_userid
+      (item: any) =>
+        item.market_id === row.market_id
     );
 
     setEditId(rowIndex);
 
     formik.setValues({
+      market_id: row.market_id,
       category_id: row.category_id,
       category_name: row.category_name,
       product_name: row.product_name,
       product_desc: row.product_desc,
-      images: row.images || [],
+      product_images: row.product_images || [],
       price: row.price,
       location: row.location,
       type: row.type,
@@ -347,29 +348,28 @@ const MarketPlace = () => {
 
   
 
-  const deleteMarketplace = async (row: MarketplaceRow) => {
+  const deleteMarketplace = async (row: any) => {
     setLoading(true);
-
-    console.log('FAKE DELETE API:', row);
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    setData((prevData) =>
-      prevData.filter(
-        (item) =>
-          !(
-            item.product_name === row.product_name &&
-            item.registered_userid === row.registered_userid
-          )
-      )
-    );
-
-    toast('Marketplace item deleted successfully', {
-      position: 'top-right',
-      type: 'success',
-    });
-
-    setLoading(false);
+    try {
+      const res = await http.post(DELETE_MARKET_PRODUCT_ITEM, {
+        id: row.market_id,
+      });
+      if (res.status === 200 || res.status === 201) {
+        toast('Marketplace item deleted successfully', {
+          position: 'top-right',
+          type: 'success',
+        });
+        fetchData(initialRequest);
+      }
+    } catch (err) {
+      console.error('Failed to delete data', err);
+      toast('Failed to delete marketplace item', {
+        position: 'top-right',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   
@@ -378,8 +378,89 @@ const MarketPlace = () => {
     deleteMarketplace(row);
   };
 
+  const extractImageIds = (rawImages:any) => {
+  if (!rawImages) return [];
+  if (Array.isArray(rawImages)) return rawImages;
 
+  if (typeof rawImages === "string") {
+    let str = rawImages.trim();
+    // Handle PostgreSQL array format: {"14","15"} or {14,15}
+    if (str.startsWith("{") && str.endsWith("}")) {
+      str = str.slice(1, -1).trim();
+      if (!str) return [];
+      return str.split(",").map((s) => s.replace(/["']/g, "").trim()).filter(Boolean);
+    }
+    // Handle JSON array format: ["14","15"]
+    if (str.startsWith("[") && str.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(str);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // fallback
+      }
+    }
+    // Handle comma-separated string
+    if (str.includes(",")) {
+      return str.split(",").map((s) => s.replace(/["'{}]/g, "").trim()).filter(Boolean);
+    }
+    return [str.replace(/["'{}]/g, "").trim()].filter(Boolean);
+  }
 
+  return [rawImages];
+};
+
+const ShowProductImages = React.memo(({ item }:any) => {
+  console.log("ShowProductImages item:", item);
+  const imageIds = extractImageIds(item?.images);
+  const lastImageId = imageIds.length > 0 ? imageIds[imageIds.length - 1] : null;
+
+  const [pdctImage, setPdctImage] = useState(() => {
+    return lastImageId && imageCache[lastImageId] ? imageCache[lastImageId] : null;
+  });
+  const [loader, setLoader] = useState(false);
+
+  const fetchImage = useCallback(async () => {
+    if (!lastImageId) return;
+    if (imageCache[lastImageId]) {
+      setPdctImage(imageCache[lastImageId]);
+      return;
+    }
+    setLoader(true);
+    try {
+      const payload = {
+        "image_id": String(lastImageId)
+      };
+      const res = await http.post(GET_PRODUCT_IMAGES, payload);
+      // console.log("GET_PRODUCT_IMAGES", res);
+      imageCache[lastImageId] = res.data;
+      setPdctImage(res.data);
+    } catch (err) {
+      console.error("Failed to fetch product image", err);
+    } finally {
+      setLoader(false);
+    }
+  }, [lastImageId]);
+
+  useEffect(() => {
+    if (lastImageId && !imageCache[lastImageId]) {
+      fetchImage();
+    }
+  }, [fetchImage, lastImageId]);
+
+  if (loader) return <div>Loading...</div>;
+
+  const imageSrc = pdctImage?.market_image || item?.image || (Array.isArray(item?.product_images) ? item.product_images[item.product_images.length - 1] : null);
+
+  return (
+    <img
+      src={imageSrc}
+      alt={item?.title || item?.product_name || "Product"}
+      className="product-image"
+      height="42"
+      width={"42"}
+    />
+  );
+});
   
 const columns = useMemo(
   () => [
@@ -502,7 +583,7 @@ const columns = useMemo(
               overflow: 'hidden',
             }}
           >
-            {images
+            {/* {images
               .slice(0, 3)
               .map(
                 (
@@ -526,16 +607,17 @@ const columns = useMemo(
                     }}
                   />
                 )
-              )}
+              )} */}
+            <ShowProductImages item={cell.row.original} />
 
-            {images.length > 3 && (
+            {/* {images.length > 3 && (
               <Badge
                 color="secondary"
                 pill
               >
                 +{images.length - 3}
               </Badge>
-            )}
+            )} */}
           </div>
         );
       },
@@ -776,69 +858,7 @@ const columns = useMemo(
 
     
 
-    setData([
-      {
-        category_id: 1,
-        category_name: 'Electronics',
-        product_name: 'Samsung Mobile',
-        product_desc:
-          'Good condition Samsung mobile phone',
-        images: [
-          'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500',
-          'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500',
-        ],
-        price: 15000,
-        location: 'Thiruvananthapuram',
-        type: 'Sell',
-        registered_userid: 'USER001',
-      },
-
-      {
-        category_id: 2,
-        category_name: 'Furniture',
-        product_name: 'Wooden Table',
-        product_desc:
-          'Strong wooden dining table',
-        images: [
-          'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=500',
-        ],
-        price: 8500,
-        location: 'Kollam',
-        type: 'Sell',
-        registered_userid: 'USER002',
-      },
-
-      {
-        category_id: 3,
-        category_name: 'Vehicles',
-        product_name: 'Honda Activa',
-        product_desc:
-          'Well maintained scooter',
-        images: [
-          'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=500',
-          'https://images.unsplash.com/photo-1558980664-10ea7b4f1c6c?w=500',
-        ],
-        price: 65000,
-        location: 'Kochi',
-        type: 'Sell',
-        registered_userid: 'USER003',
-      },
-
-      {
-        category_id: 4,
-        category_name: 'Books',
-        product_name: 'Engineering Books',
-        product_desc:
-          'Engineering reference books',
-        images: [
-          'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=500',
-        ],
-        price: 1200,
-        location: 'Kottayam',
-        type: 'Exchange',
-        registered_userid: 'USER004',
-      },
-    ]);
+    setData([]);
 
     setPage(1);
   };
@@ -1073,77 +1093,82 @@ const columns = useMemo(
                         You can select multiple images.
                       </small>
 
-                      {formik.errors.images &&
-                        formik.touched.images && (
+                      {formik.errors.product_images &&
+                        formik.touched.product_images && (
                           <div className="text-danger mt-1">
-                            {formik.errors.images as string}
+                            {formik.errors.product_images as string}
                           </div>
                         )}
 
                       {/* Image Preview */}
 
-                      {formik.values.images.length > 0 && (
+                      {formik.values.product_images.length > 0 && (
 
                         <div className="d-flex flex-wrap gap-3 mt-3">
 
-                          {formik.values.images.map(
-                            (image, index) => (
-
-                              <div
-                                key={index}
-                                style={{
-                                  position:
-                                    'relative',
-                                  width: 120,
-                                  height: 120,
-                                }}
-                              >
-
-                                <img
-                                  src={image}
-                                  alt={`preview-${index}`}
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit:
-                                      'cover',
-                                    borderRadius:
-                                      '8px',
-                                    border:
-                                      '1px solid #ddd',
-                                  }}
-                                />
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeImage(index)
-                                  }
+                          {formik.values.product_images.map(
+                            (image: any, index: number) => {
+                              const imageUrl =
+                                typeof image === 'string'
+                                  ? image
+                                  : URL.createObjectURL(image);
+                              return (
+                                <div
+                                  key={index}
                                   style={{
                                     position:
-                                      'absolute',
-                                    top: 5,
-                                    right: 5,
-                                    background:
-                                      'red',
-                                    color:
-                                      '#fff',
-                                    border:
-                                      'none',
-                                    borderRadius:
-                                      '50%',
-                                    width: 25,
-                                    height: 25,
-                                    cursor:
-                                      'pointer',
+                                      'relative',
+                                    width: 120,
+                                    height: 120,
                                   }}
                                 >
-                                  ✕
-                                </button>
 
-                              </div>
+                                  <img
+                                    src={imageUrl}
+                                    alt={`preview-${index}`}
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit:
+                                        'cover',
+                                      borderRadius:
+                                        '8px',
+                                      border:
+                                        '1px solid #ddd',
+                                    }}
+                                  />
 
-                            )
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeImage(index)
+                                    }
+                                    style={{
+                                      position:
+                                        'absolute',
+                                      top: 5,
+                                      right: 5,
+                                      background:
+                                        'red',
+                                      color:
+                                        '#fff',
+                                      border:
+                                        'none',
+                                      borderRadius:
+                                        '50%',
+                                      width: 25,
+                                      height: 25,
+                                      cursor:
+                                        'pointer',
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+
+                                </div>
+
+                              );
+                            }
                           )}
 
                         </div>

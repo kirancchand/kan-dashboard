@@ -63,9 +63,10 @@ interface AdvRow {
   advertisement_desc: string;
   start_date: string;
   end_date: string;
-  isExclusive: boolean;
+  isexclusive: boolean;
   f_villageapp_id: keyValue | null;
   f_villageorganisation_id: keyValue | null;
+  f_adv_type_id: keyValue | null;
 }
 
 const Advertisement = () => {
@@ -80,8 +81,9 @@ const Advertisement = () => {
   const [villageAppData, setVillageAppData] = useState([]);
   const [villageAppDataLoading, setVillageAppDataLoading] = useState(false);
   const [villageOrganisationData, setVillageOrganisationData] = useState([]);
-  const [villageOrganisationDataLoading, setVillageOrganisationDataLoading] =
-    useState(false);
+  const [villageOrganisationDataLoading, setVillageOrganisationDataLoading] = useState(false);
+  const [advTypeData, setAdvTypeData] = useState([]);
+  const [advTypeDataLoading, setAdvTypeDataLoading] = useState(false);
   const [filterName, setFilterName] = useState("");
   const [filterVillageApp, setFilterVillageApp] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
@@ -154,9 +156,23 @@ const Advertisement = () => {
       });
   }
 
+  async function fetchAdvTypes() {
+    setAdvTypeDataLoading(true);
+    mdurl(MD_URL, "getAll_AdvType")
+      .then((r) => {
+        setAdvTypeData(r);
+        setAdvTypeDataLoading(false);
+      })
+      .catch((error) => {
+        toast(error, { position: "top-right", type: "error" });
+        setAdvTypeDataLoading(false);
+      });
+  }
+
   useEffect(() => {
     fetchVillageApps();
     fetchVillageOrganisation();
+    fetchAdvTypes();
   }, []);
 
   let initialRequest = {
@@ -240,9 +256,10 @@ const Advertisement = () => {
       advertisement_desc: "",
       start_date: "",
       end_date: "",
-      isExclusive: false,
+      isexclusive: false,
       f_villageapp_id: null,
       f_villageorganisation_id: null,
+      f_adv_type_id: null,
     },
     onSubmit: (values, { resetForm, setSubmitting }) => {
       const formData = new FormData();
@@ -250,7 +267,7 @@ const Advertisement = () => {
       formData.append("advertisement_desc", values.advertisement_desc);
       formData.append("start_date", values.start_date || "");
       formData.append("end_date", values.end_date || "");
-      formData.append("isExclusive", values.isExclusive.toString());
+      formData.append("isexclusive", values.isexclusive.toString());
       formData.append(
         "f_villageapp_id",
         values.f_villageapp_id?.value.toString() || "",
@@ -258,6 +275,10 @@ const Advertisement = () => {
       formData.append(
         "f_villageorganisation_id",
         values.f_villageorganisation_id?.value.toString() || "",
+      );
+      formData.append(
+        "f_adv_type_id",
+        values.f_adv_type_id?.value.toString() || "",
       );
 
       if (values.advertisement_image) {
@@ -292,7 +313,7 @@ const Advertisement = () => {
     formik.setFieldValue("advertisement_desc", row.advertisement_desc);
     formik.setFieldValue("start_date", row.start_date);
     formik.setFieldValue("end_date", row.end_date);
-    formik.setFieldValue("isExclusive", row.isExclusive);
+    formik.setFieldValue("isexclusive", row.isexclusive);
     formik.setFieldValue(
       "f_villageapp_id",
       villageAppData.find((vap: any) => vap.value == row.f_villageapp_id),
@@ -302,6 +323,10 @@ const Advertisement = () => {
       villageOrganisationData.find(
         (vap: any) => vap.value == row.f_villageorganisation_id,
       ),
+    );
+    formik.setFieldValue(
+      "f_adv_type_id",
+      advTypeData.find((vap: any) => vap.value == row.f_adv_type_id),
     );
     setShowForm(true);
   };
@@ -395,6 +420,15 @@ const Advertisement = () => {
         header: "Village Organisation",
         enableColumnFilter: false,
         accessorKey: "organisation_name",
+        cell: (cell: any) => {
+          return  <span>
+        <div>{cell.row.original.organisation_name}</div>
+        <span className="badge bg-warning">
+          {cell.row.original.adv_type}
+        </span>
+      </span>
+          
+        },
       },
       {
         header: "Actions",
@@ -603,6 +637,29 @@ const Advertisement = () => {
                       </div>
                     )}
                 </FormGroup>
+                <FormGroup>
+                  <Label>Select Advertisment Type</Label>
+                  <RSelect
+                    name="f_adv_type_id"
+                    id="f_adv_type_id"
+                    value={formik.values.f_adv_type_id}
+                    onChange={(ev: any) =>
+                      formik.setFieldValue("f_adv_type_id", ev)
+                    }
+                    options={advTypeData}
+                    placeholder="--Select Advertisement Type--"
+                    error={formik.errors.f_adv_type_id}
+                    touched={formik.touched.f_adv_type_id}
+                    isLoading={advTypeDataLoading}
+                    isClearable
+                  />
+                  {formik.touched.f_adv_type_id &&
+                    formik.errors.f_adv_type_id && (
+                      <div className="text-danger">
+                        {formik.errors.f_adv_type_id as string}
+                      </div>
+                    )}
+                </FormGroup>
 
                 <FormGroup>
                   <Label>Advertisement Description</Label>
@@ -699,13 +756,13 @@ const Advertisement = () => {
                           <Input
                             type="checkbox"
                             role="switch"
-                            name="isExclusive"
-                            checked={formik.values.isExclusive}
+                            name="isexclusive"
+                            checked={formik.values.isexclusive}
                             onChange={formik.handleChange}
                           />
     
                           <Label check className="ms-2">
-                            {formik.values.isExclusive
+                            {formik.values.isexclusive
                               ? "Exclusive Advertisement"
                               : "Not an Exclusive Advertisement"}
                           </Label>

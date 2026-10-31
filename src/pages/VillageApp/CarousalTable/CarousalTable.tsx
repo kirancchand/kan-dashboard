@@ -53,6 +53,7 @@ interface CarousalRow {
   carousel_position: number;
   isenabled: boolean;
   f_villageapp_id: keyValue | null;
+  ismobile: boolean;
 }
 
 const CarousalTable = () => {
@@ -191,6 +192,7 @@ const CarousalTable = () => {
       carousel_position: 1,
       isenabled: false,
       f_villageapp_id: null,
+      ismobile: false
     },
     onSubmit: (values, { resetForm, setSubmitting }) => {
       const formData = new FormData();
@@ -199,6 +201,7 @@ const CarousalTable = () => {
       formData.append("carousel_position", values.carousel_position.toString());
       formData.append("isenabled", values.isenabled.toString());
       formData.append("f_villageapp_id", values.f_villageapp_id?.value.toString() || "");
+      formData.append("ismobile", values.ismobile.toString());
 
       if (values.carousel_image) {
         formData.append("carousel_image", values.carousel_image);
@@ -227,6 +230,12 @@ const CarousalTable = () => {
     formik.setFieldValue("carousel_position", row.carousel_position);
     formik.setFieldValue("isenabled", row.isenabled);
     formik.setFieldValue("f_villageapp_id", villageAppData.find((v: any) => v.value === row.f_villageapp_id));
+    formik.setFieldValue("ismobile", row.ismobile);
+    if (row.carousel_image) {
+      setImagePreview(row.carousel_image as unknown as string);
+    } else {
+      setImagePreview(null);
+    }
     setShowForm(true);
   };
 
@@ -272,6 +281,14 @@ const CarousalTable = () => {
       header: 'Name',
       enableColumnFilter: false,
       accessorKey: 'carousel_name',
+      cell: (cell: any) => {
+        return (
+          <div>
+            <strong>{cell.row.original.carousel_name}</strong>
+            <div className="text-muted">{cell.row.original.ismobile ? 'Mobile' : 'Web'}</div>
+          </div>
+        );
+      },
     },
     {
       header: 'Image',
@@ -577,6 +594,18 @@ const CarousalTable = () => {
                       />
                       <Label className="ms-2">
                         {formik.values.isenabled ? 'Enabled' : 'Disabled'}
+                      </Label>
+                    </div>
+
+                    <div className="form-check form-switch mb-3">
+                      <Input
+                        type="switch"
+                        name="ismobile"
+                        checked={formik.values.ismobile}
+                        onChange={formik.handleChange}
+                      />
+                      <Label className="ms-2">
+                        {formik.values.ismobile ? 'Mobile' : 'Web'}
                       </Label>
                     </div>
 
